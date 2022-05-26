@@ -44,7 +44,11 @@ export interface jobModel<> implements Model {
     },
     entity_id: {
         type: DataTypes.INTEGER,
-        allowNull: boolean
+        allowNull: boolean,
+        references: {
+            model: string
+            key: string
+        }
     },
     start_at: {
         type: DateDataTypeConstructor,
