@@ -1,9 +1,12 @@
-import * as jwt from "jsonwebtoken"
-import { JwtPayload } from "jsonwebtoken"
+'use strict'
 
-const generate = async (key: string, payload: JwtPayload, expiresIn: number) : Promise<string> => {
+import jwt from "jsonwebtoken"
+import { authUser } from "../types/user"
+import express from "express"
+
+const generate = async (key: string, payload: authUser, expiresIn: number) : Promise<string> => {
     if (!Boolean(key) || !Boolean(payload) || !Boolean(expiresIn)) {
-        throw new Error('Erro in generate token: empty key or payload or expiresIn')
+        throw new Error('Error in generate token: empty key or payload or expiresIn')
     }
 
     const jwtToken: string = jwt.sign(payload, key, {
@@ -17,19 +20,17 @@ const generate = async (key: string, payload: JwtPayload, expiresIn: number) : P
     return jwtToken
 }
 
-const authenticate = async (key: string, token: string) : Promise<boolean> => {
-    if (!Boolean(token)) {
+const verify = async (key: string, token: string) : Promise<void> => {
+    if (!Boolean(token) || !Boolean(key)) {
         throw new Error ('Unauthorized')
     }
 
     jwt.verify(token, key,  (error, user) => {
-        if (error) throw new Error ('Error in authenticateToken: ' + error)
+        if (error) throw new Error ('Error in verify token - ' + error)
     })
-
-    return true
 }
 
-const getPayload = (token: string) :JwtPayload => {
+const getPayload = async (token: string): Promise<authUser> => {
     const decoded = jwt.decode(token, {complete: true})
 
     if (!Boolean(decoded)) {
@@ -40,13 +41,24 @@ const getPayload = (token: string) :JwtPayload => {
         throw new Error('Empty JTW payload')
     }
 
-    return <JwtPayload>decoded.payload
+    return <authUser>decoded.payload
 }
 
 const refreshToken = async (key: string, expiresIn: number, token: string) : Promise<string> => {
-    const payload: JwtPayload = getPayload(token)
+    const payload: authUser = await getPayload(token)
 
-    return await generate(key, payload, expiresIn)
+    return await generate(key, { username: payload.username, role: payload.role }, expiresIn)
 }
 
-export { generate, authenticate, getPayload, refreshToken }
+const getToken = async (req: express.Request) : Promise<string> => {
+    const authHeader = req.headers['authorization']
+    const token      = authHeader && authHeader.split(' ')[1]
+
+    if (!Boolean(token)) {
+        throw new Error('Missing token from authorization header')
+    }
+
+    return token
+}
+
+export { generate, verify, getPayload, refreshToken, getToken }

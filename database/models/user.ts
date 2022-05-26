@@ -34,7 +34,11 @@ const syncTable = () => {
 }
 
 const define = () => {
-    return db.define(modelName, structure)
+    return db.define(modelName, structure, {
+        defaultScope: {
+            attributes: { exclude: ['password'] }
+        }
+    })
 }
 
 export { modelName, syncTable, define }

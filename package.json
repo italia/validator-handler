@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dist-webserver": "node --experimental-modules --es-module-specifier-resolution=node ./dist/server.js",
-    "ts-webserver": "node --experimental-modules --es-module-specifier-resolution=node ./server.ts",
+    "ts-webserver": "node --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./server.ts",
     "build": "tsc && cp -rp ./.env ./dist && cp -rp ./.env.example ./dist",
     "prepack": "npm run build"
   },
