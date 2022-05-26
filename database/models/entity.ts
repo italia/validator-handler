@@ -5,7 +5,6 @@ import { entityModel } from "../../types/database"
 import { db } from "../connection"
 
 const modelName: string             = 'Entity'
-const primaryKey: string            = 'id'
 const allowedTypes: string[]        = ['school', 'municipality']
 
 const structure: entityModel = {
@@ -13,6 +12,10 @@ const structure: entityModel = {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
+    },
+    external_id: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
     url: {
         type: DataTypes.STRING,
@@ -39,4 +42,4 @@ const define = () => {
     return db.define(modelName, structure)
 }
 
-export { modelName, allowedTypes, primaryKey, syncTable, define }
+export { modelName, allowedTypes, syncTable, define }

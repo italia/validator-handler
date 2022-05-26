@@ -5,7 +5,6 @@ import { userModel } from "../../types/database"
 import { db } from "../connection"
 
 const modelName: string  = 'User'
-const primaryKey: string = 'id'
 const roles: string[]    = ['api-user']
 
 const structure: userModel = {
@@ -23,7 +22,7 @@ const structure: userModel = {
         allowNull: false
     },
     role: {
-        type: DataTypes.ARRAY,
+        type: DataTypes.STRING,
         validate: {
             isIn: [roles]
         }

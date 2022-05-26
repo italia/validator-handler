@@ -1,6 +1,6 @@
 'use strict'
 
-import {ArrayDataTypeConstructor, DataTypes, Model} from "sequelize"
+import { DataTypes, Model } from "sequelize"
 import {
     IntegerDataTypeConstructor,
     StringDataTypeConstructor,
@@ -14,6 +14,10 @@ export interface entityModel<> implements Model {
         type: IntegerDataTypeConstructor,
         autoIncrement: boolean,
         primaryKey: boolean
+    },
+    external_id: {
+        type: StringDataTypeConstructor,
+        allowNull: boolean
     },
     url: {
         type: StringDataTypeConstructor,
@@ -29,7 +33,7 @@ export interface entityModel<> implements Model {
         validate: {
             isIn: Array<Array<string>>,
         }
-    }
+    },
 }
 
 export interface jobModel<> implements Model {
@@ -106,7 +110,7 @@ export interface userModel<> implements Model {
         allowNull: boolean
     },
     role: {
-        type: ArrayDataTypeConstructor,
+        type: StringDataTypeConstructor,
         validate: {
             isIn: Array<Array<string>>,
         }
