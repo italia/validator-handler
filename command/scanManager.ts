@@ -1,16 +1,14 @@
 'use strict'
 
-//@ts-ignore
 import yargs from "yargs"
-import { hideBin } from "yargs/helpers"
-
 import { db }  from "../database/connection"
+import { hideBin } from "yargs/helpers"
 import { define as jobDefine } from "../database/models/job"
+import { run } from "pa-website-validator/dist/controller/launchLighthouse"
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { run } from "pa-website-validator/dist/controller/spawnCrawler"
-
-//@ts-ignore
+import { Job } from "../types/models"
+import { Model } from "sequelize"
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const command = yargs(hideBin(process.argv))
@@ -23,46 +21,45 @@ db
     .then(async () => {
         console.log(`[DB-SYNC]: Database ${db.getDatabaseName()} connected!`)
 
-        const jobObjs: any = await jobDefine().findAll({
+        const jobObjs: Model<Job, Job>[] = await jobDefine().findAll({
             where: {
                 spawn_code: command.spawnCode,
                 status: 'PENDING'
             }
         })
 
-        for (let jobObj of jobObjs) {
-            await jobObj.update({
+        for (let element of jobObjs) {
+            await element.update({
                 status: 'IN_PROGRESS',
                 start_at: Date.now()
             })
 
+            const jobObj: Job = element.get()
+
             const type    = jobObj.type
             const scanUrl = jobObj.scan_url
             const path    = __dirname + '/../tmp/' + jobObj.entity_id + '/' + jobObj.id
-            const child   = await run(scanUrl, type, 'online', path, 'report')
+            const result  = await run(scanUrl, type, 'online', path, 'report')
 
-            child.on('close', async (code) => {
-                if (code === 0) {
-                    await successReport(jobObj, path)
-                } else {
-                    await errorReport(jobObj)
-                }
-            })
+            if (result.status) {
+                await successReport(jobObj, path)
+            } else {
+                await errorReport(jobObj)
+            }
         }
-
     })
     .catch(err => {
         console.error('[DB-SYNC]: Unable to connect to the database:', err)
     })
 
-const successReport = async (jobObj, path) => {
+const successReport = async (jobObj: Job, path: string) => {
     const status = 'PASSED'
 
     //TODO: Push report on AWS S3
 
     const s3JsonUrl = 'test'
     const s3HtmlUrl = 'test'
-    const jsonResult = generateJSONReport(path)
+    const jsonResult = await generateJSONReport(path)
 
     //TODO: empty tmp folder
 
@@ -75,13 +72,13 @@ const successReport = async (jobObj, path) => {
     })
 }
 
-const errorReport = async (jobObj) => {
+const errorReport = async (jobObj: Job) => {
     await jobObj.update({
         status: 'ERROR',
         end_at: Date.now()
     })
 }
 
-const generateJSONReport = async (path) => {
-    //TODO
+const generateJSONReport = async (path: string) => {
+    return {}
 }
