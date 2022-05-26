@@ -1,9 +1,10 @@
 'use strict'
 
-import { DataTypes } from "sequelize"
+import {DataTypes, Sequelize} from "sequelize"
 import { jobModel } from "../../types/database"
 import { allowedTypes } from "./entity"
 import { db } from "../connection"
+import { define as entityDefine, primaryKey as entityPrimaryKey } from "./entity"
 
 const modelName: string             = 'Job'
 const statusAllowedValues: string[] = ['IN_PROGRESS', 'PENDING', 'ERROR', 'PASSED', 'FAILED']
@@ -16,7 +17,11 @@ const structure: jobModel = {
     },
     entity_id: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: entityDefine().getTableName().toString(),
+            key: entityPrimaryKey
+        }
     },
     start_at: {
         type: DataTypes.DATE,
@@ -68,7 +73,7 @@ const structure: jobModel = {
 }
 
 const syncTable = () => {
-    return define().sync({ alter: true })
+    return db.define(modelName, structure).sync({ alter: true })
 }
 
 const define = () => {

@@ -3,9 +3,11 @@
 import { DataTypes } from "sequelize"
 import { entityModel } from "../../types/database"
 import { db } from "../connection"
+import { define as jobDefine } from "./job"
 
-const modelName: string             = 'Entity'
-const allowedTypes: string[]        = ['school', 'municipality']
+const primaryKey: string      = 'id'
+const modelName: string       = 'Entity'
+const allowedTypes: string[]  = ['school', 'municipality']
 
 const structure: entityModel = {
     id: {
@@ -35,11 +37,11 @@ const structure: entityModel = {
 }
 
 const syncTable = () => {
-    return define().sync({ alter: true })
+    return db.define(modelName, structure).sync({ alter: true })
 }
 
 const define = () => {
     return db.define(modelName, structure)
 }
 
-export { modelName, allowedTypes, syncTable, define }
+export { primaryKey, modelName, allowedTypes, syncTable, define }
