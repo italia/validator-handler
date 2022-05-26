@@ -2,7 +2,6 @@
 
 import { db }  from "../database/connection"
 
-//@ts-ignore
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
 import { QueryTypes } from "sequelize"

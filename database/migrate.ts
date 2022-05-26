@@ -5,7 +5,6 @@ import { syncTable as entitySyncTable } from "./models/entity"
 import { syncTable as jobSyncTable } from "./models/job"
 import { syncTable as userSyncTable } from "./models/user"
 
-//@ts-ignore
 import yargs from "yargs"
 import { hideBin } from 'yargs/helpers'
 
