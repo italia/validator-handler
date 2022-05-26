@@ -1,4 +1,5 @@
-import { Model, InferAttributes, InferCreationAttributes } from 'sequelize'
+import {Model, InferAttributes, InferCreationAttributes, DataTypes} from 'sequelize'
+import { allowedTypes } from "../database/models/entity";
 
 export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job>> {
     declare id: number;
@@ -13,6 +14,25 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     declare s3_json_url: string;
     declare json_result: object;
     declare preserve: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+}
+
+export class Entity extends Model<InferAttributes<Entity>, InferCreationAttributes<Entity>> {
+    declare id: number;
+    declare external_id: string;
+    declare url: string;
+    declare enable: boolean;
+    declare type: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+}
+
+export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+    declare id: number;
+    declare username: string;
+    declare password: string;
+    declare role: string;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }
