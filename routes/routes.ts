@@ -10,8 +10,8 @@ import { emptyBodyType, loginBodyType, createEntityBodyType } from "../types/api
 import { successResponseType, errorResponseType } from "../types/api-response-body"
 import { generate as jwtGenerate, verify as jwtVerify, refreshToken as jwtRefreshToken, getToken } from "../auth/jwt"
 import { auth } from "../controller/userController"
-import { create as entityCreateValidation } from "../validators/entity"
-import {create} from "../controller/entityController";
+import { create as entityCreateValidation, update as entityUpdateValidation } from "../validators/entity"
+import { create as entityCreate, update as entityUpdate } from "../controller/entityController"
 
 router.post('/api/login/token', async (req: loginBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
@@ -54,7 +54,20 @@ router.put('/api/entity/create', async (req: createEntityBodyType, res: successR
         await jwtVerify(process.env.JWT_SECRET, await getToken(req))
         await entityCreateValidation(req.body)
 
-        const result = await create(req.body)
+        const result = await entityCreate(req.body)
+
+        return succesResponse(result, res)
+    } catch (error) {
+        return errorResponse(0, error, 401, res)
+    }
+})
+
+router.post('/api/entity/update', async (req: createEntityBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
+    try {
+        await jwtVerify(process.env.JWT_SECRET, await getToken(req))
+        await entityUpdateValidation(req.body)
+
+        const result = await entityUpdate(req.body)
 
         return succesResponse(result, res)
     } catch (error) {
