@@ -1,4 +1,5 @@
 'use strict'
+import { ValidationError } from "jsonschema"
 
 const arrayChunkify = async (inputArray: [], numberOfDesiredChuck: number, balanced: boolean = true) => {
     if (numberOfDesiredChuck < 2) {
@@ -34,4 +35,14 @@ const arrayChunkify = async (inputArray: [], numberOfDesiredChuck: number, balan
     return out
 }
 
-export { arrayChunkify }
+const mapValidationErrors = async (validationErrors: ValidationError[]): Promise<string> => {
+    let errorMessages = []
+
+    for (let element of validationErrors) {
+        errorMessages.push(element.stack)
+    }
+
+    return errorMessages.join(' | ')
+}
+
+export { arrayChunkify, mapValidationErrors }
