@@ -1,6 +1,6 @@
-import express from "express"
+import { successResponseType, errorResponseType } from "../types/api-response-body"
 
-const errorResponse = (error_code: number, errorObj: any, http_code: number, res: express.Response) : void => {
+const errorResponse = (error_code: number, errorObj: any, http_code: number, res: errorResponseType) : void => {
     let message = 'Generic error'
 
     if (typeof errorObj == 'string') {
@@ -19,7 +19,7 @@ const errorResponse = (error_code: number, errorObj: any, http_code: number, res
     })
 }
 
-const succesResponse = (response: any, res: express.Response, http_code: number = 200, isHtml: boolean = false) : void => {
+const succesResponse = (response: any, res: successResponseType, http_code: number = 200, isHtml: boolean = false) : void => {
     if (isHtml) {
         res.writeHead(http_code,  {"Content-Type": "text/html"})
         res.write(response)
