@@ -19,3 +19,13 @@ export interface createEntityBodyType<> extends express.Request {
         type: string
     }
 }
+
+export interface updateEntityBodyType<> extends express.Request {
+    body: {
+        external_id: string,
+        data: {
+            url: string,
+            enable: boolean
+        }
+    }
+}
