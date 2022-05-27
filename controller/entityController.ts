@@ -1,5 +1,5 @@
 'use strict'
-import {createBody, updateBody} from "../types/entity"
+import { createBody, updateBody } from "../types/entity"
 import { define as entityDefine } from "../database/models/entity"
 import { Entity } from "../types/models"
 import { Model } from "sequelize"
@@ -37,16 +37,12 @@ const update = async (entityExternalId: string, entityUpdateBody: updateBody) : 
     let updateObj = {}
 
     if ("url" in entityUpdateBody) {
-        console.log('qui1')
         updateObj = {...updateObj, ...{ url: entityUpdateBody.url }}
     }
 
     if ("enable" in entityUpdateBody) {
-        console.log('qui2')
         updateObj = {...updateObj, ...{ enable: entityUpdateBody.enable }}
     }
-
-    console.log('update obj', updateObj)
 
     const result = await entity.update(updateObj)
 
