@@ -11,29 +11,29 @@ const exists = async (entityExternalId: string) : Promise<boolean> => {
     }) !== null
 }
 
-const create = async (entity: createBody) : Promise<Entity> => {
-    if (await exists(entity.external_id)) {
+const create = async (entityCreateBody: createBody) : Promise<Entity> => {
+    if (await exists(entityCreateBody.external_id)) {
         throw new Error('Entity already exists for the passed id')
     }
 
     const result = await entityDefine().create({
-        external_id: entity.external_id,
-        url: entity.url,
-        enable: entity.enable,
-        type: entity.type
+        external_id: entityCreateBody.external_id,
+        url: entityCreateBody.url,
+        enable: entityCreateBody.enable,
+        type: entityCreateBody.type
     })
 
     return result.get()
 }
 
-const update = async (entity: updateBody) : Promise<Entity[]> => {
-    if (!await exists(entity.external_id)) {
+const update = async (entityUpdateBody: updateBody) : Promise<Entity[]> => {
+    if (!await exists(entityUpdateBody.external_id)) {
         throw new Error('Entity does not exists')
     }
 
     const result = await entityDefine().update(
-        { enable: entity.enable, url: entity.url },
-        { where: { external_id: entity.external_id }, returning: true }
+        { enable: entityUpdateBody.data.enable, url: entityUpdateBody.data.url },
+        { where: { external_id: entityUpdateBody.external_id }, returning: true }
     )
 
     if (result.length <= 0) {
@@ -50,4 +50,18 @@ const update = async (entity: updateBody) : Promise<Entity[]> => {
     return returnEntities
 }
 
-export { exists, create, update }
+const retrieve = async (entityExternalId: string) : Promise<Entity> | null => {
+    const result = await entityDefine().findOne({
+        where: {
+            external_id: entityExternalId
+        }
+    })
+
+    if (result != null) {
+        return result.get()
+    }
+
+    return null
+}
+
+export { exists, create, update, retrieve }
