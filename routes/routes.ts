@@ -11,6 +11,7 @@ import { successResponseType, errorResponseType } from "../types/api-response-bo
 import { generate as jwtGenerate, verify as jwtVerify, refreshToken as jwtRefreshToken, getToken } from "../auth/jwt"
 import { auth } from "../controller/userController"
 import { create as entityCreateValidation } from "../validators/entity"
+import {create} from "../controller/entityController";
 
 router.post('/api/login/token', async (req: loginBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
@@ -26,7 +27,7 @@ router.post('/api/login/token', async (req: loginBodyType, res: successResponseT
 
         return succesResponse({
             token: token,
-            expires_in: Number(process.env.JWT_EXPIRATION_TIME)
+            expiresIn: Number(process.env.JWT_EXPIRATION_TIME)
         }, res)
     } catch (error) {
         return errorResponse(0, error, 401, res)
@@ -41,7 +42,7 @@ router.post('/api/login/refresh', async (req: emptyBodyType, res: successRespons
 
         return succesResponse({
             token: newToken,
-            expires_in: Number(process.env.JWT_EXPIRATION_TIME),
+            expiresIn: Number(process.env.JWT_EXPIRATION_TIME),
         }, res)
     } catch (error) {
         return errorResponse(0, error, 401, res)
@@ -50,12 +51,12 @@ router.post('/api/login/refresh', async (req: emptyBodyType, res: successRespons
 
 router.put('/api/entity/create', async (req: createEntityBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
-        const token = await getToken(req)
-        await jwtVerify(process.env.JWT_SECRET, token)
+        await jwtVerify(process.env.JWT_SECRET, await getToken(req))
         await entityCreateValidation(req.body)
 
+        const result = await create(req.body)
 
-        return succesResponse({}, res)
+        return succesResponse(result, res)
     } catch (error) {
         return errorResponse(0, error, 401, res)
     }

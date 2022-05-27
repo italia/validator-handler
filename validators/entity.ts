@@ -1,15 +1,17 @@
 import * as jsonschema from "jsonschema"
 import { mapValidationErrors } from "../utils/utils"
 import { ValidatorResult } from "jsonschema"
+import { create } from "../types/entity"
 
-const create = async (body): Promise<boolean> => {
+const create = async (body: create): Promise<boolean> => {
     const expectedBody = {
         "type": "object",
+
         "properties": {
-            "id": {"type": "string", "minLength": 1},
-            "url": {"type": "string", "minLength": 1},
+            "id":     {"type": "string", "minLength": 1},
+            "url":    {"type": "string", "minLength": 1},
             "enable": {"type": "boolean", "minLength": 1},
-            "type": {"type": "string", "minLength": 1, "enum": ['school', 'municipality']}
+            "type":   {"type": "string", "minLength": 1, "enum": ['school', 'municipality']}
         },
 
         "required": ["id", "url", "enable", "type"]
