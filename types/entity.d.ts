@@ -6,9 +6,6 @@ export interface createBody {
 }
 
 export interface updateBody {
-    external_id: string
-    data: {
-        url: string
-        enable: boolean
-    }
+    url: string,
+    enable: boolean
 }

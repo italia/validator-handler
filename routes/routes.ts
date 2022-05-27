@@ -62,12 +62,12 @@ router.put('/api/entity/create', async (req: createEntityBodyType, res: successR
     }
 })
 
-router.post('/api/entity/update', async (req: updateEntityBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
+router.post('/api/entity/:external_id/update', async (req: updateEntityBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
         await jwtVerify(process.env.JWT_SECRET, await getToken(req))
         await entityUpdateValidation(req.body)
 
-        const result = await entityUpdate(req.body)
+        const result = await entityUpdate(req.params.external_id, req.body)
 
         return succesResponse(result, res)
     } catch (error) {
@@ -84,7 +84,7 @@ router.get('/api/entity/retrieve', async (req: emptyBodyType, res: successRespon
             throw new Error('Missing external_id query parameter')
         }
 
-        const result = await entityRetrieve(externalEntityId)
+        const result = await entityRetrieve(externalEntityId) ?? {}
 
         return succesResponse(result, res)
     } catch (error) {

@@ -36,19 +36,22 @@ const update = async (body: updateBody): Promise<boolean> => {
         "type": "object",
 
         "properties": {
-            "external_id": {"type": "string", "minLength": 1},
-            "data": {
-                "type": "object",
-                "properties": {
-                    "url":    {"type": "string", "minLength": 1},
-                    "enable": {"type": "boolean", "minLength": 1},
-                },
-
-                "required": ["url", "enable"]
-            }
+            "url":    {"type": "string", "minLength": 1},
+            "enable": {"type": "boolean", "minLength": 1},
         },
 
-        "required": ["external_id", "data"]
+        "anyOf": [
+            {
+                "required": [
+                    "url"
+                ]
+            },
+            {
+                "required": [
+                    "enable"
+                ]
+            }
+        ]
     }
 
     return await validate(body, updateBody)
