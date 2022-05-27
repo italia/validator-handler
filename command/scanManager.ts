@@ -87,7 +87,9 @@ const uploadFiles = async (jobObj: Job, htmlReport: string, jsonReport: string) 
         const jsonLocationUrl = await s3Upload(jsonReport, jobObj.entity_id + '/' + jobObj.id + '/' + 'report.json')
 
         if (htmlLocationUrl === null || jsonLocationUrl === null) {
-            await s3Delete(jobObj.entity_id + '/' + jobObj.id)
+            if (Boolean(jobObj.entity_id) && Boolean(jobObj.id)) {
+                await s3Delete(jobObj.entity_id + '/' + jobObj.id)
+            }
 
             return {
                 status: false,
@@ -102,7 +104,9 @@ const uploadFiles = async (jobObj: Job, htmlReport: string, jsonReport: string) 
             jsonLocationUrl: jsonLocationUrl
         }
     } catch (ex) {
-        await s3Delete(jobObj.entity_id + '/' + jobObj.id)
+        if (Boolean(jobObj.entity_id) && Boolean(jobObj.id)) {
+            await s3Delete(jobObj.entity_id + '/' + jobObj.id)
+        }
 
         return {
             status: false,
