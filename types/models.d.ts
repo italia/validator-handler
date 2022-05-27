@@ -1,5 +1,4 @@
-import {Model, InferAttributes, InferCreationAttributes, DataTypes} from 'sequelize'
-import { allowedTypes } from "../database/models/entity";
+import { Model, InferAttributes, InferCreationAttributes } from 'sequelize'
 
 export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job>> {
     declare id: number;
