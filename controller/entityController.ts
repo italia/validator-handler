@@ -2,17 +2,19 @@
 import {createBody, updateBody} from "../types/entity"
 import { define as entityDefine } from "../database/models/entity"
 import { Entity } from "../types/models"
+import { Model } from "sequelize"
 
-const exists = async (entityExternalId: string) : Promise<boolean> => {
+const retrieve = async (entityExternalId: string) : Promise<Model<Entity, Entity>> => {
     return await entityDefine().findOne({
         where: {
             external_id: entityExternalId
         }
-    }) !== null
+    })
 }
 
 const create = async (entityCreateBody: createBody) : Promise<Entity> => {
-    if (await exists(entityCreateBody.external_id)) {
+    const entity = await retrieve(entityCreateBody.external_id)
+    if (entity !== null) {
         throw new Error('Entity already exists for the passed id')
     }
 
@@ -26,42 +28,29 @@ const create = async (entityCreateBody: createBody) : Promise<Entity> => {
     return result.get()
 }
 
-const update = async (entityUpdateBody: updateBody) : Promise<Entity[]> => {
-    if (!await exists(entityUpdateBody.external_id)) {
+const update = async (entityExternalId: string, entityUpdateBody: updateBody) : Promise<Entity> => {
+    const entity = await retrieve(entityExternalId)
+    if (entity === null) {
         throw new Error('Entity does not exists')
     }
 
-    const result = await entityDefine().update(
-        { enable: entityUpdateBody.data.enable, url: entityUpdateBody.data.url },
-        { where: { external_id: entityUpdateBody.external_id }, returning: true }
-    )
+    let updateObj = {}
 
-    if (result.length <= 0) {
-        throw new Error('Update returned empty result')
+    if ("url" in entityUpdateBody) {
+        console.log('qui1')
+        updateObj = {...updateObj, ...{ url: entityUpdateBody.url }}
     }
 
-    const updatedEntities = result[1]
-
-    let returnEntities: Entity[] = []
-    for (let updateEntity of updatedEntities) {
-        returnEntities.push(updateEntity.get())
+    if ("enable" in entityUpdateBody) {
+        console.log('qui2')
+        updateObj = {...updateObj, ...{ enable: entityUpdateBody.enable }}
     }
 
-    return returnEntities
+    console.log('update obj', updateObj)
+
+    const result = await entity.update(updateObj)
+
+    return result.get()
 }
 
-const retrieve = async (entityExternalId: string) : Promise<Entity> | null => {
-    const result = await entityDefine().findOne({
-        where: {
-            external_id: entityExternalId
-        }
-    })
-
-    if (result != null) {
-        return result.get()
-    }
-
-    return null
-}
-
-export { exists, create, update, retrieve }
+export { retrieve, create, update }
