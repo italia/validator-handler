@@ -1,9 +1,10 @@
 'use strict'
 
+import { Entity } from "../types/models"
 import { Job } from "../types/models"
-import { mappedJob } from "../types/job"
-import { define as entityDefine } from "../database/models/entity"
+import { mappedJob, updatePreserveBody } from "../types/job"
 import { Model, Op } from "sequelize"
+import { retrieve as entityRetrieve } from "./entityController"
 
 const list = async (entityExternalId: string, dateFrom, dateTo): Promise<mappedJob[]> => {
     let returnValues = []
@@ -12,13 +13,9 @@ const list = async (entityExternalId: string, dateFrom, dateTo): Promise<mappedJ
         throw new Error('dateFrom and dateTo both must be passed or neither')
     }
 
-    const result: Model<Job, Job> = await entityDefine().findOne({
-        where: {
-            external_id: entityExternalId
-        }
-    })
+    const entityObj: Model<Entity, Entity> = await entityRetrieve(entityExternalId)
 
-    if (result === null) {
+    if (entityObj === null) {
         return returnValues
     }
 
@@ -34,7 +31,7 @@ const list = async (entityExternalId: string, dateFrom, dateTo): Promise<mappedJ
     }
 
     //@ts-ignore - getJobs(): metodo autogenerato dall'ORM Sequelize dopo l'associazione
-    const jobList = await result.getJobs(betweenCondition)
+    const jobList: Job[] = await entityObj.getJobs(betweenCondition)
 
     jobList.forEach(job => {
         const jobElement = job.toJSON()
@@ -55,8 +52,31 @@ const list = async (entityExternalId: string, dateFrom, dateTo): Promise<mappedJ
     return returnValues
 }
 
-const updatePreserve = async (entityExternalId: string, jobId: number) => {
-    return {}
+const updatePreserve = async (entityExternalId: string, jobId: number, updatePreserve: updatePreserveBody) : Promise<Job> => {
+    const entityObj: Model<Entity, Entity> = await entityRetrieve(entityExternalId)
+
+    if (entityObj === null) {
+        throw new Error('Entity not found')
+    }
+
+    //@ts-ignore
+    const jobObjs: Job[] = await entityObj.getJobs({
+        where: {
+            id: jobId
+        }
+    })
+
+    if (jobObjs.length > 1) {
+        throw new Error('Multiple job found for the passed ids')
+    }
+
+    if (jobObjs.length <= 0) {
+        throw new Error('Job not found')
+    }
+
+    return await jobObjs[0].update({
+        preserve: updatePreserve.value
+    })
 }
 
 export { list, updatePreserve }

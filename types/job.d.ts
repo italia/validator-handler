@@ -10,3 +10,7 @@ export interface mappedJob {
     jsonResult: any,
     preserve: boolean
 }
+
+export interface updatePreserveBody {
+    value: boolean
+}

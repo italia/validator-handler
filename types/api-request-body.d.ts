@@ -26,3 +26,9 @@ export interface updateEntityBodyType<> extends express.Request {
         enable: boolean
     }
 }
+
+export interface updatePreserveBodyType<> extends express.Request {
+    body: {
+        value: boolean
+    }
+}

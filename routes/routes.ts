@@ -7,10 +7,17 @@ import express from 'express'
 const router = express.Router()
 import { auth } from "../controller/userController"
 import { succesResponse, errorResponse } from "../utils/response"
-import { emptyBodyType, loginBodyType, createEntityBodyType, updateEntityBodyType } from "../types/api-request-body"
+import {
+    emptyBodyType,
+    loginBodyType,
+    createEntityBodyType,
+    updateEntityBodyType,
+    updatePreserveBodyType
+} from "../types/api-request-body"
 import { successResponseType, errorResponseType } from "../types/api-response-body"
 import { generate as jwtGenerate, verify as jwtVerify, refreshToken as jwtRefreshToken, getToken } from "../auth/jwt"
 import { create as entityCreateValidation, update as entityUpdateValidation } from "../validators/entity"
+import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job"
 import { create as entityCreate, update as entityUpdate, retrieve as entityRetrieve } from "../controller/entityController"
 import { list as jobList, updatePreserve as jobUpdatePreserve } from "../controller/jobController"
 
@@ -59,7 +66,7 @@ router.put('/api/entity/create', async (req: createEntityBodyType, res: successR
 
         return succesResponse(result, res)
     } catch (error) {
-        return errorResponse(0, error, 401, res)
+        return errorResponse(0, error, 500, res)
     }
 })
 
@@ -72,7 +79,7 @@ router.post('/api/entity/:external_id/update', async (req: updateEntityBodyType,
 
         return succesResponse(result, res)
     } catch (error) {
-        return errorResponse(0, error, 401, res)
+        return errorResponse(0, error, 500, res)
     }
 })
 
@@ -86,7 +93,7 @@ router.get('/api/entity/:external_id/retrieve', async (req: emptyBodyType, res: 
 
         return succesResponse(result, res)
     } catch (error) {
-        return errorResponse(0, error, 401, res)
+        return errorResponse(0, error, 500, res)
     }
 })
 
@@ -102,22 +109,23 @@ router.get('/api/entity/:external_id/job/list', async (req: emptyBodyType, res: 
 
         return succesResponse(result, res)
     } catch (error) {
-        return errorResponse(0, error, 401, res)
+        return errorResponse(0, error, 500, res)
     }
 })
 
-router.post('/api/entity/:external_id/job/:id/preserve/update', async (req: emptyBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
+router.post('/api/entity/:external_id/job/:id/preserve/update', async (req: updatePreserveBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
         await jwtVerify(process.env.JWT_SECRET, await getToken(req))
 
+        await jobPreserveUpdateValidation(req.body)
+        const jobId            = parseInt(req.params.id)
         const externalEntityId = req.params.external_id.toString()
-        const jobId = parseInt(req.params.id)
 
-        const result = await jobUpdatePreserve(externalEntityId, jobId)
+        const result = await jobUpdatePreserve(externalEntityId, jobId, req.body)
 
         return succesResponse(result, res)
     } catch (error) {
-        return errorResponse(0, error, 401, res)
+        return errorResponse(0, error, 500, res)
     }
 })
 
