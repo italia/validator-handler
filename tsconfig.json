@@ -8,10 +8,6 @@
     "outDir": "dist",
     "skipLibCheck": true
   },
-  "lib": [
-    "esnext"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "lib": ["esnext"],
+  "exclude": ["node_modules"]
 }

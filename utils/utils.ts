@@ -1,48 +1,53 @@
-'use strict'
-import { ValidationError } from "jsonschema"
+"use strict";
+import { ValidationError } from "jsonschema";
 
-const arrayChunkify = async (inputArray: [], numberOfDesiredChuck: number, balanced: boolean = true) => {
-    if (numberOfDesiredChuck < 2) {
-        return [inputArray]
+const arrayChunkify = async (
+  inputArray: [],
+  numberOfDesiredChuck: number,
+  balanced = true
+) => {
+  if (numberOfDesiredChuck < 2) {
+    return [inputArray];
+  }
+
+  const len = inputArray.length,
+    out = [];
+  let i = 0,
+    size: number;
+
+  if (len % numberOfDesiredChuck === 0) {
+    size = Math.floor(len / numberOfDesiredChuck);
+    while (i < len) {
+      out.push(inputArray.slice(i, (i += size)));
     }
-
-    let len = inputArray.length,
-        out = [],
-        i = 0,
-        size
-
-    if (len % numberOfDesiredChuck === 0) {
-        size = Math.floor(len / numberOfDesiredChuck)
-        while (i < len) {
-            out.push(inputArray.slice(i, i += size))
-        }
-    } else if (balanced) {
-        while (i < len) {
-            size = Math.ceil((len - i) / numberOfDesiredChuck--)
-            out.push(inputArray.slice(i, i += size))
-        }
-    } else {
-        numberOfDesiredChuck--
-        size = Math.floor(len / numberOfDesiredChuck)
-        if (len % size === 0)
-            size--
-        while (i < size * numberOfDesiredChuck) {
-            out.push(inputArray.slice(i, i += size))
-        }
-        out.push(inputArray.slice(size * numberOfDesiredChuck))
+  } else if (balanced) {
+    while (i < len) {
+      size = Math.ceil((len - i) / numberOfDesiredChuck--);
+      out.push(inputArray.slice(i, (i += size)));
     }
-
-    return out
-}
-
-const mapValidationErrors = async (validationErrors: ValidationError[]): Promise<string> => {
-    let errorMessages = []
-
-    for (let element of validationErrors) {
-        errorMessages.push(element.stack)
+  } else {
+    numberOfDesiredChuck--;
+    size = Math.floor(len / numberOfDesiredChuck);
+    if (len % size === 0) size--;
+    while (i < size * numberOfDesiredChuck) {
+      out.push(inputArray.slice(i, (i += size)));
     }
+    out.push(inputArray.slice(size * numberOfDesiredChuck));
+  }
 
-    return errorMessages.join(' | ')
-}
+  return out;
+};
 
-export { arrayChunkify, mapValidationErrors }
+const mapValidationErrors = async (
+  validationErrors: ValidationError[]
+): Promise<string> => {
+  const errorMessages = [];
+
+  for (const element of validationErrors) {
+    errorMessages.push(element.stack);
+  }
+
+  return errorMessages.join(" | ");
+};
+
+export { arrayChunkify, mapValidationErrors };

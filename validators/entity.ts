@@ -1,49 +1,45 @@
-'use strict'
+"use strict";
 
-import { validate } from "./validate"
-import { createBody, updateBody } from "../types/entity"
+import { validate } from "./validate";
+import { createBody, updateBody } from "../types/entity";
 
 const create = async (body: createBody): Promise<boolean> => {
-    const createBody = {
-        "type": "object",
+  const createBody = {
+    type: "object",
 
-        "properties": {
-            "external_id":  {"type": "string", "minLength": 1},
-            "url":          {"type": "string", "minLength": 1},
-            "enable":       {"type": "boolean", "minLength": 1},
-            "type":         {"type": "string", "minLength": 1, "enum": ['school', 'municipality']}
-        },
+    properties: {
+      external_id: { type: "string", minLength: 1 },
+      url: { type: "string", minLength: 1 },
+      enable: { type: "boolean", minLength: 1 },
+      type: { type: "string", minLength: 1, enum: ["school", "municipality"] },
+    },
 
-        "required": ["external_id", "url", "enable", "type"]
-    }
+    required: ["external_id", "url", "enable", "type"],
+  };
 
-    return await validate(body, createBody)
-}
+  return await validate(body, createBody);
+};
 
 const update = async (body: updateBody): Promise<boolean> => {
-    const updateBody = {
-        "type": "object",
+  const updateBody = {
+    type: "object",
 
-        "properties": {
-            "url":    {"type": "string", "minLength": 1},
-            "enable": {"type": "boolean", "minLength": 1},
-        },
+    properties: {
+      url: { type: "string", minLength: 1 },
+      enable: { type: "boolean", minLength: 1 },
+    },
 
-        "anyOf": [
-            {
-                "required": [
-                    "url"
-                ]
-            },
-            {
-                "required": [
-                    "enable"
-                ]
-            }
-        ]
-    }
+    anyOf: [
+      {
+        required: ["url"],
+      },
+      {
+        required: ["enable"],
+      },
+    ],
+  };
 
-    return await validate(body, updateBody)
-}
+  return await validate(body, updateBody);
+};
 
-export { create, update }
+export { create, update };
