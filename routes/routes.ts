@@ -5,13 +5,13 @@ dotenv.config()
 
 import express from 'express'
 const router = express.Router()
+import { auth } from "../controller/userController"
 import { succesResponse, errorResponse } from "../utils/response"
 import { emptyBodyType, loginBodyType, createEntityBodyType, updateEntityBodyType } from "../types/api-request-body"
 import { successResponseType, errorResponseType } from "../types/api-response-body"
 import { generate as jwtGenerate, verify as jwtVerify, refreshToken as jwtRefreshToken, getToken } from "../auth/jwt"
-import { auth } from "../controller/userController"
 import { create as entityCreateValidation, update as entityUpdateValidation } from "../validators/entity"
-import { create as entityCreate, update as entityUpdate, retrieve as entityRetrieve } from "../controller/entityController"
+import { create as entityCreate, update as entityUpdate, retrieve as entityRetrieve, jobList as entityJobList } from "../controller/entityController"
 
 router.post('/api/login/token', async (req: loginBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
@@ -75,14 +75,11 @@ router.post('/api/entity/:external_id/update', async (req: updateEntityBodyType,
     }
 })
 
-router.get('/api/entity/retrieve', async (req: emptyBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
+router.get('/api/entity/:external_id/retrieve', async (req: emptyBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
         await jwtVerify(process.env.JWT_SECRET, await getToken(req))
 
-        const externalEntityId = req.query.external_id.toString()
-        if (!Boolean(externalEntityId)) {
-            throw new Error('Missing external_id query parameter')
-        }
+        const externalEntityId = req.params.external_id.toString()
 
         const result = await entityRetrieve(externalEntityId) ?? {}
 
@@ -91,6 +88,21 @@ router.get('/api/entity/retrieve', async (req: emptyBodyType, res: successRespon
         return errorResponse(0, error, 401, res)
     }
 })
+
+router.get('/api/entity/:external_id/job/list', async (req: emptyBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
+    try {
+        await jwtVerify(process.env.JWT_SECRET, await getToken(req))
+
+        const externalEntityId = req.params.external_id.toString()
+
+        const result = await entityJobList(externalEntityId) ?? {}
+
+        return succesResponse(result, res)
+    } catch (error) {
+        return errorResponse(0, error, 401, res)
+    }
+})
+
 
 router.get('/api/info', (req: emptyBodyType, res: successResponseType | errorResponseType) : void => {
     succesResponse({ version: '1.0.0' }, res, 200)
