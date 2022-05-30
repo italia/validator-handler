@@ -1,8 +1,10 @@
 'use strict'
 import { createBody, updateBody } from "../types/entity"
 import { define as entityDefine } from "../database/models/entity"
+import { define as jobDefine } from "../database/models/job"
 import { Entity } from "../types/models"
-import { Model } from "sequelize"
+import {Model, QueryTypes} from "sequelize"
+import {db} from "../database/connection";
 
 const retrieve = async (entityExternalId: string) : Promise<Model<Entity, Entity>> => {
     return await entityDefine().findOne({
@@ -49,4 +51,8 @@ const update = async (entityExternalId: string, entityUpdateBody: updateBody) : 
     return result.get()
 }
 
-export { retrieve, create, update }
+const jobList = async (entityExternalId: string) => {
+    return {}
+}
+
+export { retrieve, create, update, jobList }
