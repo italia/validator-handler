@@ -40,13 +40,14 @@ db
 
             const type              = jobObj.type
             const scanUrl           = jobObj.scan_url
-            const lighthouseResult  = await run(scanUrl, type, 'online', logLevels.display_none, false)
+            const lighthouseResult  = await run(scanUrl, type, 'online', logLevels.display_info, false)
 
             let cleanJson
             let uploadResult = { status: false,  htmlLocationUrl: null,  jsonLocationUrl: null }
             if (lighthouseResult.status) {
-                cleanJson    = await cleanJSONReport(lighthouseResult.data.reportJson)
-                uploadResult = await uploadFiles(jobObj, lighthouseResult.data.reportHtml, cleanJson)
+                cleanJson    = await cleanJSONReport(lighthouseResult.data.jsonReport)
+                process.exit()
+                uploadResult = await uploadFiles(jobObj, lighthouseResult.data.htmlReport, cleanJson)
             }
 
             if (uploadResult.status) {
@@ -78,6 +79,9 @@ const errorReport = async (jobObj: Job) => {
 }
 
 const cleanJSONReport = async (jsonResult: string): Promise<string> => {
+    console.log('JSON RESULT', jsonResult)
+    console.log('TYPEOF', typeof(jsonResult))
+
     return ''
 }
 
