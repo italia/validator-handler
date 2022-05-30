@@ -15,6 +15,8 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     declare preserve: string;
     readonly createdAt: Date;
     readonly updatedAt: Date;
+
+    public getJobs(): Job[];
 }
 
 export class Entity extends Model<InferAttributes<Entity>, InferCreationAttributes<Entity>> {

@@ -40,8 +40,18 @@ const syncTable = () => {
     return db.define(modelName, structure).sync({ alter: true })
 }
 
-const define = () => {
-    return db.define(modelName, structure)
+const define = (join: boolean = true) => {
+    const entityDefineObj = db.define(modelName, structure)
+
+    if (join) {
+        entityDefineObj.hasMany(jobDefine(false), { foreignKey: 'entity_id' })
+    }
+
+    return entityDefineObj
 }
 
-export { primaryKey, modelName, allowedTypes, syncTable, define }
+const getTable = (): string => {
+    return db.define(modelName, structure).getTableName().toString()
+}
+
+export { primaryKey, modelName, allowedTypes, syncTable, define, getTable }

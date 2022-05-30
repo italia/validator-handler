@@ -94,8 +94,10 @@ router.get('/api/entity/:external_id/job/list', async (req: emptyBodyType, res: 
         await jwtVerify(process.env.JWT_SECRET, await getToken(req))
 
         const externalEntityId = req.params.external_id.toString()
+        const dateFrom         = req.query.dateFrom
+        const dateTo           = req.query.dateTo
 
-        const result = await entityJobList(externalEntityId) ?? {}
+        const result = await entityJobList(externalEntityId, dateFrom, dateTo) ?? {}
 
         return succesResponse(result, res)
     } catch (error) {
