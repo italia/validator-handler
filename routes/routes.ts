@@ -11,7 +11,8 @@ import { emptyBodyType, loginBodyType, createEntityBodyType, updateEntityBodyTyp
 import { successResponseType, errorResponseType } from "../types/api-response-body"
 import { generate as jwtGenerate, verify as jwtVerify, refreshToken as jwtRefreshToken, getToken } from "../auth/jwt"
 import { create as entityCreateValidation, update as entityUpdateValidation } from "../validators/entity"
-import { create as entityCreate, update as entityUpdate, retrieve as entityRetrieve, jobList as entityJobList } from "../controller/entityController"
+import { create as entityCreate, update as entityUpdate, retrieve as entityRetrieve } from "../controller/entityController"
+import { list as jobList, updatePreserve as jobUpdatePreserve } from "../controller/jobController"
 
 router.post('/api/login/token', async (req: loginBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
     try {
@@ -97,7 +98,7 @@ router.get('/api/entity/:external_id/job/list', async (req: emptyBodyType, res: 
         const dateFrom         = req.query.dateFrom
         const dateTo           = req.query.dateTo
 
-        const result = await entityJobList(externalEntityId, dateFrom, dateTo) ?? {}
+        const result = await jobList(externalEntityId, dateFrom, dateTo) ?? {}
 
         return succesResponse(result, res)
     } catch (error) {
@@ -105,6 +106,20 @@ router.get('/api/entity/:external_id/job/list', async (req: emptyBodyType, res: 
     }
 })
 
+router.post('/api/entity/:external_id/job/:id/preserve/update', async (req: emptyBodyType, res: successResponseType | errorResponseType) : Promise<void> => {
+    try {
+        await jwtVerify(process.env.JWT_SECRET, await getToken(req))
+
+        const externalEntityId = req.params.external_id.toString()
+        const jobId = parseInt(req.params.id)
+
+        const result = await jobUpdatePreserve(externalEntityId, jobId)
+
+        return succesResponse(result, res)
+    } catch (error) {
+        return errorResponse(0, error, 401, res)
+    }
+})
 
 router.get('/api/info', (req: emptyBodyType, res: successResponseType | errorResponseType) : void => {
     succesResponse({ version: '1.0.0' }, res, 200)
