@@ -12,11 +12,9 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     declare s3_html_url: string;
     declare s3_json_url: string;
     declare json_result: object;
-    declare preserve: string;
+    declare preserve: boolean;
     readonly createdAt: Date;
     readonly updatedAt: Date;
-
-    public getJobs(): Job[];
 }
 
 export class Entity extends Model<InferAttributes<Entity>, InferCreationAttributes<Entity>> {
