@@ -1,10 +1,9 @@
 'use strict'
 
-import {DataTypes, Sequelize} from "sequelize"
+import { DataTypes } from "sequelize"
 import { jobModel } from "../../types/database"
-import { allowedTypes } from "./entity"
 import { db } from "../connection"
-import { define as entityDefine, primaryKey as entityPrimaryKey } from "./entity"
+import { define as entityDefine } from "./entity"
 
 const modelName: string             = 'Job'
 const statusAllowedValues: string[] = ['IN_PROGRESS', 'PENDING', 'ERROR', 'PASSED', 'FAILED']
@@ -19,8 +18,8 @@ const structure: jobModel = {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: entityDefine().getTableName().toString(),
-            key: entityPrimaryKey
+            model: 'Entities',
+            key: 'id'
         }
     },
     start_at: {
@@ -43,7 +42,7 @@ const structure: jobModel = {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isIn: [allowedTypes],
+            isIn: [['school', 'municipality']],
         }
     },
     status: {
@@ -76,8 +75,14 @@ const syncTable = () => {
     return db.define(modelName, structure).sync({ alter: true })
 }
 
-const define = () => {
-    return db.define(modelName, structure)
+const define = (join: boolean = true) => {
+    const jobDefineObj = db.define(modelName, structure)
+
+    if (join) {
+        jobDefineObj.belongsTo(entityDefine(), { foreignKey: 'entity_id' })
+    }
+
+    return jobDefineObj
 }
 
 export { modelName, statusAllowedValues, syncTable, define }
