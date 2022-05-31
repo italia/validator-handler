@@ -36,10 +36,6 @@ const structure: jobModel = {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  spawn_code: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   scan_url: {
     type: DataTypes.STRING,
     allowNull: false,
