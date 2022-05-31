@@ -105,8 +105,59 @@ const errorReport = async (jobObj: Job) => {
 };
 
 const cleanJSONReport = async (jsonResult: string): Promise<string> => {
-  console.log("JSON RESULT", jsonResult);
-  console.log("TYPEOF", typeof jsonResult);
+  const parsedResult = JSON.parse(jsonResult)
+  const categoryResults = parsedResult.categories
+  const auditResults = parsedResult.audits
+
+  let categoryResultsMappedValues = []
+  let key: any
+  let value: any
+
+  for ([key, value] of Object.entries(categoryResults)) {
+      categoryResultsMappedValues.push({
+        id: value?.id ?? '',
+        title: value?.title ?? '',
+        description: value?.description ?? '',
+        score: value?.score ?? ''
+      })
+  }
+
+  //TODO: completare integrazione
+  let auditResultsMappedValues = []
+  for ([key, value] of Object.entries(auditResults)) {
+      let mappedObject = {
+        headings: [],
+        items: []
+      }
+
+      const headings = value?.details?.headings
+      if (Boolean(headings)) {
+        for([key, value] of Object.entries(headings)) {
+          mappedObject.headings.push({
+            text: value.text ?? ''
+          })
+        }
+      }
+
+      const items = value?.details?.items
+      if (Boolean(items)) {
+        for([key, value] of Object.entries(items)) {
+          mappedObject.items.push({
+            [key]: value ?? ''
+          })
+        }
+      }
+
+      auditResultsMappedValues.push({
+        id: value?.id ?? '',
+        title: value?.title ?? '',
+        description: value?.description ?? '',
+        score: value?.score ?? '',
+        details: mappedObject
+      })
+  }
+
+  console.log(auditResultsMappedValues)
 
   return "";
 };
