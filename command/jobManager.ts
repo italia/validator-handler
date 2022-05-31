@@ -1,28 +1,23 @@
 "use strict";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import { db } from "../database/connection";
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { QueryTypes } from "sequelize";
 import dateFormat from "dateformat";
-import { v4 as uuidv4 } from "uuid";
 import { define as entityDefine } from "../database/models/entity";
 import { define as jobDefine } from "../database/models/job";
-import { arrayChunkify as instancesChunkify } from "../utils/utils";
+import { Queue } from 'bullmq';
 
 const command = yargs(hideBin(process.argv))
   .usage(
-    "Usage: --instances <instances> --items <items> --passedOlderThanDays <passedOlderThanDays> --failedOlderThanDays <failedOlderThanDays>"
-  )
-  .option("instances", {
-    describe: "Numero di istanze da lanciare",
-    type: "integer",
-    demandOption: true,
-    default: 10,
-  })
-  .option("items", {
-    describe: "Numero di entity da analizzare per istanza",
+    "Usage: --maxItems <maxItems> --passedOlderThanDays <passedOlderThanDays> --failedOlderThanDays <failedOlderThanDays>"
+  ).option("maxItems", {
+    describe: "Numero massimo di entity da analizzare",
     type: "integer",
     demandOption: true,
     default: 100,
@@ -46,19 +41,21 @@ db.authenticate()
   .then(async () => {
     console.log(`[DB-SYNC]: Database ${db.getDatabaseName()} connected!`);
 
-    const instancesNumber: number = parseInt(command.instances);
-    const itemsNumber: number = parseInt(command.items);
+      const crawlerQueue = new Queue('crawler-queue', { connection: {
+              host: process.env.REDIS_HOST,
+              port: process.env.REDIS_PORT
+      }});
+
     const passedOlderThanDays: number = parseInt(command.passedOlderThanDays);
     const failedOlderThanDays: number = parseInt(command.failedOlderThanDays);
-
-    const paramsLimit: number = instancesNumber * itemsNumber;
+    const maxItems: number = parseInt(command.maxItems);
 
     const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
-      paramsLimit
+        maxItems
     );
 
     let rescanEntityToBeAnalyzed = [];
-    const gapLimit: number = paramsLimit - firstTimeEntityToBeAnalyzed.length;
+    const gapLimit: number = maxItems - firstTimeEntityToBeAnalyzed.length;
     if (gapLimit > 0) {
       rescanEntityToBeAnalyzed = await getRescanEntityToBeAnalyzed(
         passedOlderThanDays,
@@ -71,12 +68,15 @@ db.authenticate()
       ...firstTimeEntityToBeAnalyzed,
       ...rescanEntityToBeAnalyzed,
     ];
-    let spawnCodes: string[] = [];
+
+    console.log('TOTAL ENTITIES', totalEntities.length)
+
     if (totalEntities.length > 0) {
-      spawnCodes = await generateJobs(totalEntities, instancesNumber);
+        await generateJobs(totalEntities, crawlerQueue);
     }
 
-    console.log(spawnCodes);
+    const counts = await crawlerQueue.getJobCounts('wait', 'completed', 'failed');
+    console.log('QUEUE STATUS', counts)
   })
   .catch((err) => {
     console.error("[DB-SYNC]: Unable to connect to the database:", err);
@@ -144,35 +144,36 @@ const getRescanEntityToBeAnalyzed = async (
 
 const generateJobs = async (
   entities,
-  instancesNumber: number
-): Promise<string[]> => {
-  const chunks = await instancesChunkify(entities, instancesNumber);
-  const spawnCodes = Array.apply(null, { length: chunks.length }).map(() =>
-    uuidv4()
-  );
+  crawlerQueue
+): Promise<void> => {
 
-  for (const [index, chunk] of chunks.entries()) {
-    const spawnCode = spawnCodes[index];
-    for (const pieceOfChunk of chunk) {
-      const entityObj: any = await entityDefine().findByPk(pieceOfChunk.id);
-      if (entityObj === null) {
-        continue;
+  let jobs
+  for (let entity of entities) {
+      try {
+          const entityObj: any = await entityDefine().findByPk(entity.id);
+          if (entityObj === null) {
+              continue;
+          }
+
+          const entityParse = entityObj.toJSON()
+          const jobObj = await jobDefine(false).create({
+              entity_id: entityParse.id,
+              start_at: null,
+              end_at: null,
+              scan_url: entityParse.url,
+              type: entityParse.type,
+              status: "PENDING",
+              s3_html_url: null,
+              s3_json_url: null,
+              json_result: null,
+          });
+          const parsedJob = jobObj.toJSON()
+
+          jobs = await crawlerQueue.addBulk([
+              { name: 'job', data: { id: parsedJob.id } },
+          ]);
+      } catch (e) {
+          console.log(e)
       }
-
-      await jobDefine().create({
-        entity_id: entityObj.id,
-        start_at: null,
-        end_at: null,
-        spawn_code: spawnCode,
-        scan_url: entityObj.url,
-        type: entityObj.type,
-        status: "PENDING",
-        s3_html_url: null,
-        s3_json_url: null,
-        json_result: null,
-      });
-    }
   }
-
-  return spawnCodes;
 };

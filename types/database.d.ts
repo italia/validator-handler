@@ -58,10 +58,6 @@ export interface jobModel<> {
     type: DateDataTypeConstructor;
     allowNull: boolean;
   };
-  spawn_code: {
-    type: StringDataTypeConstructor;
-    allowNull: boolean;
-  };
   scan_url: {
     type: StringDataTypeConstructor;
     allowNull: boolean;

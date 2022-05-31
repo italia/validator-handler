@@ -8,7 +8,6 @@ export class Job extends Model<
   declare entity_id: number;
   declare start_at: number;
   declare end_at: number;
-  declare spawn_code: string;
   declare scan_url: string;
   declare type: string;
   declare status: string;

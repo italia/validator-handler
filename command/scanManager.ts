@@ -1,8 +1,7 @@
 "use strict";
 
-import yargs from "yargs";
+
 import { db } from "../database/connection";
-import { hideBin } from "yargs/helpers";
 import { define as jobDefine } from "../database/models/job";
 import { run } from "pa-website-validator/dist/controller/launchLighthouse";
 import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
@@ -12,75 +11,80 @@ import {
   upload as s3Upload,
   empty as s3Delete,
 } from "../controller/s3Controller";
-
-const command = yargs(hideBin(process.argv))
-  .usage("Usage: --spawnCode <spawnCode>")
-  .option("spawnCode", {
-    describe: "Spawn code dell'istanza di cui caricare i Job",
-    type: "string",
-    demandOption: true,
-  }).argv;
+import { Queue } from 'bullmq';
 
 db.authenticate()
   .then(async () => {
     console.log(`[DB-SYNC]: Database ${db.getDatabaseName()} connected!`);
 
-    const jobObjs: Model<Job, Job>[] = await jobDefine().findAll({
-      where: {
-        spawn_code: command.spawnCode,
-        status: "PENDING",
-      },
-    });
+    const crawlerQueue = new Queue('crawler-queue', { connection: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+      }});
 
-    for (const element of jobObjs) {
-      await element.update({
-        status: "IN_PROGRESS",
-        start_at: Date.now(),
-      });
+    do {
+      //TODO: pescare dalla coda gli ID (in loop)
+      let jobId = 0
 
-      const jobObj: Job = element.get();
-
-      const type = jobObj.type;
-      const scanUrl = jobObj.scan_url;
-      const lighthouseResult = await run(
-        scanUrl,
-        type,
-        "online",
-        logLevels.display_info,
-        false
-      );
-
-      let cleanJson;
-      let uploadResult = {
-        status: false,
-        htmlLocationUrl: null,
-        jsonLocationUrl: null,
-      };
-      if (lighthouseResult.status) {
-        cleanJson = await cleanJSONReport(lighthouseResult.data.jsonReport);
-        process.exit();
-        uploadResult = await uploadFiles(
-          jobObj,
-          lighthouseResult.data.htmlReport,
-          cleanJson
-        );
+      const jobObj: Model<Job, Job> = await jobDefine().findByPk(jobId);
+      if (jobObj !== null && jobObj.toJSON().status === 'PENDING') {
+          scan(jobObj)
       }
 
-      if (uploadResult.status) {
-        await successReport(
-          jobObj,
-          cleanJson,
-          uploadResult.jsonLocationUrl,
-          uploadResult.htmlLocationUrl
-        );
-      } else {
-        await errorReport(jobObj);
-      }
-    }
+      let contr = true
+    } while(contr)
+
   })
   .catch((err) => {
     console.error("[DB-SYNC]: Unable to connect to the database:", err);
   });
+
+const scan = async (jobObj) => {
+  await jobObj.update({
+    status: "IN_PROGRESS",
+    start_at: Date.now(),
+  });
+
+  const jobObjParsed = jobObj.toJSON();
+
+  const type = jobObjParsed.type;
+  const scanUrl = jobObjParsed.scan_url;
+  const lighthouseResult = await run(
+    scanUrl,
+    type,
+    "online",
+    logLevels.display_info,
+    false
+  );
+
+  let cleanJson;
+  let uploadResult = {
+    status: false,
+    htmlLocationUrl: null,
+    jsonLocationUrl: null,
+  };
+  if (lighthouseResult.status) {
+    cleanJson = await cleanJSONReport(lighthouseResult.data.jsonReport);
+    process.exit();
+    uploadResult = await uploadFiles(
+      jobObjParsed.id, //TODO: correggere firma metodo
+      jobObjParsed.entity_id, //TODO: correggere firma metodo
+      lighthouseResult.data.htmlReport,
+      cleanJson
+    );
+  }
+
+  if (uploadResult.status) {
+    await successReport(
+      jobObj,
+      cleanJson,
+      uploadResult.jsonLocationUrl,
+      uploadResult.htmlLocationUrl
+    );
+  } else {
+    await errorReport(jobObj);
+  }
+}
 
 const successReport = async (
   jobObj,
