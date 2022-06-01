@@ -1,8 +1,7 @@
 "use strict";
 
-import { DataTypes } from "sequelize";
+import {DataTypes, Sequelize} from "sequelize";
 import { jobModel } from "../../types/database";
-import { db } from "../connection";
 import { define as entityDefine } from "./entity";
 
 const modelName = "Job";
@@ -73,15 +72,15 @@ const structure: jobModel = {
   },
 };
 
-const syncTable = () => {
+const syncTable = (db: Sequelize) => {
   return db.define(modelName, structure).sync({ alter: true });
 };
 
-const define = (join = true) => {
+const define = (db: Sequelize, join = true) => {
   const jobDefineObj = db.define(modelName, structure);
 
   if (join) {
-    jobDefineObj.belongsTo(entityDefine(), { foreignKey: "entity_id" });
+    jobDefineObj.belongsTo(entityDefine(db), { foreignKey: "entity_id" });
   }
 
   return jobDefineObj;

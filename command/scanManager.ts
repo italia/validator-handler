@@ -1,6 +1,9 @@
 "use strict";
 
-import { db } from "../database/connection";
+import dotenv from "dotenv";
+dotenv.config();
+
+import { dbSM } from "../database/connection";
 import { define as jobDefine } from "../database/models/job";
 import { run } from "pa-website-validator/dist/controller/launchLighthouse";
 import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
@@ -13,6 +16,7 @@ import {
 import { Worker, Job as bullJob } from 'bullmq';
 import { v4 } from "uuid"
 
+//TODO: definire audit-id per test sul PASSED
 const mandatoryValidAuditKeys = [
   'common-security-https-is-present',
   'common-security-tls-check',
@@ -20,9 +24,14 @@ const mandatoryValidAuditKeys = [
   'common-security-cipher-check'
 ]
 
-db.authenticate()
+dbSM.authenticate()
   .then(async () => {
-      const worker: Worker = new Worker('crawler-queue', null, {lockDuration: 100000})
+      const worker: Worker = new Worker('crawler-queue', null, {
+        lockDuration: 100000,
+        connection: {
+          host: process.env.REDIS_HOST,
+          port: process.env.REDIS_PORT
+        }})
       const token = v4()
       let job: bullJob
 
@@ -47,7 +56,7 @@ db.authenticate()
   });
 
 const scan = async (jobId) => {
-  const jobObj: Model<Job, Job> = await jobDefine().findByPk(jobId)
+  const jobObj: Model<Job, Job> = await jobDefine(dbSM).findByPk(jobId)
 
   try {
     if (jobObj === null || jobObj.toJSON().status !== 'PENDING') {
@@ -105,7 +114,7 @@ const scan = async (jobId) => {
   }
 }
 
-const cleanJSONReport = async (jsonResult: string): Promise<object> => {
+const cleanJSONReport = async (jsonResult: string): Promise<{ categories: object, audits: object }> => {
   const parsedResult = JSON.parse(jsonResult)
   const categoryResults = parsedResult.categories
   const auditResults = parsedResult.audits
@@ -177,7 +186,7 @@ const uploadFiles = async (
   }
 };
 
-const isPassedReport = async (jsonReport) => {
+const isPassedReport = async (jsonReport) : Promise<Boolean> => {
   mandatoryValidAuditKeys.forEach(item => {
       if (!(item in jsonReport.audits) || jsonReport.audits[item] ==! 1) {
           return false

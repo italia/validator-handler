@@ -1,6 +1,6 @@
 "use strict";
 
-import { db } from "./connection";
+import { dbRoot } from "./connection";
 import { syncTable as entitySyncTable } from "./models/entity";
 import { syncTable as jobSyncTable } from "./models/job";
 import { syncTable as userSyncTable } from "./models/user";
@@ -17,25 +17,25 @@ const syncCommand = yargs(hideBin(process.argv))
     choices: ["all", "entity", "job", "user"],
   }).argv;
 
-db.authenticate()
+dbRoot.authenticate()
   .then(async () => {
-    console.log(`[DB-SYNC]: Database ${db.getDatabaseName()} connected!`);
+    console.log(`[DB-SYNC]: Database ${dbRoot.getDatabaseName()} connected!`);
     console.log("[DB-SYNC]: Database sync start");
 
     switch (syncCommand.tablename) {
       case "entity":
-        await entitySyncTable();
+        await entitySyncTable(dbRoot);
         break;
       case "job":
-        await jobSyncTable();
+        await jobSyncTable(dbRoot);
         break;
       case "user":
-        await userSyncTable();
+        await userSyncTable(dbRoot);
         break;
       case "all":
-        await entitySyncTable();
-        await jobSyncTable();
-        await userSyncTable();
+        await entitySyncTable(dbRoot);
+        await jobSyncTable(dbRoot);
+        await userSyncTable(dbRoot);
         break;
       default:
         console.log("[DB-SYNC]: No table synched");

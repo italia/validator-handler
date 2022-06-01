@@ -1,8 +1,7 @@
 "use strict";
 
-import { DataTypes } from "sequelize";
+import { DataTypes, Sequelize } from "sequelize";
 import { userModel } from "../../types/database";
-import { db } from "../connection";
 
 const modelName = "User";
 const roles: string[] = ["api-user"];
@@ -29,11 +28,11 @@ const structure: userModel = {
   },
 };
 
-const syncTable = () => {
-  return define().sync({ alter: true });
+const syncTable = (db: Sequelize) => {
+  return define(db).sync({ alter: true });
 };
 
-const define = () => {
+const define = (db: Sequelize) => {
   return db.define(modelName, structure, {
     defaultScope: {
       attributes: { exclude: ["password"] },

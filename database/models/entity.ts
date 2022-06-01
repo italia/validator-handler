@@ -1,8 +1,7 @@
 "use strict";
 
-import { DataTypes } from "sequelize";
+import { DataTypes, Sequelize } from "sequelize";
 import { entityModel } from "../../types/database";
-import { db } from "../connection";
 import { define as jobDefine } from "./job";
 
 const primaryKey = "id";
@@ -36,22 +35,18 @@ const structure: entityModel = {
   },
 };
 
-const syncTable = () => {
+const syncTable = (db: Sequelize) => {
   return db.define(modelName, structure).sync({ alter: true });
 };
 
-const define = (join = true) => {
+const define = (db: Sequelize, join = true) => {
   const entityDefineObj = db.define(modelName, structure);
 
   if (join) {
-    entityDefineObj.hasMany(jobDefine(false), { foreignKey: "entity_id" });
+    entityDefineObj.hasMany(jobDefine(db,false), { foreignKey: "entity_id" });
   }
 
   return entityDefineObj;
 };
 
-const getTable = (): string => {
-  return db.define(modelName, structure).getTableName().toString();
-};
-
-export { primaryKey, modelName, allowedTypes, syncTable, define, getTable };
+export { primaryKey, modelName, allowedTypes, syncTable, define };
