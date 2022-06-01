@@ -39,12 +39,16 @@ const command = yargs(hideBin(process.argv))
 
 db.authenticate()
   .then(async () => {
-    console.log(`[DB-SYNC]: Database ${db.getDatabaseName()} connected!`);
-
-      const crawlerQueue = new Queue('crawler-queue', { connection: {
-              host: process.env.REDIS_HOST,
-              port: process.env.REDIS_PORT
-      }});
+     const crawlerQueue = new Queue('crawler-queue', {
+        connection: {
+          host: process.env.REDIS_HOST,
+          port: process.env.REDIS_PORT
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true,
+        }
+      });
 
     const passedOlderThanDays: number = parseInt(command.passedOlderThanDays);
     const failedOlderThanDays: number = parseInt(command.failedOlderThanDays);
@@ -69,7 +73,7 @@ db.authenticate()
       ...rescanEntityToBeAnalyzed,
     ];
 
-    console.log('TOTAL ENTITIES', totalEntities.length)
+    console.log('TOTAL ENTITIES', totalEntities.length, totalEntities)
 
     if (totalEntities.length > 0) {
         await generateJobs(totalEntities, crawlerQueue);
@@ -77,16 +81,18 @@ db.authenticate()
 
     const counts = await crawlerQueue.getJobCounts('wait', 'completed', 'failed');
     console.log('QUEUE STATUS', counts)
+    process.exit(0)
   })
   .catch((err) => {
-    console.error("[DB-SYNC]: Unable to connect to the database:", err);
+    console.error("Error: ", err);
+    process.exit(1)
   });
 
 const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
   let returnValues = [];
 
   const firstTimeEntityToBeAnalyzed = await db.query(
-    'SELECT E.id FROM "Entities" as E LEFT JOIN "Jobs" as J ON E.id = J.entity_id WHERE J.id IS NULL LIMIT :limit',
+    'SELECT E.id FROM "Entities" as E LEFT JOIN "Jobs" as J ON E.id = J.entity_id WHERE J.id IS NULL AND E.enable = TRUE LIMIT :limit',
     {
       replacements: { limit: limit },
       type: QueryTypes.RAW,
@@ -119,7 +125,7 @@ const getRescanEntityToBeAnalyzed = async (
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
                  LEFT OUTER JOIN "Jobs" J2 ON (E.id = J2.entity_id AND\
                  (J1."updatedAt" < J2."updatedAt" OR (J1."updatedAt" = J2."updatedAt" AND J1.id < J2.id)))\
-                 WHERE J2.id IS NULL\ 
+                 WHERE E.enable = TRUE AND J2.id IS NULL\ 
                     AND (J1.status='ERROR'\ 
                         OR (J1.status = 'PASSED' AND DATE(J1."updatedAt") > DATE(:passedDate))\
                         OR (J1.status = 'FAILED' AND DATE(J1."updatedAt") > DATE(:failedDate))\
@@ -169,9 +175,7 @@ const generateJobs = async (
           });
           const parsedJob = jobObj.toJSON()
 
-          jobs = await crawlerQueue.addBulk([
-              { name: 'job', data: { id: parsedJob.id } },
-          ]);
+          jobs = await crawlerQueue.add('job', { id: parsedJob.id })
       } catch (e) {
           console.log(e)
       }
