@@ -60,6 +60,7 @@ const scan = async (jobId) => {
     });
 
     const jobObjParsed = jobObj.toJSON();
+    console.log('lighthouse start')
     const lighthouseResult = await run(
       jobObjParsed.scan_url,
       jobObjParsed.type,
@@ -67,6 +68,7 @@ const scan = async (jobId) => {
       logLevels.display_none,
       false
     );
+    console.log('lighthouse finish')
 
     if (!lighthouseResult.status) {
       throw new Error('Empty lighthouse result')
