@@ -3,56 +3,57 @@
 import { Entity } from "../types/models";
 import { createBody, updateBody } from "../types/entity";
 import { define as entityDefine } from "../database/models/entity";
-import { Model } from "sequelize";
+import { Model, Sequelize } from "sequelize";
 
-const retrieve = async (
-  entityExternalId: string
-): Promise<Model<Entity, Entity>> => {
-  return await entityDefine().findOne({
-    where: {
-      external_id: entityExternalId,
-    },
-  });
-};
+export class entityController {
+  db
 
-const create = async (entityCreateBody: createBody): Promise<Entity> => {
-  const entity = await retrieve(entityCreateBody.external_id);
-  if (entity !== null) {
-    throw new Error("Entity already exists for the passed id");
+  constructor(db: Sequelize) {
+    this.db = db;
   }
 
-  const result = await entityDefine().create({
-    external_id: entityCreateBody.external_id,
-    url: entityCreateBody.url,
-    enable: entityCreateBody.enable,
-    type: entityCreateBody.type,
-  });
+  async retrieve (entityExternalId: string): Promise<Model<Entity, Entity>> {
+    return await entityDefine(this.db).findOne({
+      where: {
+        external_id: entityExternalId,
+      },
+    });
+  };
 
-  return result.toJSON();
-};
+  async create (entityCreateBody: createBody): Promise<Entity> {
+    const entity = await this.retrieve(entityCreateBody.external_id);
+    if (entity !== null) {
+      throw new Error("Entity already exists for the passed id");
+    }
 
-const update = async (
-  entityExternalId: string,
-  entityUpdateBody: updateBody
-): Promise<Entity> => {
-  const entity: Model<Entity, Entity> = await retrieve(entityExternalId);
-  if (entity === null) {
-    throw new Error("Entity does not exists");
-  }
+    const result = await entityDefine(this.db).create({
+      external_id: entityCreateBody.external_id,
+      url: entityCreateBody.url,
+      enable: entityCreateBody.enable,
+      type: entityCreateBody.type,
+    });
 
-  let updateObj = {};
+    return result.toJSON();
+  };
 
-  if ("url" in entityUpdateBody) {
-    updateObj = { ...updateObj, ...{ url: entityUpdateBody.url } };
-  }
+  async update (entityExternalId: string, entityUpdateBody: updateBody): Promise<Entity> {
+    const entity: Model<Entity, Entity> = await this.retrieve(entityExternalId);
+    if (entity === null) {
+      throw new Error("Entity does not exists");
+    }
 
-  if ("enable" in entityUpdateBody) {
-    updateObj = { ...updateObj, ...{ enable: entityUpdateBody.enable } };
-  }
+    let updateObj = {};
 
-  const result = await entity.update(updateObj);
+    if ("url" in entityUpdateBody) {
+      updateObj = { ...updateObj, ...{ url: entityUpdateBody.url } };
+    }
 
-  return result.toJSON();
-};
+    if ("enable" in entityUpdateBody) {
+      updateObj = { ...updateObj, ...{ enable: entityUpdateBody.enable } };
+    }
 
-export { retrieve, create, update };
+    const result = await entity.update(updateObj);
+
+    return result.toJSON();
+  };
+}

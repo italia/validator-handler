@@ -3,7 +3,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { db } from "../database/connection";
+import { dbQM } from "../database/connection";
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -37,9 +37,9 @@ const command = yargs(hideBin(process.argv))
     default: 14,
   }).argv;
 
-db.authenticate()
+dbQM.authenticate()
   .then(async () => {
-     const crawlerQueue = new Queue('crawler-queue', {
+     const crawlerQueue: Queue = new Queue('crawler-queue', {
         connection: {
           host: process.env.REDIS_HOST,
           port: process.env.REDIS_PORT
@@ -69,7 +69,7 @@ db.authenticate()
     }
 
     const totalEntities = [
-      ...firstTimeEntityToBeAnalyzed,
+      ...firstTimeEntityToBeAnalyzed, //TODO: nel generate JOBS per queste entity settare il preserve a TRUE
       ...rescanEntityToBeAnalyzed,
     ];
 
@@ -91,7 +91,7 @@ db.authenticate()
 const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
   let returnValues = [];
 
-  const firstTimeEntityToBeAnalyzed = await db.query(
+  const firstTimeEntityToBeAnalyzed = await dbQM.query(
     'SELECT E.id FROM "Entities" as E LEFT JOIN "Jobs" as J ON E.id = J.entity_id WHERE J.id IS NULL AND E.enable = TRUE LIMIT :limit',
     {
       replacements: { limit: limit },
@@ -119,7 +119,7 @@ const getRescanEntityToBeAnalyzed = async (
   const failedDate = new Date();
   failedDate.setDate(failedDate.getDate() + failedOlderThanDays);
 
-  const rescanEntityToBeAnalyzed = await db.query(
+  const rescanEntityToBeAnalyzed = await dbQM.query(
     `SELECT E.id\
                  FROM "Entities" AS E\
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
@@ -156,13 +156,13 @@ const generateJobs = async (
   let jobs
   for (let entity of entities) {
       try {
-          const entityObj: any = await entityDefine().findByPk(entity.id);
+          const entityObj: any = await entityDefine(dbQM).findByPk(entity.id);
           if (entityObj === null) {
               continue;
           }
 
           const entityParse = entityObj.toJSON()
-          const jobObj = await jobDefine(false).create({
+          const jobObj = await jobDefine(dbQM, false).create({
               entity_id: entityParse.id,
               start_at: null,
               end_at: null,
