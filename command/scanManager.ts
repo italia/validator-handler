@@ -13,54 +13,56 @@ import {
   upload as s3Upload,
   empty as s3Delete,
 } from "../controller/s3Controller";
-import { Worker, Job as bullJob } from 'bullmq';
-import { v4 } from "uuid"
+import { Worker, Job as bullJob } from "bullmq";
+import { v4 } from "uuid";
 
 //TODO: definire audit-id per test sul PASSED
 const mandatoryValidAuditKeys = [
-  'common-security-https-is-present',
-  'common-security-tls-check',
-  'common-security-ip-location',
-  'common-security-cipher-check'
-]
+  "common-security-https-is-present",
+  "common-security-tls-check",
+  "common-security-ip-location",
+  "common-security-cipher-check",
+];
 
-dbSM.authenticate()
+dbSM
+  .authenticate()
   .then(async () => {
-      const worker: Worker = new Worker('crawler-queue', null, {
-        lockDuration: 100000,
-        connection: {
-          host: process.env.REDIS_HOST,
-          port: process.env.REDIS_PORT
-        }})
-      const token = v4()
-      let job: bullJob
+    const worker: Worker = new Worker("crawler-queue", null, {
+      lockDuration: 100000,
+      connection: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+      },
+    });
+    const token = v4();
+    let job: bullJob;
 
-      while((job = (await worker.getNextJob(token))) !== undefined) {
-        console.log('Job start for JobID: ', job.data.id)
-        const result = await scan(job.data.id)
+    while ((job = await worker.getNextJob(token)) !== undefined) {
+      console.log("Job start for JobID: ", job.data.id);
+      const result = await scan(job.data.id);
 
-        if (result) {
-          await job.moveToCompleted('completed', token, false);
-        } else {
-          await job.moveToFailed(new Error('error'), token);
-        }
+      if (result) {
+        await job.moveToCompleted("completed", token, false);
+      } else {
+        await job.moveToFailed(new Error("error"), token);
       }
+    }
 
-      await worker.close()
+    await worker.close();
 
-      process.exit(0)
+    process.exit(0);
   })
   .catch((err) => {
     console.error("Error: ", err);
-    process.exit(1)
+    process.exit(1);
   });
 
 const scan = async (jobId) => {
-  const jobObj: Model<Job, Job> = await jobDefine(dbSM).findByPk(jobId)
+  const jobObj: Model<Job, Job> = await jobDefine(dbSM).findByPk(jobId);
 
   try {
-    if (jobObj === null || jobObj.toJSON().status !== 'PENDING') {
-      return false
+    if (jobObj === null || jobObj.toJSON().status !== "PENDING") {
+      return false;
     }
 
     await jobObj.update({
@@ -69,7 +71,7 @@ const scan = async (jobId) => {
     });
 
     const jobObjParsed = jobObj.toJSON();
-    console.log('lighthouse start')
+    console.log("lighthouse start");
     const lighthouseResult = await run(
       jobObjParsed.scan_url,
       jobObjParsed.type,
@@ -77,14 +79,14 @@ const scan = async (jobId) => {
       logLevels.display_none,
       false
     );
-    console.log('lighthouse finish')
+    console.log("lighthouse finish");
 
     if (!lighthouseResult.status) {
-      throw new Error('Empty lighthouse result')
+      throw new Error("Empty lighthouse result");
     }
 
-    let jsonResult = await cleanJSONReport(lighthouseResult.data.jsonReport);
-    let uploadResult = await uploadFiles(
+    const jsonResult = await cleanJSONReport(lighthouseResult.data.jsonReport);
+    const uploadResult = await uploadFiles(
       jobObjParsed.id,
       jobObjParsed.entity_id,
       lighthouseResult.data.htmlReport,
@@ -92,49 +94,58 @@ const scan = async (jobId) => {
     );
 
     if (!uploadResult.status) {
-      throw new Error('Upload error')
+      throw new Error("Upload error");
     }
 
     await jobObj.update({
-      status: await isPassedReport(jsonResult) ? "PASSED" : "FAILED",
+      status: (await isPassedReport(jsonResult)) ? "PASSED" : "FAILED",
       end_at: Date.now(),
       json_result: jsonResult,
       s3_json_url: uploadResult.jsonLocationUrl,
       s3_html_url: uploadResult.htmlLocationUrl,
-    })
+    });
 
-    return true
+    return true;
   } catch (e) {
     await jobObj.update({
       status: "ERROR",
-      end_at: Date.now()
-    })
+      end_at: Date.now(),
+    });
 
-    return false
+    return false;
   }
-}
+};
 
-const cleanJSONReport = async (jsonResult: string): Promise<{ categories: object, audits: object }> => {
-  const parsedResult = JSON.parse(jsonResult)
-  const categoryResults = parsedResult.categories
-  const auditResults = parsedResult.audits
+const cleanJSONReport = async (
+  jsonResult: string
+): Promise<{ categories: object; audits: object }> => {
+  const parsedResult = JSON.parse(jsonResult);
+  const categoryResults: Record<string, { id: string; score: number }> =
+    parsedResult.categories;
+  const auditResults: Record<string, { id: string; score: number }> =
+    parsedResult.audits;
 
-  let categoryResultsMappedValues = []
-  let auditResultsMappedValues = []
+  let categoryResultsMappedValues = [];
+  let auditResultsMappedValues = [];
 
-  let key, value
-  for ([key, value] of Object.entries(categoryResults)) {
-    categoryResultsMappedValues = {...categoryResultsMappedValues, ...{[value.id]: value.score}}
+  for (const value of Object.values(categoryResults)) {
+    categoryResultsMappedValues = {
+      ...categoryResultsMappedValues,
+      ...{ [value.id]: value.score },
+    };
   }
 
-  for ([key, value] of Object.entries(auditResults)) {
-    auditResultsMappedValues = {...auditResultsMappedValues, ...{[value.id]: value.score}}
+  for (const value of Object.values(auditResults)) {
+    auditResultsMappedValues = {
+      ...auditResultsMappedValues,
+      ...{ [value.id]: value.score },
+    };
   }
 
   return {
     categories: categoryResultsMappedValues,
-    audits: auditResultsMappedValues
-  }
+    audits: auditResultsMappedValues,
+  };
 };
 
 const uploadFiles = async (
@@ -150,9 +161,9 @@ const uploadFiles = async (
   try {
     return {
       status: true,
-      htmlLocationUrl:  "/" + entityId + "/" + jobId + "/" + "report.html",
-      jsonLocationUrl:  "/" + entityId + "/" + jobId + "/" + "report.json",
-    }
+      htmlLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.html",
+      jsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.json",
+    };
 
     //TODO: Integrazione completata - In attesa di bucket S3 per testing
     const htmlLocationUrl = await s3Upload(
@@ -165,7 +176,7 @@ const uploadFiles = async (
     );
 
     if (htmlLocationUrl === null || jsonLocationUrl === null) {
-      throw new Error('Empty result from S3')
+      throw new Error("Empty result from S3");
     }
 
     return {
@@ -186,12 +197,12 @@ const uploadFiles = async (
   }
 };
 
-const isPassedReport = async (jsonReport) : Promise<Boolean> => {
-  mandatoryValidAuditKeys.forEach(item => {
-      if (!(item in jsonReport.audits) || jsonReport.audits[item] ==! 1) {
-          return false
-      }
-  })
+const isPassedReport = async (jsonReport): Promise<boolean> => {
+  mandatoryValidAuditKeys.forEach((item) => {
+    if (!(item in jsonReport.audits) || jsonReport.audits[item] == !1) {
+      return false;
+    }
+  });
 
-  return true
-}
+  return true;
+};

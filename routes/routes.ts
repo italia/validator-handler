@@ -47,7 +47,7 @@ router.post(
         throw new Error("Empty username or password");
       }
 
-      const userObj = await (new userController(dbWS)).auth(username, password);
+      const userObj = await new userController(dbWS).auth(username, password);
       const token = await jwtGenerate(
         process.env.JWT_SECRET,
         userObj,
@@ -105,7 +105,7 @@ router.put(
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
       await entityCreateValidation(req.body);
 
-      const result = await (new entityController(dbWS)).create(req.body);
+      const result = await new entityController(dbWS).create(req.body);
 
       return succesResponse(result, res);
     } catch (error) {
@@ -124,7 +124,10 @@ router.post(
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
       await entityUpdateValidation(req.body);
 
-      const result = await (new entityController(dbWS)).update(req.params.external_id, req.body)
+      const result = await new entityController(dbWS).update(
+        req.params.external_id,
+        req.body
+      );
 
       return succesResponse(result, res);
     } catch (error) {
@@ -144,7 +147,9 @@ router.get(
 
       const externalEntityId = req.params.external_id.toString();
 
-      const result = await (new entityController(dbWS)).retrieve(externalEntityId)
+      const result = await new entityController(dbWS).retrieve(
+        externalEntityId
+      );
 
       return succesResponse(result, res);
     } catch (error) {
@@ -166,7 +171,11 @@ router.get(
       const dateFrom = req.query.dateFrom;
       const dateTo = req.query.dateTo;
 
-      const result = await (new jobController(dbWS)).list(externalEntityId, dateFrom, dateTo);
+      const result = await new jobController(dbWS).list(
+        externalEntityId,
+        dateFrom,
+        dateTo
+      );
 
       return succesResponse(result, res);
     } catch (error) {
@@ -188,7 +197,11 @@ router.post(
       const jobId = parseInt(req.params.id);
       const externalEntityId = req.params.external_id.toString();
 
-      const result = await (new jobController(dbWS)).updatePreserve(externalEntityId, jobId, req.body);
+      const result = await new jobController(dbWS).updatePreserve(
+        externalEntityId,
+        jobId,
+        req.body
+      );
 
       return succesResponse(result, res);
     } catch (error) {

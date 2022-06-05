@@ -5,7 +5,7 @@ export interface successResponseType<>extends express.Response {
     {
       status: string;
       timestamp: number;
-      data: any;
+      data: unknown;
     },
     this
   >;

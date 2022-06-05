@@ -1,16 +1,16 @@
 "use strict";
 
-import { DataTypes, Sequelize } from "sequelize";
-import { entityModel } from "../../types/database";
+import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
+import { Entity } from "../../types/models";
 import { define as jobDefine } from "./job";
 
 const primaryKey = "id";
 const modelName = "Entity";
-const allowedTypes: string[] = ["school", "municipality"];
+const allowedTypes = ["school", "municipality"] as const;
 
-const structure: entityModel = {
+const structure: ModelAttributes<Entity, Attributes<Entity>> = {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.INTEGER.UNSIGNED,
     autoIncrement: true,
     primaryKey: true,
   },
@@ -30,9 +30,11 @@ const structure: entityModel = {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [allowedTypes],
+      isIn: [[...allowedTypes]],
     },
   },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
 };
 
 const syncTable = (db: Sequelize) => {
@@ -43,7 +45,7 @@ const define = (db: Sequelize, join = true) => {
   const entityDefineObj = db.define(modelName, structure);
 
   if (join) {
-    entityDefineObj.hasMany(jobDefine(db,false), { foreignKey: "entity_id" });
+    entityDefineObj.hasMany(jobDefine(db, false), { foreignKey: "entity_id" });
   }
 
   return entityDefineObj;

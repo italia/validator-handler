@@ -1,30 +1,25 @@
 "use strict";
 
-import { Entity } from "../types/models";
 import { Job } from "../types/models";
 import { mappedJob, updatePreserveBody } from "../types/job";
-import {Model, Op, Sequelize} from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { entityController } from "./entityController";
 
 export class jobController {
-  db
+  db: Sequelize;
 
   constructor(db: Sequelize) {
     this.db = db;
   }
 
-  async list (
-    entityExternalId: string,
-    dateFrom,
-    dateTo
-  ): Promise<mappedJob[]> {
+  async list(entityExternalId: string, dateFrom, dateTo): Promise<mappedJob[]> {
     const returnValues = [];
 
     if ((Boolean(dateFrom) && !dateTo) || (!dateFrom && Boolean(dateTo))) {
       throw new Error("dateFrom and dateTo both must be passed or neither");
     }
 
-    const entityObj: Model<Entity, Entity> = await (new entityController(this.db)).retrieve(
+    const entityObj = await new entityController(this.db).retrieve(
       entityExternalId
     );
 
@@ -64,14 +59,14 @@ export class jobController {
     });
 
     return returnValues;
-  };
+  }
 
-  async updatePreserve (
+  async updatePreserve(
     entityExternalId: string,
     jobId: number,
     updatePreserve: updatePreserveBody
   ): Promise<Job> {
-    const entityObj: Model<Entity, Entity> = await (new entityController(this.db)).retrieve(
+    const entityObj = await new entityController(this.db).retrieve(
       entityExternalId
     );
 
@@ -79,7 +74,8 @@ export class jobController {
       throw new Error("Entity not found");
     }
 
-    //@ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore - getJobs(): metodo autogenerato dall'ORM Sequelize dopo l'associazione
     const jobObjs: Job[] = await entityObj.getJobs({
       where: {
         id: jobId,
@@ -97,6 +93,5 @@ export class jobController {
     return await jobObjs[0].update({
       preserve: updatePreserve.value,
     });
-  };
-
+  }
 }
