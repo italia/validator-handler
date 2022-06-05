@@ -31,7 +31,7 @@ const verify = async (key: string, token: string): Promise<void> => {
     throw new Error("Unauthorized");
   }
 
-  jwt.verify(token, key, (error, user) => {
+  jwt.verify(token, key, (error) => {
     if (error) throw new Error("Error in verify token - " + error);
   });
 };

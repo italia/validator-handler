@@ -12,10 +12,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use("/", router);
 
-dbWS.authenticate()
+dbWS
+  .authenticate()
   .then(async () => {
-    //@ts-ignore
-    app.listen(port, async function (req, res) {
+    app.listen(port, async function () {
       console.log(`[WEBSERVER]: Server is listening on port ${port}!`);
       console.log(`[WEBSERVER]: Database ${dbWS.getDatabaseName()} connected!`);
     });

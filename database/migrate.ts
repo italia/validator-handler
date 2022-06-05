@@ -17,7 +17,8 @@ const syncCommand = yargs(hideBin(process.argv))
     choices: ["all", "entity", "job", "user"],
   }).argv;
 
-dbRoot.authenticate()
+dbRoot
+  .authenticate()
   .then(async () => {
     console.log(`[DB-SYNC]: Database ${dbRoot.getDatabaseName()} connected!`);
     console.log("[DB-SYNC]: Database sync start");

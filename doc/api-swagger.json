@@ -24,9 +24,7 @@
   "paths": {
     "/api/login/token": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Genera un token JWT",
         "requestBody": {
           "content": {
@@ -78,9 +76,7 @@
     },
     "/api/login/refresh": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Genera un nuovo token JWT partendo da uno valido",
         "security": [
           {
@@ -124,9 +120,7 @@
     },
     "/api/entity/create": {
       "put": {
-        "tags": [
-          "Entity"
-        ],
+        "tags": ["Entity"],
         "summary": "Crea una nuova Entity",
         "requestBody": {
           "content": {
@@ -185,9 +179,7 @@
     },
     "/api/entity/{external_id}/update": {
       "post": {
-        "tags": [
-          "Entity"
-        ],
+        "tags": ["Entity"],
         "summary": "Aggiorna URL o Enabling di una Entity esistente",
         "requestBody": {
           "content": {
@@ -255,9 +247,7 @@
     },
     "/api/entity/{external_id}/retrieve": {
       "get": {
-        "tags": [
-          "Entity"
-        ],
+        "tags": ["Entity"],
         "summary": "Restituisce una entity puntualmente",
         "security": [
           {
@@ -311,9 +301,7 @@
     },
     "/api/entity/{external_id}/job/list": {
       "get": {
-        "tags": [
-          "Job"
-        ],
+        "tags": ["Job"],
         "summary": "Restituisce la lista dei Job per una data Entity",
         "security": [
           {
@@ -388,9 +376,7 @@
     },
     "/api/entity/{external_id}/job/{id}/preserve/update": {
       "post": {
-        "tags": [
-          "Job"
-        ],
+        "tags": ["Job"],
         "summary": "Aggiorna lo status di preserve di un Job",
         "requestBody": {
           "content": {

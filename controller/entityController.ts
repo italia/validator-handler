@@ -1,26 +1,25 @@
 "use strict";
 
-import { Entity } from "../types/models";
 import { createBody, updateBody } from "../types/entity";
 import { define as entityDefine } from "../database/models/entity";
-import { Model, Sequelize } from "sequelize";
+import { Sequelize } from "sequelize";
 
 export class entityController {
-  db
+  db;
 
   constructor(db: Sequelize) {
     this.db = db;
   }
 
-  async retrieve (entityExternalId: string): Promise<Model<Entity, Entity>> {
+  async retrieve(entityExternalId: string) {
     return await entityDefine(this.db).findOne({
       where: {
         external_id: entityExternalId,
       },
     });
-  };
+  }
 
-  async create (entityCreateBody: createBody): Promise<Entity> {
+  async create(entityCreateBody: createBody) {
     const entity = await this.retrieve(entityCreateBody.external_id);
     if (entity !== null) {
       throw new Error("Entity already exists for the passed id");
@@ -34,10 +33,10 @@ export class entityController {
     });
 
     return result.toJSON();
-  };
+  }
 
-  async update (entityExternalId: string, entityUpdateBody: updateBody): Promise<Entity> {
-    const entity: Model<Entity, Entity> = await this.retrieve(entityExternalId);
+  async update(entityExternalId: string, entityUpdateBody: updateBody) {
+    const entity = await this.retrieve(entityExternalId);
     if (entity === null) {
       throw new Error("Entity does not exists");
     }
@@ -55,5 +54,5 @@ export class entityController {
     const result = await entity.update(updateObj);
 
     return result.toJSON();
-  };
+  }
 }

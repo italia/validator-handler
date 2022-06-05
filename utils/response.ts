@@ -5,7 +5,7 @@ import {
 
 const errorResponse = (
   error_code: number,
-  errorObj: any,
+  errorObj: string | { message: string },
   http_code: number,
   res: errorResponseType
 ): void => {
@@ -28,7 +28,7 @@ const errorResponse = (
 };
 
 const succesResponse = (
-  response: any,
+  response: unknown,
   res: successResponseType,
   http_code = 200,
   isHtml = false

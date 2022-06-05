@@ -1,6 +1,6 @@
 "use strict";
 
-import {DataTypes, Sequelize} from "sequelize";
+import { DataTypes, Sequelize } from "sequelize";
 import { jobModel } from "../../types/database";
 import { define as entityDefine } from "./entity";
 

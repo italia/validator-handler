@@ -1,18 +1,18 @@
 "use strict";
 
 import { authUser } from "../types/user";
-import {Model, Sequelize} from "sequelize";
+import { Model, Sequelize } from "sequelize";
 import { User } from "../types/models";
 import { define as userDefine } from "../database/models/user";
 
 export class userController {
-  db
+  db;
 
   constructor(db: Sequelize) {
     this.db = db;
   }
 
-   async auth(username: string, password: string): Promise<authUser> {
+  async auth(username: string, password: string): Promise<authUser> {
     const userObj: Model<User, User> = await userDefine(this.db).findOne({
       where: {
         username: username,
@@ -30,5 +30,5 @@ export class userController {
       username: userObjValues.username,
       role: userObjValues.role,
     };
-  };
+  }
 }
