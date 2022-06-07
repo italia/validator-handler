@@ -70,15 +70,19 @@ dbQM
       );
     }
 
-    const totalEntities = [
-      ...firstTimeEntityToBeAnalyzed, //TODO: nel generate JOBS per queste entity settare il preserve a TRUE
-      ...rescanEntityToBeAnalyzed,
-    ];
+    console.log(
+      "TOTAL ENTITIES",
+      [...firstTimeEntityToBeAnalyzed, ...rescanEntityToBeAnalyzed].length
+    );
+    console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
+    console.log("RESCAN ENTITIES", rescanEntityToBeAnalyzed.length);
 
-    console.log("TOTAL ENTITIES", totalEntities.length, totalEntities);
+    if (firstTimeEntityToBeAnalyzed.length > 0) {
+      await generateJobs(firstTimeEntityToBeAnalyzed, crawlerQueue, true);
+    }
 
-    if (totalEntities.length > 0) {
-      await generateJobs(totalEntities, crawlerQueue);
+    if (rescanEntityToBeAnalyzed.length > 0) {
+      await generateJobs(rescanEntityToBeAnalyzed, crawlerQueue, false);
     }
 
     const counts = await crawlerQueue.getJobCounts(
@@ -87,6 +91,7 @@ dbQM
       "failed"
     );
     console.log("QUEUE STATUS", counts);
+
     process.exit(0);
   })
   .catch((err) => {
@@ -131,8 +136,8 @@ const getRescanEntityToBeAnalyzed = async (
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
                  LEFT OUTER JOIN "Jobs" J2 ON (E.id = J2.entity_id AND\
                  (J1."updatedAt" < J2."updatedAt" OR (J1."updatedAt" = J2."updatedAt" AND J1.id < J2.id)))\
-                 WHERE E.enable = TRUE AND J2.id IS NULL\
-                    AND (J1.status='ERROR'\
+                 WHERE E.enable = TRUE AND J2.id IS NULL\ 
+                    AND (J1.status='ERROR'\ 
                         OR (J1.status = 'PASSED' AND DATE(J1."updatedAt") > DATE(:passedDate))\
                         OR (J1.status = 'FAILED' AND DATE(J1."updatedAt") > DATE(:failedDate))\
                     )\
@@ -154,16 +159,22 @@ const getRescanEntityToBeAnalyzed = async (
   return returnValues;
 };
 
-const generateJobs = async (entities, crawlerQueue): Promise<void> => {
-  for (const entity of entities) {
+const generateJobs = async (
+  entities,
+  crawlerQueue,
+  preserve = false
+): Promise<void> => {
+  let jobs;
+  for (let entity of entities) {
     try {
-      const entityObj = await entityDefine(dbQM).findByPk(entity.id);
+      const entityObj: any = await entityDefine(dbQM).findByPk(entity.id);
       if (entityObj === null) {
         continue;
       }
 
       const entityParse = entityObj.toJSON();
-      const jobObj = await jobDefine(dbQM, false).create({
+
+      let createObj = {
         entity_id: entityParse.id,
         start_at: null,
         end_at: null,
@@ -173,10 +184,17 @@ const generateJobs = async (entities, crawlerQueue): Promise<void> => {
         s3_html_url: null,
         s3_json_url: null,
         json_result: null,
-      });
+        preserve: false,
+      };
+
+      if (preserve) {
+        createObj.preserve = true;
+      }
+
+      const jobObj = await jobDefine(dbQM, false).create(createObj);
       const parsedJob = jobObj.toJSON();
 
-      await crawlerQueue.add("job", { id: parsedJob.id });
+      jobs = await crawlerQueue.add("job", { id: parsedJob.id });
     } catch (e) {
       console.log(e);
     }
