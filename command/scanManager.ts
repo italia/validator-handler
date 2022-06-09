@@ -8,7 +8,6 @@ import { define as jobDefine } from "../database/models/job";
 import { run } from "pa-website-validator/dist/controller/launchLighthouse";
 import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
 import { Job } from "../types/models";
-import { Model } from "sequelize";
 import {
   upload as s3Upload,
   empty as s3Delete,
@@ -58,7 +57,7 @@ dbSM
   });
 
 const scan = async (jobId) => {
-  const jobObj: Model<Job, Job> = await jobDefine(dbSM).findByPk(jobId);
+  const jobObj: Job | null = await jobDefine(dbSM).findByPk(jobId);
 
   try {
     if (jobObj === null || jobObj.toJSON().status !== "PENDING") {
