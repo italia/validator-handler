@@ -1,8 +1,8 @@
 "use strict";
 
-import { DataTypes, Sequelize } from "sequelize";
-import { jobModel } from "../../types/database";
+import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
 import { define as entityDefine } from "./entity";
+import { Job } from "../../types/models";
 
 const modelName = "Job";
 const statusAllowedValues: string[] = [
@@ -13,7 +13,7 @@ const statusAllowedValues: string[] = [
   "FAILED",
 ];
 
-const structure: jobModel = {
+const structure: ModelAttributes<Job, Attributes<Job>> = {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -70,6 +70,8 @@ const structure: jobModel = {
     allowNull: true,
     defaultValue: false,
   },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
 };
 
 const syncTable = (db: Sequelize) => {

@@ -1,12 +1,12 @@
 "use strict";
 
-import { DataTypes, Sequelize } from "sequelize";
-import { userModel } from "../../types/database";
+import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
+import { User } from "../../types/models";
 
 const modelName = "User";
 const roles: string[] = ["api-user"];
 
-const structure: userModel = {
+const structure: ModelAttributes<User, Attributes<User>> = {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -26,6 +26,8 @@ const structure: userModel = {
       isIn: [roles],
     },
   },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
 };
 
 const syncTable = (db: Sequelize) => {

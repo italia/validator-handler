@@ -12,6 +12,7 @@ import dateFormat from "dateformat";
 import { define as entityDefine } from "../database/models/entity";
 import { define as jobDefine } from "../database/models/job";
 import { Queue } from "bullmq";
+import { Entity } from "../types/models";
 
 const command = yargs(hideBin(process.argv))
   .usage(
@@ -136,8 +137,8 @@ const getRescanEntityToBeAnalyzed = async (
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
                  LEFT OUTER JOIN "Jobs" J2 ON (E.id = J2.entity_id AND\
                  (J1."updatedAt" < J2."updatedAt" OR (J1."updatedAt" = J2."updatedAt" AND J1.id < J2.id)))\
-                 WHERE E.enable = TRUE AND J2.id IS NULL\ 
-                    AND (J1.status='ERROR'\ 
+                 WHERE E.enable = TRUE AND J2.id IS NULL 
+                    AND (J1.status='ERROR' 
                         OR (J1.status = 'PASSED' AND DATE(J1."updatedAt") > DATE(:passedDate))\
                         OR (J1.status = 'FAILED' AND DATE(J1."updatedAt") > DATE(:failedDate))\
                     )\
@@ -164,17 +165,16 @@ const generateJobs = async (
   crawlerQueue,
   preserve = false
 ): Promise<void> => {
-  let jobs;
-  for (let entity of entities) {
+  for (const entity of entities) {
     try {
-      const entityObj: any = await entityDefine(dbQM).findByPk(entity.id);
+      const entityObj: Entity = await entityDefine(dbQM).findByPk(entity.id);
       if (entityObj === null) {
         continue;
       }
 
       const entityParse = entityObj.toJSON();
 
-      let createObj = {
+      const createObj = {
         entity_id: entityParse.id,
         start_at: null,
         end_at: null,
@@ -194,7 +194,7 @@ const generateJobs = async (
       const jobObj = await jobDefine(dbQM, false).create(createObj);
       const parsedJob = jobObj.toJSON();
 
-      jobs = await crawlerQueue.add("job", { id: parsedJob.id });
+      await crawlerQueue.add("job", { id: parsedJob.id });
     } catch (e) {
       console.log(e);
     }

@@ -1,7 +1,7 @@
 "use strict";
 
 import { authUser } from "../types/user";
-import { Model, Sequelize } from "sequelize";
+import { InferAttributes, Sequelize } from "sequelize";
 import { User } from "../types/models";
 import { define as userDefine } from "../database/models/user";
 
@@ -13,7 +13,7 @@ export class userController {
   }
 
   async auth(username: string, password: string): Promise<authUser> {
-    const userObj: Model<User, User> = await userDefine(this.db).findOne({
+    const userObj: User | null = await userDefine(this.db).findOne({
       where: {
         username: username,
         password: password,
@@ -24,7 +24,7 @@ export class userController {
       throw new Error("Wrong username or password");
     }
 
-    const userObjValues: User = userObj.get();
+    const userObjValues: InferAttributes<User> = userObj.get();
 
     return {
       username: userObjValues.username,
