@@ -170,11 +170,15 @@ router.get(
       const externalEntityId = req.params.external_id.toString();
       const dateFrom = req.query.dateFrom;
       const dateTo = req.query.dateTo;
+      const page = req.query.page === "0" ? "1" : req.query.page;
+      const limit = req.query.limit;
 
       const result = await new jobController(dbWS).list(
         externalEntityId,
         dateFrom,
-        dateTo
+        dateTo,
+        page,
+        limit
       );
 
       return succesResponse(result, res);
