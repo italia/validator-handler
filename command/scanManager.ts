@@ -89,7 +89,8 @@ const scan = async (jobId) => {
       jobObjParsed.id,
       jobObjParsed.entity_id,
       lighthouseResult.data.htmlReport,
-      lighthouseResult.data.jsonReport
+      lighthouseResult.data.jsonReport,
+      JSON.stringify(jsonResult)
     );
 
     if (!uploadResult.status) {
@@ -151,17 +152,21 @@ const uploadFiles = async (
   jobId: number,
   entityId: number,
   htmlReport: string,
-  jsonReport: string
+  jsonReport: string,
+  cleanJsonReport: string
 ): Promise<{
   status: boolean;
   htmlLocationUrl: string | null;
   jsonLocationUrl: string | null;
+  cleanJsonLocationUrl: string | null;
 }> => {
   try {
     return {
       status: true,
       htmlLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.html",
       jsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.json",
+      cleanJsonLocationUrl:
+        "/" + entityId + "/" + jobId + "/" + "cleanreport.json",
     };
 
     //TODO: Integrazione completata - In attesa di bucket S3 per testing
@@ -173,8 +178,16 @@ const uploadFiles = async (
       jsonReport,
       entityId + "/" + jobId + "/" + "report.json"
     );
+    const cleanJsonLocationUrl = await s3Upload(
+      cleanJsonReport,
+      entityId + "/" + jobId + "/" + "cleanreport.json"
+    );
 
-    if (htmlLocationUrl === null || jsonLocationUrl === null) {
+    if (
+      htmlLocationUrl === null ||
+      jsonLocationUrl === null ||
+      cleanJsonLocationUrl === null
+    ) {
       throw new Error("Empty result from S3");
     }
 
@@ -182,6 +195,7 @@ const uploadFiles = async (
       status: true,
       htmlLocationUrl: htmlLocationUrl,
       jsonLocationUrl: jsonLocationUrl,
+      cleanJsonLocationUrl: cleanJsonLocationUrl,
     };
   } catch (ex) {
     if (Boolean(entityId) && Boolean(jobId)) {
@@ -192,6 +206,7 @@ const uploadFiles = async (
       status: false,
       htmlLocationUrl: null,
       jsonLocationUrl: null,
+      cleanJsonLocationUrl: null,
     };
   }
 };
