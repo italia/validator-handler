@@ -13,6 +13,7 @@ export class Job extends Model<
   declare status: string;
   declare s3_html_url: string;
   declare s3_json_url: string;
+  declare s3_clean_json_result_url: string;
   declare json_result: object;
   declare preserve: boolean;
   readonly createdAt: Date;

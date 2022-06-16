@@ -7,6 +7,7 @@ export interface mappedJob {
   status: string;
   s3HTMLUrl: string;
   s3JSONUrl: string;
+  s3CleanJSONUrl: string;
   jsonResult: Record<string, unknown>;
   preserve: boolean;
 }

@@ -90,6 +90,7 @@ export class jobController {
         status: jobElement.status,
         s3HTMLUrl: jobElement.s3_html_url,
         s3JSONUrl: jobElement.s3_json_url,
+        s3CleanJSONUrl: jobElement.s3_clean_json_result_url,
         jsonResult: jobElement.json_result,
         preserve: jobElement.preserve,
       });
