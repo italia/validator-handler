@@ -12,8 +12,24 @@ export class jobController {
     this.db = db;
   }
 
-  async list(entityExternalId: string, dateFrom, dateTo): Promise<mappedJob[]> {
-    const returnValues = [];
+  async list(
+    entityExternalId: string,
+    dateFrom,
+    dateTo,
+    page,
+    limit
+  ): Promise<{
+    totalElements: number;
+    currentPage: number;
+    pages: number;
+    jobs: mappedJob[];
+  }> {
+    const returnValues = {
+      totalElements: 0,
+      currentPage: parseInt(page),
+      pages: 0,
+      jobs: [],
+    };
 
     if ((Boolean(dateFrom) && !dateTo) || (!dateFrom && Boolean(dateTo))) {
       throw new Error("dateFrom and dateTo both must be passed or neither");
@@ -23,13 +39,13 @@ export class jobController {
       entityExternalId
     );
 
-    if (entityObj === null) {
+    if (entityObj === null || parseInt(limit) <= 0) {
       return returnValues;
     }
 
-    let betweenCondition = {};
+    let condition = {};
     if (Boolean(dateFrom) && Boolean(dateTo)) {
-      betweenCondition = {
+      condition = {
         where: {
           updatedAt: {
             [Op.between]: [dateFrom, dateTo],
@@ -39,12 +55,33 @@ export class jobController {
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore - getJobs(): metodo autogenerato dall'ORM Sequelize dopo l'associazione
-    const jobList: Job[] = await entityObj.getJobs(betweenCondition);
+    //@ts-ignore
+    const countData = await entityObj.getJobs(condition);
+    let cont = 0;
+    countData.forEach((job) => {
+      if (job) {
+        cont++;
+      }
+    });
 
+    const pages = Math.ceil(cont / limit);
+    const offset = limit * (page - 1);
+    condition = {
+      ...condition,
+      ...{
+        offset: offset,
+        limit: limit,
+      },
+    };
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore - getJobs(): metodo autogenerato dall'ORM Sequelize dopo l'associazione
+    const jobList: Job[] = await entityObj.getJobs(condition);
+
+    const jobElements = [];
     jobList.forEach((job) => {
       const jobElement = job.toJSON();
-      returnValues.push({
+      jobElements.push({
         id: jobElement.id,
         startAt: jobElement.start_at,
         endAt: jobElement.end_at,
@@ -57,6 +94,11 @@ export class jobController {
         preserve: jobElement.preserve,
       });
     });
+
+    returnValues.totalElements = cont;
+    returnValues.pages = pages;
+    returnValues.currentPage = parseInt(page);
+    returnValues.jobs = jobElements;
 
     return returnValues;
   }
