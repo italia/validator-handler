@@ -103,6 +103,7 @@ const scan = async (jobId) => {
       json_result: jsonResult,
       s3_json_url: uploadResult.jsonLocationUrl,
       s3_html_url: uploadResult.htmlLocationUrl,
+      s3_clean_json_result_url: uploadResult.cleanJsonLocationUrl,
     });
 
     return true;

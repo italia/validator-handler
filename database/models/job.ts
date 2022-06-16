@@ -61,6 +61,10 @@ const structure: ModelAttributes<Job, Attributes<Job>> = {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  s3_clean_json_result_url: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   json_result: {
     type: DataTypes.JSONB,
     allowNull: true,
