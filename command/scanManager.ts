@@ -19,6 +19,7 @@ import {
   cleanSchoolJSONReport,
   isPassedReport,
 } from "../controller/auditController";
+import { jobController } from "../controller/jobController";
 
 dbSM
   .authenticate()
@@ -115,7 +116,7 @@ const scan = async (jobId) => {
       s3_clean_json_result_url: uploadResult.cleanJsonLocationUrl,
     });
 
-    //TODO: metodo che svecchia i JOB
+    await new jobController(dbSM).cleanJobs(jobObjParsed.entity_id);
 
     return true;
   } catch (e) {
