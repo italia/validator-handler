@@ -1,10 +1,13 @@
 "use strict";
+import dotenv from "dotenv";
+dotenv.config();
 
 import { Job } from "../types/models";
 import { mappedJob, updatePreserveBody } from "../types/job";
 import { Op, Sequelize } from "sequelize";
 import { entityController } from "./entityController";
 import { preserveReasons } from "../database/models/job";
+import { define as jobDefine } from "../database/models/job";
 
 export class jobController {
   db: Sequelize;
@@ -142,5 +145,30 @@ export class jobController {
       preserve: updatePreserve.value,
       preserve_reason: updatePreserve.reason,
     });
+  }
+
+  async cleanJobs(entityId: number): Promise<number[]> {
+    const jobAmountToPreserve = parseInt(process.env.JOB_AMOUNT_TO_PRESERVE);
+
+    const jobs = await jobDefine(this.db).findAll({
+      where: {
+        entity_id: entityId,
+        preserve: false,
+      },
+      order: [["updatedAt", "ASC"]],
+    });
+
+    let jobToDelete = 0;
+    if (jobs.length > jobAmountToPreserve) {
+      jobToDelete = jobs.length - jobAmountToPreserve;
+    }
+
+    const jobDeleted = [];
+    for (let i = 0; i < jobToDelete; i++) {
+      jobDeleted.push(jobs[i].id);
+      await jobs[i].destroy();
+    }
+
+    return jobDeleted;
   }
 }
