@@ -8,4 +8,5 @@ export interface createBody {
 export interface updateBody {
   url: string;
   enable: boolean;
+  status: boolean;
 }

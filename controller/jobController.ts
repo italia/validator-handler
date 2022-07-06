@@ -4,6 +4,7 @@ import { Job } from "../types/models";
 import { mappedJob, updatePreserveBody } from "../types/job";
 import { Op, Sequelize } from "sequelize";
 import { entityController } from "./entityController";
+import { preserveReasons } from "../database/models/job";
 
 export class jobController {
   db: Sequelize;
@@ -117,6 +118,10 @@ export class jobController {
       throw new Error("Entity not found");
     }
 
+    if (!preserveReasons.includes(updatePreserve.reason)) {
+      throw new Error("Preserve reason not valid");
+    }
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore - getJobs(): metodo autogenerato dall'ORM Sequelize dopo l'associazione
     const jobObjs: Job[] = await entityObj.getJobs({
@@ -135,6 +140,7 @@ export class jobController {
 
     return await jobObjs[0].update({
       preserve: updatePreserve.value,
+      preserve_reason: updatePreserve.reason,
     });
   }
 }

@@ -1,3 +1,3 @@
 export const additionalTestAudits = {
-  "common-security-ip-location": "legislation"
-}
+  "common-security-ip-location": "legislation",
+};

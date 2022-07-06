@@ -24,11 +24,13 @@ export interface updateEntityBodyType<>extends express.Request {
   body: {
     url: string;
     enable: boolean;
+    status: boolean;
   };
 }
 
 export interface updatePreserveBodyType<>extends express.Request {
   body: {
     value: boolean;
+    reason: string;
   };
 }

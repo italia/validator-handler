@@ -26,6 +26,11 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
+  status: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   type: {
     type: DataTypes.STRING,
     allowNull: false,

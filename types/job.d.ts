@@ -10,8 +10,10 @@ export interface mappedJob {
   s3CleanJSONUrl: string;
   jsonResult: Record<string, unknown>;
   preserve: boolean;
+  preserve_reason: string;
 }
 
 export interface updatePreserveBody {
   value: boolean;
+  reason: string;
 }

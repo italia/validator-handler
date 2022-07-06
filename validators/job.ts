@@ -9,9 +9,10 @@ const preserveUpdate = async (body: updatePreserveBody): Promise<boolean> => {
 
     properties: {
       value: { type: "boolean", minLength: 1 },
+      reason: { type: "string", minLength: 1 },
     },
 
-    required: ["value"],
+    required: ["value", "reason"],
   };
 
   return await validate(body, createBody);

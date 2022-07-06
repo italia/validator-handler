@@ -27,6 +27,7 @@ const update = async (body: updateBody): Promise<boolean> => {
     properties: {
       url: { type: "string", minLength: 1 },
       enable: { type: "boolean", minLength: 1 },
+      status: { type: "boolean", minLength: 1 },
     },
 
     anyOf: [
@@ -35,6 +36,9 @@ const update = async (body: updateBody): Promise<boolean> => {
       },
       {
         required: ["enable"],
+      },
+      {
+        required: ["status"],
       },
     ],
   };
