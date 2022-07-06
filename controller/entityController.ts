@@ -29,6 +29,7 @@ export class entityController {
       external_id: entityCreateBody.external_id,
       url: entityCreateBody.url,
       enable: entityCreateBody.enable,
+      status: false,
       type: entityCreateBody.type,
     });
 
@@ -49,6 +50,10 @@ export class entityController {
 
     if ("enable" in entityUpdateBody) {
       updateObj = { ...updateObj, ...{ enable: entityUpdateBody.enable } };
+    }
+
+    if ("status" in entityUpdateBody) {
+      updateObj = { ...updateObj, ...{ status: entityUpdateBody.status } };
     }
 
     const result = await entity.update(updateObj);

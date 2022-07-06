@@ -13,6 +13,15 @@ const statusAllowedValues: string[] = [
   "FAILED",
 ];
 
+const preserveReasons: string[] = [
+  "prima scansione",
+  "scansione asseverata",
+  "scansione salvata dall'operatore",
+  "scansione salvata in automatico",
+];
+
+const allowedDataSentStatus: string[] = ["COMPLETED", "ERROR"];
+
 const structure: ModelAttributes<Job, Attributes<Job>> = {
   id: {
     type: DataTypes.INTEGER,
@@ -74,6 +83,21 @@ const structure: ModelAttributes<Job, Attributes<Job>> = {
     allowNull: true,
     defaultValue: false,
   },
+  preserve_reason: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isIn: [preserveReasons],
+    },
+  },
+  data_sent_status: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isIn: [allowedDataSentStatus],
+    },
+  },
+  data_sent_date: DataTypes.DATE,
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 };
@@ -92,4 +116,4 @@ const define = (db: Sequelize, join = true) => {
   return jobDefineObj;
 };
 
-export { modelName, statusAllowedValues, syncTable, define };
+export { modelName, statusAllowedValues, syncTable, define, preserveReasons };

@@ -106,6 +106,8 @@ const scan = async (jobId) => {
       s3_clean_json_result_url: uploadResult.cleanJsonLocationUrl,
     });
 
+    //TODO: metodo che svecchia i JOB
+
     return true;
   } catch (e) {
     await jobObj.update({

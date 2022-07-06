@@ -16,6 +16,9 @@ export class Job extends Model<
   declare s3_clean_json_result_url: string;
   declare json_result: object;
   declare preserve: boolean;
+  declare preserve_reason: string;
+  declare data_sent_status: string;
+  declare data_sent_date: Date;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -29,6 +32,7 @@ export class Entity extends Model<
   declare url: string;
   declare enable: boolean;
   declare type: string;
+  declare status: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
