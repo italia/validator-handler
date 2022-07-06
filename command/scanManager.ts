@@ -14,20 +14,17 @@ import {
 } from "../controller/s3Controller";
 import { Worker, Job as bullJob } from "bullmq";
 import { v4 } from "uuid";
-
-//TODO: definire audit-id per test sul PASSED
-const mandatoryValidAuditKeys = [
-  "common-security-https-is-present",
-  "common-security-tls-check",
-  "common-security-ip-location",
-  "common-security-cipher-check",
-];
+import {
+  cleanMunicipalityJSONReport,
+  cleanSchoolJSONReport,
+  isPassedReport,
+} from "../controller/auditController";
 
 dbSM
   .authenticate()
   .then(async () => {
     const worker: Worker = new Worker("crawler-queue", null, {
-      lockDuration: 100000,
+      lockDuration: 10000000,
       connection: {
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT,
@@ -70,21 +67,29 @@ const scan = async (jobId) => {
     });
 
     const jobObjParsed = jobObj.toJSON();
-    console.log("lighthouse start");
     const lighthouseResult = await run(
       jobObjParsed.scan_url,
       jobObjParsed.type,
       "online",
-      logLevels.display_none,
+      logLevels.display_info,
       false
     );
-    console.log("lighthouse finish");
 
     if (!lighthouseResult.status) {
       throw new Error("Empty lighthouse result");
     }
 
-    const jsonResult = await cleanJSONReport(lighthouseResult.data.jsonReport);
+    let jsonResult = {};
+    if (jobObjParsed.type === "municipality") {
+      jsonResult = await cleanMunicipalityJSONReport(
+        lighthouseResult.data.jsonReport
+      );
+    } else if (jobObjParsed.type === "school") {
+      jsonResult = await cleanSchoolJSONReport(
+        lighthouseResult.data.jsonReport
+      );
+    }
+
     const uploadResult = await uploadFiles(
       jobObjParsed.id,
       jobObjParsed.entity_id,
@@ -97,8 +102,12 @@ const scan = async (jobId) => {
       throw new Error("Upload error");
     }
 
+    const status = (await isPassedReport(jsonResult, jobObjParsed.type))
+      ? "PASSED"
+      : "FAILED";
+
     await jobObj.update({
-      status: (await isPassedReport(jsonResult)) ? "PASSED" : "FAILED",
+      status: status,
       end_at: Date.now(),
       json_result: jsonResult,
       s3_json_url: uploadResult.jsonLocationUrl,
@@ -110,6 +119,8 @@ const scan = async (jobId) => {
 
     return true;
   } catch (e) {
+    console.log("Exception: ", e);
+
     await jobObj.update({
       status: "ERROR",
       end_at: Date.now(),
@@ -117,38 +128,6 @@ const scan = async (jobId) => {
 
     return false;
   }
-};
-
-const cleanJSONReport = async (
-  jsonResult: string
-): Promise<{ categories: object; audits: object }> => {
-  const parsedResult = JSON.parse(jsonResult);
-  const categoryResults: Record<string, { id: string; score: number }> =
-    parsedResult.categories;
-  const auditResults: Record<string, { id: string; score: number }> =
-    parsedResult.audits;
-
-  let categoryResultsMappedValues = [];
-  let auditResultsMappedValues = [];
-
-  for (const value of Object.values(categoryResults)) {
-    categoryResultsMappedValues = {
-      ...categoryResultsMappedValues,
-      ...{ [value.id]: value.score },
-    };
-  }
-
-  for (const value of Object.values(auditResults)) {
-    auditResultsMappedValues = {
-      ...auditResultsMappedValues,
-      ...{ [value.id]: value.score },
-    };
-  }
-
-  return {
-    categories: categoryResultsMappedValues,
-    audits: auditResultsMappedValues,
-  };
 };
 
 const uploadFiles = async (
@@ -212,14 +191,4 @@ const uploadFiles = async (
       cleanJsonLocationUrl: null,
     };
   }
-};
-
-const isPassedReport = async (jsonReport): Promise<boolean> => {
-  mandatoryValidAuditKeys.forEach((item) => {
-    if (!(item in jsonReport.audits) || jsonReport.audits[item] == !1) {
-      return false;
-    }
-  });
-
-  return true;
 };
