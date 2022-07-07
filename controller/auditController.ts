@@ -236,17 +236,17 @@ const getFailAuditByClusterGroup = async (
   }
 
   const failAudits = [];
-  for (const audit of auditsToGet) {
+  for (const auditId of auditsToGet) {
     let auditScore = 0;
     if (
-      jsonResult.audits[audit] !== undefined &&
-      "score" in jsonResult.audits[audit]
+      jsonResult.audits[auditId] !== undefined &&
+      "score" in jsonResult.audits[auditId]
     ) {
-      auditScore = jsonResult.audits[audit].score ?? 0;
+      auditScore = jsonResult.audits[auditId].score ?? 0;
     }
 
     if (auditScore < 0.5) {
-      failAudits.push(audit);
+      failAudits.push(auditId);
     }
   }
 
