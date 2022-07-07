@@ -12,9 +12,17 @@ const create = async (body: createBody): Promise<boolean> => {
       url: { type: "string", minLength: 1 },
       enable: { type: "boolean", minLength: 1 },
       type: { type: "string", minLength: 1, enum: ["school", "municipality"] },
+      subtype: {
+        type: "string",
+        enum: [
+          "municipality-informed-citizen",
+          "municipality-informed-active-citizen",
+          "school-compliance-criteria",
+        ],
+      },
     },
 
-    required: ["external_id", "url", "enable", "type"],
+    required: ["external_id", "url", "enable", "type", "subtype"],
   };
 
   return await validate(body, createBody);

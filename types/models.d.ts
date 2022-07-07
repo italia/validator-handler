@@ -32,6 +32,7 @@ export class Entity extends Model<
   declare url: string;
   declare enable: boolean;
   declare type: string;
+  declare subtype: string;
   declare status: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;

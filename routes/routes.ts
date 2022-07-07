@@ -32,6 +32,10 @@ import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job
 import { entityController } from "../controller/entityController";
 import { jobController } from "../controller/jobController";
 import { dbWS } from "../database/connection";
+import {
+  allowedMunicipalitySubTypes,
+  allowedSchoolSubtypes,
+} from "../database/models/entity";
 
 router.post(
   "/api/login/token",
@@ -104,6 +108,20 @@ router.put(
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
       await entityCreateValidation(req.body);
+
+      const type = req.body.type;
+      const subtype = req.body.subtype;
+
+      if (
+        type === "municipality" &&
+        !allowedMunicipalitySubTypes.includes(subtype)
+      ) {
+        throw new Error("Invalid subtype for passed type");
+      }
+
+      if (type === "school" && !allowedSchoolSubtypes.includes(subtype)) {
+        throw new Error("Invalid subtype for passed type");
+      }
 
       const result = await new entityController(dbWS).create(req.body);
 

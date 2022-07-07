@@ -2,6 +2,9 @@
 
 import { audits as municipalityAudits } from "../storage/municipalityAudits";
 import { audits as schoolAudits } from "../storage/schoolAudits";
+import { entityController } from "./entityController";
+import { dbSM } from "../database/connection";
+import { allowedMunicipalitySubTypes } from "../database/models/entity";
 
 const cleanMunicipalityJSONReport = async (jsonResult: string) => {
   const parsedResult = JSON.parse(jsonResult);
@@ -269,39 +272,40 @@ const getPerformanceScore = async (jsonResult) => {
   return jsonResult.categories.performance.score;
 };
 
-const isPassedReport = async (jsonReport, type: string): Promise<boolean> => {
+const isPassedReport = async (
+  jsonReport,
+  type: string,
+  entity_id: number
+): Promise<boolean> => {
   let passed = false;
+
+  const entityObj = await new entityController(dbSM).retrieveByPk(entity_id);
+  if (entityObj === null) {
+    return passed;
+  }
+
+  const subtype = entityObj.subtype;
+  if (!subtype) {
+    return passed;
+  }
 
   switch (type) {
     case "municipality":
-      // eslint-disable-next-line
-      const informedCitizenStatus = jsonReport["cittadino-informato"].status;
-
-      // eslint-disable-next-line
-      const activeCitizenStatus = jsonReport["cittadino-attivo"].status;
-
-      // eslint-disable-next-line
-      const recommendationsMunicipalityStatus =
-        jsonReport["raccomandazioni"].status;
-
-      if (
-        informedCitizenStatus &&
-        activeCitizenStatus &&
-        recommendationsMunicipalityStatus
-      ) {
-        passed = true;
+      if (subtype === allowedMunicipalitySubTypes[0]) {
+        // eslint-disable-next-line
+        passed = jsonReport["cittadino-informato"].status;
+      } else if (subtype === allowedMunicipalitySubTypes[1]) {
+        // eslint-disable-next-line
+        passed =
+          jsonReport["cittadino-informato"].status &&
+          jsonReport["cittadino-attivo"].status;
+      } else {
+        passed = false;
       }
       break;
     case "school":
       // eslint-disable-next-line
-      const complianceCriteriaStatus = jsonReport["criteri-conformita"].status;
-
-      // eslint-disable-next-line
-      const recommendationsSchoolStatus = jsonReport["raccomandazioni"].status;
-
-      if (complianceCriteriaStatus && recommendationsSchoolStatus) {
-        passed = true;
-      }
+      passed = jsonReport["criteri-conformita"].status;
       break;
     default:
       passed = false;

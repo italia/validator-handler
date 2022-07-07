@@ -7,10 +7,15 @@ import { define as jobDefine } from "./job";
 const primaryKey = "id";
 const modelName = "Entity";
 const allowedTypes = ["school", "municipality"] as const;
+const allowedMunicipalitySubTypes = [
+  "municipality-informed-citizen",
+  "municipality-informed-active-citizen",
+];
+const allowedSchoolSubtypes = ["school-compliance-criteria"];
 
 const structure: ModelAttributes<Entity, Attributes<Entity>> = {
   id: {
-    type: DataTypes.INTEGER.UNSIGNED,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
@@ -38,6 +43,13 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
       isIn: [[...allowedTypes]],
     },
   },
+  subtype: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isIn: [[...allowedMunicipalitySubTypes, ...allowedSchoolSubtypes]],
+    },
+  },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 };
@@ -56,4 +68,12 @@ const define = (db: Sequelize, join = true) => {
   return entityDefineObj;
 };
 
-export { primaryKey, modelName, allowedTypes, syncTable, define };
+export {
+  primaryKey,
+  modelName,
+  allowedTypes,
+  syncTable,
+  define,
+  allowedMunicipalitySubTypes,
+  allowedSchoolSubtypes,
+};
