@@ -17,6 +17,7 @@ export interface createEntityBodyType<>extends express.Request {
     url: string;
     enable: boolean;
     type: string;
+    subtype: string;
   };
 }
 

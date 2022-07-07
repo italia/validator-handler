@@ -3,6 +3,7 @@ export interface createBody {
   url: string;
   enable: boolean;
   type: string;
+  subtype: string;
 }
 
 export interface updateBody {

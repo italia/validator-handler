@@ -72,7 +72,7 @@ const scan = async (jobId) => {
       jobObjParsed.scan_url,
       jobObjParsed.type,
       "online",
-      logLevels.display_none,
+      logLevels.display_info,
       false
     );
 
@@ -103,7 +103,11 @@ const scan = async (jobId) => {
       throw new Error("Upload error");
     }
 
-    const status = (await isPassedReport(jsonResult, jobObjParsed.type))
+    const status = (await isPassedReport(
+      jsonResult,
+      jobObjParsed.type,
+      jobObjParsed.entity_id
+    ))
       ? "PASSED"
       : "FAILED";
 

@@ -19,6 +19,10 @@ export class entityController {
     });
   }
 
+  async retrieveByPk(entityId: number) {
+    return await entityDefine(this.db).findByPk(entityId);
+  }
+
   async create(entityCreateBody: createBody) {
     const entity = await this.retrieve(entityCreateBody.external_id);
     if (entity !== null) {
@@ -31,6 +35,7 @@ export class entityController {
       enable: entityCreateBody.enable,
       status: false,
       type: entityCreateBody.type,
+      subtype: entityCreateBody.subtype,
     });
 
     return result.toJSON();
