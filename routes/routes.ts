@@ -37,6 +37,21 @@ import {
   allowedSchoolSubtypes,
 } from "../database/models/entity";
 
+/**
+ * @openapi
+ * /api/login/token:
+ *   get:
+ *     tags:
+ *       - Token
+ *     description: Returns the JWT auth token
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: JWT Token
+ *         schema:
+ *           $ref: '#/definitions/Token'
+ */
 router.post(
   "/api/login/token",
   async (
@@ -242,6 +257,11 @@ router.get(
     succesResponse({ version: "1.0.0" }, res, 200);
   }
 );
+
+/*router.get('/swagger.json', function(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});*/
 
 // ** 404 ROUTE HANDLING **
 router.get(
