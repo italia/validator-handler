@@ -39,18 +39,114 @@ import {
 
 /**
  * @openapi
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *   schemas:
+ *     Error:
+ *       properties:
+ *         status:
+ *           type: string
+ *         timestamp:
+ *           type: integer
+ *         error:
+ *           type: object
+ *           properties:
+ *             code:
+ *               type: integer
+ *             message:
+ *               type: string
+ *     Token:
+ *       properties:
+ *         token:
+ *           type: string
+ *         expiresIn:
+ *           type: integer
+ *     Entity:
+ *       properties:
+ *         id:
+ *           type: string
+ *         external_id:
+ *           type: string
+ *         url:
+ *           type: string
+ *         enable:
+ *           type: boolean
+ *         type:
+ *           type: string
+ *         subtype:
+ *           type: string
+ *         status:
+ *           type: boolean
+ *         updateAt:
+ *           type: string
+ *         createdAt:
+ *           type: string
+ *     Job:
+ *       properties:
+ *         id:
+ *           type: integer
+ *         startAt:
+ *           type: string
+ *         endAt:
+ *           type: string
+ *         scanUrl:
+ *           type: boolean
+ *         type:
+ *           type: string
+ *         status:
+ *           type: string
+ *         s3HTMLUrl:
+ *           type: string
+ *         s3JSONUrl:
+ *           type: string
+ *         jsonResult:
+ *           type: object
+ *         preserve:
+ *           type: boolean
+ *         preserve_reason:
+ *           type: string
+ */
+
+/**
+ * @openapi
  * /api/login/token:
- *   get:
+ *   post:
  *     tags:
- *       - Token
+ *       - Auth
  *     description: Returns the JWT auth token
  *     produces:
- *       - application/json
+ *      - application/json
+ *     requestBody:
+ *       content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              example:
+ *                username: username
+ *                password: password
  *     responses:
- *       200:
- *         description: JWT Token
- *         schema:
- *           $ref: '#/definitions/Token'
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   $ref: '#/definitions/Token'
+ *       "401":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Error'
  */
 router.post(
   "/api/login/token",
