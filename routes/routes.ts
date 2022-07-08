@@ -116,7 +116,7 @@ import {
  *   post:
  *     tags:
  *       - Auth
- *     description: Returns the JWT auth token
+ *     summary: Genera un nuovo JWT token
  *     produces:
  *      - application/json
  *     requestBody:
@@ -182,6 +182,36 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /api/login/refresh:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Genera un nuovo token JWT partendo da uno valido esistente
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   "$ref": "#/definitions/Token"
+ *       "401":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
 router.post(
   "/api/login/refresh",
   async (
@@ -210,6 +240,47 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /api/entity/create:
+ *   put:
+ *     tags:
+ *       - Entity
+ *     summary: Crea una nuova Entity
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               external_id: external-code
+ *               url: https://www.comune.cagliari.it/
+ *               enable: true
+ *               type: municipality
+ *               subtype: municipality-informed-active-citizen
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   "$ref": "#/definitions/Entity"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
 router.put(
   "/api/entity/create",
   async (
@@ -243,6 +314,52 @@ router.put(
   }
 );
 
+/**
+ * @openapi
+ * /api/entity/{external_id}/update:
+ *   post:
+ *     tags:
+ *       - Entity
+ *     summary: Aggiorna URL o Enabling di una Entity esistente
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               url: https://www.comune.cagliari.it/
+ *               enable: false
+ *               status: true
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: external_id
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *         example: external-code
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   "$ref": "#/definitions/Entity"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
 router.post(
   "/api/entity/:external_id/update",
   async (
@@ -265,6 +382,42 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /api/entity/{external_id}/retrieve:
+ *   get:
+ *     tags:
+ *       - Entity
+ *     summary: Restituisce una entity puntualmente
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: external_id
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   "$ref": "#/definitions/Entity"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
 router.get(
   "/api/entity/:external_id/retrieve",
   async (
@@ -287,6 +440,68 @@ router.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/entity/{external_id}/job/list:
+ *   get:
+ *     tags:
+ *       - Job
+ *     summary: Restituisce la lista dei Job per una data Entity
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: dateFrom
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: NB - La data deve essere in formato ISO, es. 2022-05-19T14:45:00.602Z
+ *         example: "2022-05-19T14:45:00.602Z"
+ *       - name: dateTo
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: NB - La data deve essere in formato ISO, es. 2022-05-23T14:26:08.602Z
+ *         example: "2022-05-23T14:26:08.602Z"
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: Paginazione - quantità di JOB restituiti per pagina
+ *         example: 10
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: Paginazione - pagina di JOB da visualizzare
+ *         example: 5
+ *       - name: external_id
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *         example: external-code
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     "$ref": "#/definitions/Job"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
 router.get(
   "/api/entity/:external_id/job/list",
   async (
@@ -321,6 +536,57 @@ router.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/entity/{external_id}/job/{id}/preserve/update:
+ *   post:
+ *     tags:
+ *       - Job
+ *     summary: Aggiorna lo status di preserve di un Job
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               value: true
+ *               reason: "prima scansione"
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: external_id
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *         example: external-code
+ *       - name: id
+ *         in: path
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         example: "38"
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   "$ref": "#/definitions/Job"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
 router.post(
   "/api/entity/:external_id/job/:id/preserve/update",
   async (
@@ -353,11 +619,6 @@ router.get(
     succesResponse({ version: "1.0.0" }, res, 200);
   }
 );
-
-/*router.get('/swagger.json', function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});*/
 
 // ** 404 ROUTE HANDLING **
 router.get(
