@@ -148,7 +148,27 @@ export class jobController {
   }
 
   async cleanJobs(entityId: number): Promise<number[]> {
-    const jobAmountToPreserve = parseInt(process.env.JOB_AMOUNT_TO_PRESERVE);
+    const countJobPreserve = await jobDefine(this.db).count({
+      where: {
+        entity_id: entityId,
+        preserve: true,
+      },
+    });
+
+    const countJobNotPreserve = await jobDefine(this.db).count({
+      where: {
+        entity_id: entityId,
+        preserve: false,
+      },
+    });
+
+    const countJobToDelete =
+      countJobPreserve +
+      countJobNotPreserve -
+      parseInt(process.env.JOB_AMOUNT_HISTORY);
+    if (countJobToDelete <= 0) {
+      return [];
+    }
 
     const jobs = await jobDefine(this.db).findAll({
       where: {
@@ -156,17 +176,13 @@ export class jobController {
         preserve: false,
       },
       order: [["updatedAt", "ASC"]],
+      limit: countJobToDelete,
     });
 
-    let jobToDelete = 0;
-    if (jobs.length > jobAmountToPreserve) {
-      jobToDelete = jobs.length - jobAmountToPreserve;
-    }
-
     const jobDeleted = [];
-    for (let i = 0; i < jobToDelete; i++) {
-      jobDeleted.push(jobs[i].id);
-      await jobs[i].destroy();
+    for (const job of jobs) {
+      jobDeleted.push(job.id);
+      await job.destroy();
     }
 
     return jobDeleted;

@@ -152,8 +152,7 @@ const uploadFiles = async (
       status: true,
       htmlLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.html",
       jsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.json",
-      cleanJsonLocationUrl:
-        "/" + entityId + "/" + jobId + "/" + "cleanreport.json",
+      cleanJsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "summary.json",
     };
 
     //TODO: Integrazione completata - In attesa di bucket S3 per testing
@@ -167,7 +166,7 @@ const uploadFiles = async (
     );
     const cleanJsonLocationUrl = await s3Upload(
       cleanJsonReport,
-      entityId + "/" + jobId + "/" + "cleanreport.json"
+      entityId + "/" + jobId + "/" + "summary.json"
     );
 
     if (
