@@ -32,9 +32,7 @@ import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job
 import { entityController } from "../controller/entityController";
 import { jobController } from "../controller/jobController";
 import { dbWS } from "../database/connection";
-import {
-  allowedMunicipalitySubTypes,
-} from "../database/models/entity";
+import { allowedMunicipalitySubTypes } from "../database/models/entity";
 
 /**
  * @openapi
@@ -301,7 +299,7 @@ router.put(
       }
 
       if (type === "school") {
-        subtype = null
+        subtype = null;
       }
 
       const result = await new entityController(dbWS).create(req.body);

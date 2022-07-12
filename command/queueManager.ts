@@ -38,7 +38,8 @@ const command = yargs(hideBin(process.argv))
     type: "integer",
     demandOption: true,
     default: 14,
-  }).option("asservationOlderThanDays", {
+  })
+  .option("asservationOlderThanDays", {
     describe:
       "Giorni dopo i quali le entity asseverate vengono riaccodate per essere scansionate",
     type: "integer",
@@ -62,7 +63,9 @@ dbQM
 
     const passedOlderThanDays: number = parseInt(command.passedOlderThanDays);
     const failedOlderThanDays: number = parseInt(command.failedOlderThanDays);
-    const asservationOlderThanDays: number = parseInt(command.asservationOlderThanDays);
+    const asservationOlderThanDays: number = parseInt(
+      command.asservationOlderThanDays
+    );
     const maxItems: number = parseInt(command.maxItems);
 
     const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
@@ -82,22 +85,35 @@ dbQM
     let rescanEntityAsseveratedToBeAnalyzed = [];
     gapLimit = gapLimit - rescanEntityToBeAnalyzed.length;
     if (gapLimit > 0) {
-      rescanEntityAsseveratedToBeAnalyzed = await getRescanEntityAsseveratedToBeAnalyzed(
-        asservationOlderThanDays,
-        gapLimit
-      );
+      rescanEntityAsseveratedToBeAnalyzed =
+        await getRescanEntityAsseveratedToBeAnalyzed(
+          asservationOlderThanDays,
+          gapLimit
+        );
     }
 
     console.log(
       "TOTAL ENTITIES",
-      [...firstTimeEntityToBeAnalyzed, ...rescanEntityToBeAnalyzed, ...rescanEntityAsseveratedToBeAnalyzed].length
+      [
+        ...firstTimeEntityToBeAnalyzed,
+        ...rescanEntityToBeAnalyzed,
+        ...rescanEntityAsseveratedToBeAnalyzed,
+      ].length
     );
     console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
     console.log("RESCAN ENTITIES", rescanEntityToBeAnalyzed.length);
-    console.log("RESCAN ASSEVERATED ENTITIES", rescanEntityAsseveratedToBeAnalyzed.length);
+    console.log(
+      "RESCAN ASSEVERATED ENTITIES",
+      rescanEntityAsseveratedToBeAnalyzed.length
+    );
 
     if (firstTimeEntityToBeAnalyzed.length > 0) {
-      await generateJobs(firstTimeEntityToBeAnalyzed, crawlerQueue, true, preserveReasons[0]);
+      await generateJobs(
+        firstTimeEntityToBeAnalyzed,
+        crawlerQueue,
+        true,
+        preserveReasons[0]
+      );
     }
 
     if (rescanEntityToBeAnalyzed.length > 0) {
@@ -105,7 +121,11 @@ dbQM
     }
 
     if (rescanEntityAsseveratedToBeAnalyzed.length > 0) {
-      await generateJobs(rescanEntityAsseveratedToBeAnalyzed, crawlerQueue, false);
+      await generateJobs(
+        rescanEntityAsseveratedToBeAnalyzed,
+        crawlerQueue,
+        false
+      );
     }
 
     const counts = await crawlerQueue.getJobCounts(
@@ -201,7 +221,7 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
     {
       replacements: {
         limit: limit,
-        filterDate: dateFormat(filterDate, "yyyy-mm-dd")
+        filterDate: dateFormat(filterDate, "yyyy-mm-dd"),
       },
       type: QueryTypes.RAW,
     }
@@ -218,7 +238,7 @@ const generateJobs = async (
   entities,
   crawlerQueue,
   preserve = false,
-  preserve_reason = null,
+  preserve_reason = null
 ): Promise<void> => {
   for (const entity of entities) {
     try {
@@ -245,7 +265,7 @@ const generateJobs = async (
 
       if (preserve) {
         createObj.preserve = true;
-        createObj.preserve_reason = preserve_reason
+        createObj.preserve_reason = preserve_reason;
       }
 
       const jobObj = await jobDefine(dbQM, false).create(createObj);
