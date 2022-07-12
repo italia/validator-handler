@@ -159,7 +159,7 @@ const getRescanEntityToBeAnalyzed = async (
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
                  LEFT OUTER JOIN "Jobs" J2 ON (E.id = J2.entity_id AND\
                  (J1."updatedAt" < J2."updatedAt" OR (J1."updatedAt" = J2."updatedAt" AND J1.id < J2.id)))\
-                 WHERE E.enable = TRUE AND E.asseverationJobId IS NULL AND J2.id IS NULL 
+                 WHERE E.enable = TRUE AND E."asseverationJobId" IS NULL AND J2.id IS NULL 
                     AND (J1.status='ERROR' 
                         OR (J1.status = 'PASSED' AND DATE(J1."updatedAt") > DATE(:passedDate))\
                         OR (J1.status = 'FAILED' AND DATE(J1."updatedAt") > DATE(:failedDate))\
@@ -195,7 +195,7 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
     `SELECT E.id\
                  FROM "Entities" AS E\
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
-                 WHERE E.enable = TRUE AND E.asseverationJobId NOT IS NULL
+                 WHERE E.enable = TRUE AND E."asseverationJobId" IS NOT NULL
                     AND DATE(J1."updatedAt") > DATE(:filterDate)
                  ORDER BY J1.status DESC, J1."updatedAt" LIMIT :limit`,
     {
