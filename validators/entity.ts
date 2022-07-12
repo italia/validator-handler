@@ -12,6 +12,7 @@ const create = async (body: createBody): Promise<boolean> => {
       url: { type: "string", minLength: 1 },
       enable: { type: "boolean", minLength: 1 },
       type: { type: "string", minLength: 1, enum: ["school", "municipality"] },
+      asseverationJobId: { type: "string" },
       subtype: {
         type: "string",
         enum: [
@@ -35,7 +36,7 @@ const update = async (body: updateBody): Promise<boolean> => {
     properties: {
       url: { type: "string", minLength: 1 },
       enable: { type: "boolean", minLength: 1 },
-      status: { type: "boolean", minLength: 1 },
+      asseverationJobId: { type: "string", minLength: 1 },
     },
 
     anyOf: [
@@ -46,7 +47,7 @@ const update = async (body: updateBody): Promise<boolean> => {
         required: ["enable"],
       },
       {
-        required: ["status"],
+        required: ["asseverationJobId"],
       },
     ],
   };

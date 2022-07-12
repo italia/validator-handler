@@ -31,10 +31,10 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
-  status: {
-    type: DataTypes.BOOLEAN,
+  asseverationJobId: {
+    type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: false,
+    defaultValue: null,
   },
   type: {
     type: DataTypes.STRING,
