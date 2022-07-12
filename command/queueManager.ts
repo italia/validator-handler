@@ -37,6 +37,12 @@ const command = yargs(hideBin(process.argv))
     type: "integer",
     demandOption: true,
     default: 14,
+  }).option("asservationOlderThanDays", {
+    describe:
+      "Giorni dopo i quali le entity asseverate vengono riaccodate per essere scansionate",
+    type: "integer",
+    demandOption: true,
+    default: 28,
   }).argv;
 
 dbQM
@@ -55,6 +61,7 @@ dbQM
 
     const passedOlderThanDays: number = parseInt(command.passedOlderThanDays);
     const failedOlderThanDays: number = parseInt(command.failedOlderThanDays);
+    const asservationOlderThanDays: number = parseInt(command.asservationOlderThanDays);
     const maxItems: number = parseInt(command.maxItems);
 
     const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
@@ -62,7 +69,7 @@ dbQM
     );
 
     let rescanEntityToBeAnalyzed = [];
-    const gapLimit: number = maxItems - firstTimeEntityToBeAnalyzed.length;
+    let gapLimit: number = maxItems - firstTimeEntityToBeAnalyzed.length;
     if (gapLimit > 0) {
       rescanEntityToBeAnalyzed = await getRescanEntityToBeAnalyzed(
         passedOlderThanDays,
@@ -71,12 +78,22 @@ dbQM
       );
     }
 
+    let rescanEntityAsseveratedToBeAnalyzed = [];
+    gapLimit = gapLimit - rescanEntityToBeAnalyzed.length;
+    if (gapLimit > 0) {
+      rescanEntityAsseveratedToBeAnalyzed = await getRescanEntityAsseveratedToBeAnalyzed(
+        asservationOlderThanDays,
+        gapLimit
+      );
+    }
+
     console.log(
       "TOTAL ENTITIES",
-      [...firstTimeEntityToBeAnalyzed, ...rescanEntityToBeAnalyzed].length
+      [...firstTimeEntityToBeAnalyzed, ...rescanEntityToBeAnalyzed, ...rescanEntityAsseveratedToBeAnalyzed].length
     );
     console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
     console.log("RESCAN ENTITIES", rescanEntityToBeAnalyzed.length);
+    console.log("RESCAN ASSEVERATED ENTITIES", rescanEntityAsseveratedToBeAnalyzed.length);
 
     if (firstTimeEntityToBeAnalyzed.length > 0) {
       await generateJobs(firstTimeEntityToBeAnalyzed, crawlerQueue, true);
@@ -84,6 +101,10 @@ dbQM
 
     if (rescanEntityToBeAnalyzed.length > 0) {
       await generateJobs(rescanEntityToBeAnalyzed, crawlerQueue, false);
+    }
+
+    if (rescanEntityAsseveratedToBeAnalyzed.length > 0) {
+      await generateJobs(rescanEntityAsseveratedToBeAnalyzed, crawlerQueue, false);
     }
 
     const counts = await crawlerQueue.getJobCounts(
@@ -137,7 +158,7 @@ const getRescanEntityToBeAnalyzed = async (
                  JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
                  LEFT OUTER JOIN "Jobs" J2 ON (E.id = J2.entity_id AND\
                  (J1."updatedAt" < J2."updatedAt" OR (J1."updatedAt" = J2."updatedAt" AND J1.id < J2.id)))\
-                 WHERE E.enable = TRUE AND J2.id IS NULL 
+                 WHERE E.enable = TRUE AND E.asseverationJobId IS NULL AND J2.id IS NULL 
                     AND (J1.status='ERROR' 
                         OR (J1.status = 'PASSED' AND DATE(J1."updatedAt") > DATE(:passedDate))\
                         OR (J1.status = 'FAILED' AND DATE(J1."updatedAt") > DATE(:failedDate))\
@@ -148,6 +169,38 @@ const getRescanEntityToBeAnalyzed = async (
         limit: limit,
         passedDate: dateFormat(passedDate, "yyyy-mm-dd"),
         failedDate: dateFormat(failedDate, "yyyy-mm-dd"),
+      },
+      type: QueryTypes.RAW,
+    }
+  );
+
+  if (rescanEntityToBeAnalyzed[0].length > 0) {
+    returnValues = rescanEntityToBeAnalyzed[0];
+  }
+
+  return returnValues;
+};
+
+const getRescanEntityAsseveratedToBeAnalyzed = async (
+  jobOlderThanDays: number,
+  limit: number
+) => {
+  let returnValues = [];
+
+  const filterDate = new Date();
+  filterDate.setDate(filterDate.getDate() + jobOlderThanDays);
+
+  const rescanEntityToBeAnalyzed = await dbQM.query(
+    `SELECT E.id\
+                 FROM "Entities" AS E\
+                 JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
+                 WHERE E.enable = TRUE AND E.asseverationJobId NOT IS NULL
+                    AND DATE(J1."updatedAt") > DATE(:filterDate)
+                 ORDER BY J1.status DESC, J1."updatedAt" LIMIT :limit`,
+    {
+      replacements: {
+        limit: limit,
+        filterDate: dateFormat(filterDate, "yyyy-mm-dd")
       },
       type: QueryTypes.RAW,
     }
