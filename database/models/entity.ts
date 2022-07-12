@@ -32,7 +32,7 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
   },
   asseverationJobId: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     defaultValue: null,
   },
   type: {
