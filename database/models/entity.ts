@@ -11,7 +11,6 @@ const allowedMunicipalitySubTypes = [
   "municipality-informed-citizen",
   "municipality-informed-active-citizen",
 ];
-const allowedSchoolSubtypes = ["school-compliance-criteria"];
 
 const structure: ModelAttributes<Entity, Attributes<Entity>> = {
   id: {
@@ -47,7 +46,7 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
     type: DataTypes.STRING,
     allowNull: true,
     validate: {
-      isIn: [[...allowedMunicipalitySubTypes, ...allowedSchoolSubtypes]],
+      isIn: [[...allowedMunicipalitySubTypes]],
     },
   },
   createdAt: DataTypes.DATE,
@@ -75,5 +74,4 @@ export {
   syncTable,
   define,
   allowedMunicipalitySubTypes,
-  allowedSchoolSubtypes,
 };

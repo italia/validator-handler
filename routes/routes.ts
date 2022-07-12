@@ -34,7 +34,6 @@ import { jobController } from "../controller/jobController";
 import { dbWS } from "../database/connection";
 import {
   allowedMunicipalitySubTypes,
-  allowedSchoolSubtypes,
 } from "../database/models/entity";
 
 /**
@@ -292,7 +291,7 @@ router.put(
       await entityCreateValidation(req.body);
 
       const type = req.body.type;
-      const subtype = req.body.subtype;
+      let subtype = req.body.subtype ?? "";
 
       if (
         type === "municipality" &&
@@ -301,8 +300,8 @@ router.put(
         throw new Error("Invalid subtype for passed type");
       }
 
-      if (type === "school" && !allowedSchoolSubtypes.includes(subtype)) {
-        throw new Error("Invalid subtype for passed type");
+      if (type === "school") {
+        subtype = null
       }
 
       const result = await new entityController(dbWS).create(req.body);

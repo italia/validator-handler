@@ -3,6 +3,8 @@
 import { createBody, updateBody } from "../types/entity";
 import { define as entityDefine } from "../database/models/entity";
 import { Sequelize } from "sequelize";
+import { jobController } from "./jobController";
+import {dbWS} from "../database/connection";
 
 export class entityController {
   db;
@@ -33,7 +35,6 @@ export class entityController {
       external_id: entityCreateBody.external_id,
       url: entityCreateBody.url,
       enable: entityCreateBody.enable,
-      asseverationJobId: entityCreateBody.asseverationJobId,
       type: entityCreateBody.type,
       subtype: entityCreateBody.subtype,
     });
@@ -58,10 +59,26 @@ export class entityController {
     }
 
     if ("asseverationJobId" in entityUpdateBody) {
-      updateObj = {
-        ...updateObj,
-        ...{ asseverationJobId: entityUpdateBody.asseverationJobId },
-      };
+
+      const result = await new jobController(dbWS).updatePreserve(
+        entityExternalId,
+        parseInt(entityUpdateBody.asseverationJobId),
+        {
+          value: true,
+          reason: "scansione asseverata"
+        }
+      );
+
+      if (result) {
+        updateObj = {
+          ...updateObj,
+          ...{ asseverationJobId: entityUpdateBody.asseverationJobId },
+        };
+      }
+    }
+
+    if ("subtype" in entityUpdateBody) {
+      updateObj = { ...updateObj, ...{ subtype: entityUpdateBody.subtype } };
     }
 
     const result = await entity.update(updateObj);
