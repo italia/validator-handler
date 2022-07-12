@@ -4,10 +4,11 @@ export interface createBody {
   enable: boolean;
   type: string;
   subtype: string;
+  asseverationJobId: string;
 }
 
 export interface updateBody {
   url: string;
   enable: boolean;
-  status: boolean;
+  asseverationJobId: string;
 }

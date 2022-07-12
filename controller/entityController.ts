@@ -33,7 +33,7 @@ export class entityController {
       external_id: entityCreateBody.external_id,
       url: entityCreateBody.url,
       enable: entityCreateBody.enable,
-      status: false,
+      asseverationJobId: entityCreateBody.asseverationJobId,
       type: entityCreateBody.type,
       subtype: entityCreateBody.subtype,
     });
@@ -57,8 +57,11 @@ export class entityController {
       updateObj = { ...updateObj, ...{ enable: entityUpdateBody.enable } };
     }
 
-    if ("status" in entityUpdateBody) {
-      updateObj = { ...updateObj, ...{ status: entityUpdateBody.status } };
+    if ("asseverationJobId" in entityUpdateBody) {
+      updateObj = {
+        ...updateObj,
+        ...{ asseverationJobId: entityUpdateBody.asseverationJobId },
+      };
     }
 
     const result = await entity.update(updateObj);

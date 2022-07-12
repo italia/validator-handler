@@ -18,6 +18,7 @@ export interface createEntityBodyType<>extends express.Request {
     enable: boolean;
     type: string;
     subtype: string;
+    asseverationJobId: string;
   };
 }
 
@@ -25,7 +26,7 @@ export interface updateEntityBodyType<>extends express.Request {
   body: {
     url: string;
     enable: boolean;
-    status: boolean;
+    asseverationJobId: string;
   };
 }
 
