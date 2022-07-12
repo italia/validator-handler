@@ -285,7 +285,7 @@ const isPassedReport = async (
   }
 
   const subtype = entityObj.subtype;
-  if (!subtype) {
+  if (!subtype && entityObj.type === "municipality") {
     return passed;
   }
 

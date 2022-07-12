@@ -13,6 +13,7 @@ import { define as entityDefine } from "../database/models/entity";
 import { define as jobDefine } from "../database/models/job";
 import { Queue } from "bullmq";
 import { Entity } from "../types/models";
+import { preserveReasons } from "../database/models/job";
 
 const command = yargs(hideBin(process.argv))
   .usage(
@@ -96,7 +97,7 @@ dbQM
     console.log("RESCAN ASSEVERATED ENTITIES", rescanEntityAsseveratedToBeAnalyzed.length);
 
     if (firstTimeEntityToBeAnalyzed.length > 0) {
-      await generateJobs(firstTimeEntityToBeAnalyzed, crawlerQueue, true);
+      await generateJobs(firstTimeEntityToBeAnalyzed, crawlerQueue, true, preserveReasons[0]);
     }
 
     if (rescanEntityToBeAnalyzed.length > 0) {
@@ -216,7 +217,8 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
 const generateJobs = async (
   entities,
   crawlerQueue,
-  preserve = false
+  preserve = false,
+  preserve_reason = null,
 ): Promise<void> => {
   for (const entity of entities) {
     try {
@@ -238,10 +240,12 @@ const generateJobs = async (
         s3_json_url: null,
         json_result: null,
         preserve: false,
+        preserve_reason: null,
       };
 
       if (preserve) {
         createObj.preserve = true;
+        createObj.preserve_reason = preserve_reason
       }
 
       const jobObj = await jobDefine(dbQM, false).create(createObj);
