@@ -56,6 +56,9 @@ export const swaggerDefinition = {
         enable: {
           type: "boolean",
         },
+        asseverationJobId: {
+          type: "string",
+        },
         type: {
           type: "string",
         },

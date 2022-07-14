@@ -327,6 +327,7 @@ router.put(
  *               url: https://www.comune.cagliari.it/
  *               enable: false
  *               status: true
+ *               asseverationJobId: 1
  *     security:
  *       - bearerAuth: []
  *     parameters:
