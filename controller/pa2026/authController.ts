@@ -33,7 +33,6 @@ export class authController {
       console.log("TOKEN CREATED");
 
       tokenInfo = await this.retrieveToken();
-
       return await tokenDefine(this.db).create({
         value: tokenInfo.value,
         instanceUrl: tokenInfo.instanceUrl,
@@ -50,7 +49,6 @@ export class authController {
       console.log("TOKEN UPDATED");
 
       tokenInfo = await this.retrieveToken();
-
       return await tokens[0].update({
         value: tokenInfo.value,
         instanceUrl: tokenInfo.instanceUrl,
