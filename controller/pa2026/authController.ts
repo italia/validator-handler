@@ -5,13 +5,13 @@ dotenv.config();
 
 import querystring from "querystring";
 import { Sequelize } from "sequelize";
-import { define as tokenDefine } from "../database/models/token";
-import { post } from "../utils/https-request";
-import { response } from "../types/https-request";
-import { Token } from "../types/models";
-import { integrationTokenInfo } from "../types/token";
+import { define as tokenDefine } from "../../database/models/token";
+import { post } from "../../utils/https-request";
+import { response } from "../../types/https-request";
+import { Token } from "../../types/models";
+import { integrationTokenInfo } from "../../types/token";
 
-export class tokenController {
+export class authController {
   db;
 
   constructor(db: Sequelize) {
@@ -30,7 +30,7 @@ export class tokenController {
 
     let tokenInfo: integrationTokenInfo;
     if (tokens.length <= 0) {
-      console.log("TOKEN CREATION");
+      console.log("TOKEN CREATED");
 
       tokenInfo = await this.retrieveToken();
 
