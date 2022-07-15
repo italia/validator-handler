@@ -27,6 +27,10 @@ const updateQuery =
   "AND ID_Crawler__c !=null " +
   "AND Attivita_completata__c= true";
 
+//TODO: Terza query --> GetEntityInEndProcess (entità che sono in processo finale) --> Mi verrà ritornato l'externalID, IDCrawler, IDJobAsseverato e STATUS della entity di PA2026 (status di processo)
+//TODO: Se lo status è completato prendo il campo IDJobAsseverato e vado inserirlo nella Entity in questione (vado in update) --> Prendo il JOB (solo se esiste) e lo metto in PRESERVE con la reason "asseverato" --> Si fa poi una chiamata di Update passando l'externalID (con un flag da passare a TRUE)
+//TODO: Se lo status è != completato (sarà un listato TBD) l'IDJobAsseverato sarà NULL --> Il campo enable della Entity diventa FALSE
+
 export class integrationController {
   db;
 
@@ -55,39 +59,19 @@ export class integrationController {
     return await get(host, path, headers, { q: query });
   }
 
-  async createOrUpdate(operation: string): Promise<Entity[] | []> {
-    let query;
-    switch (operation) {
-      case "create":
-        query = createQuery;
-        break;
-      case "update":
-        query = updateQuery;
-        break;
+  //TODO: dopo aver creato l'entity sul DB chiamare PA2026 e passare l'ID della Entity e l'externalID
+  async create(): Promise<Entity[] | []> {
+    const createResult = await this.executeQueryAPI(createQuery);
+
+    if (!createResult || createResult?.statusCode !== 200 || !createResult?.data) {
+      throw new Error("PA2026 update API failed: " + JSON.stringify(createResult));
     }
 
-    const result = await this.executeQueryAPI(query);
-
-    if (!result || result?.statusCode !== 200 || !result?.data) {
-      throw new Error("PA2026 update API failed: " + JSON.stringify(result));
-    }
-
-    const records = result.data.records;
+    const records = createResult.data.records;
     if (records.length < 0) {
       return [];
     }
 
-    let returnValues: Entity[] = [];
-    if (operation === "create") {
-      returnValues = await this.create(records);
-    } else if (operation === "update") {
-      returnValues = await this.update(records);
-    }
-
-    return returnValues;
-  }
-
-  async create(records): Promise<Entity[] | []> {
     const createdEntities: Entity[] = [];
     for (const record of records) {
       const externalId = record.Id ?? "";
@@ -111,6 +95,7 @@ export class integrationController {
         subtype = null;
       }
 
+      //TODO: Verificare se esiste
       const newEntity: Entity = await new entityController(this.db).create({
         external_id: externalId,
         url: url,
@@ -129,12 +114,25 @@ export class integrationController {
     return createdEntities;
   }
 
-  async update(records): Promise<Entity[] | []> {
+  //TODO: arrivano tutte le PA che hanno URL diverso rispetto quello dell'ultima scansione --> Update dell'URL nella Entity --> Fare sempre l'update
+  async update(): Promise<Entity[] | []> {
+    const updateResult = await this.executeQueryAPI(createQuery);
+
+    if (!updateResult || updateResult?.statusCode !== 200 || !updateResult?.data) {
+      throw new Error("PA2026 update API failed: " + JSON.stringify(updateResult));
+    }
+
+    const records = updateResult.data.records;
+    if (records.length < 0) {
+      return [];
+    }
+
     const updatedEntities: Entity[] = [];
     for (const record of records) {
       const externalId = record.Id ?? "";
+      const url = record.Url_Sito_Internet__c ?? "";
 
-      if (!externalId) {
+      if (!externalId || !url) {
         continue;
       }
 
@@ -145,7 +143,9 @@ export class integrationController {
         continue;
       }
 
-      const updatedEntity: Entity = await entityToUpdate.update({});
+      const updatedEntity: Entity = await entityToUpdate.update({
+        url: url
+      });
 
       if (!updatedEntity) {
         continue;
@@ -155,5 +155,13 @@ export class integrationController {
     }
 
     return updatedEntities;
+  }
+
+  async push () {
+
+  }
+
+  async endProcess() {
+
   }
 }
