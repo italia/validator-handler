@@ -1,11 +1,11 @@
 "use strict";
 
-import { dbSM } from "./database/connection";
+import { dbRoot } from "./database/connection";
 
-dbSM
+dbRoot
   .authenticate()
   .then(async () => {
-    console.log("test");
+    console.log("Temporary test command");
   })
   .catch((err) => {
     console.error("Error: ", err);

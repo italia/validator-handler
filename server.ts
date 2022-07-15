@@ -3,9 +3,11 @@ dotenv.config();
 
 import express from "express";
 import bodyParser from "body-parser";
+import cron from "node-cron";
 const port = process.env.PORT || 3000;
 import router from "./routes/routes";
 import { dbWS } from "./database/connection";
+import { run as runUpdateToken } from "./cron/pa2026TokenCron";
 
 import basicAuth from "express-basic-auth";
 const basicAuthMiddleware = basicAuth({
@@ -35,6 +37,11 @@ dbWS
     app.listen(port, async function () {
       console.log(`[WEBSERVER]: Server is listening on port ${port}!`);
       console.log(`[WEBSERVER]: Database ${dbWS.getDatabaseName()} connected!`);
+
+      //* At minute 0 of every hour */
+      await cron.schedule("0 * * * *", async () => {
+        await runUpdateToken();
+      });
     });
   })
   .catch((err) => {
