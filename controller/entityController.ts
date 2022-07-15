@@ -5,6 +5,7 @@ import { define as entityDefine } from "../database/models/entity";
 import { Sequelize } from "sequelize";
 import { jobController } from "./jobController";
 import { dbWS } from "../database/connection";
+import { Entity } from "../types/models";
 
 export class entityController {
   db;
@@ -13,7 +14,7 @@ export class entityController {
     this.db = db;
   }
 
-  async retrieve(entityExternalId: string) {
+  async retrieve(entityExternalId: string): Promise<Entity> {
     return await entityDefine(this.db).findOne({
       where: {
         external_id: entityExternalId,
@@ -25,21 +26,19 @@ export class entityController {
     return await entityDefine(this.db).findByPk(entityId);
   }
 
-  async create(entityCreateBody: createBody) {
-    const entity = await this.retrieve(entityCreateBody.external_id);
+  async create(entityCreateBody: createBody): Promise<Entity> {
+    const entity: Entity = await this.retrieve(entityCreateBody.external_id);
     if (entity !== null) {
       throw new Error("Entity already exists for the passed id");
     }
 
-    const result = await entityDefine(this.db).create({
+    return await entityDefine(this.db).create({
       external_id: entityCreateBody.external_id,
       url: entityCreateBody.url,
       enable: entityCreateBody.enable,
       type: entityCreateBody.type,
       subtype: entityCreateBody.subtype,
     });
-
-    return result.toJSON();
   }
 
   async update(entityExternalId: string, entityUpdateBody: updateBody) {

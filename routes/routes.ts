@@ -33,6 +33,7 @@ import { entityController } from "../controller/entityController";
 import { jobController } from "../controller/jobController";
 import { dbWS } from "../database/connection";
 import { allowedMunicipalitySubTypes } from "../database/models/entity";
+import { Entity } from "../types/models";
 
 /**
  * @openapi
@@ -302,9 +303,9 @@ router.put(
         subtype = null;
       }
 
-      const result = await new entityController(dbWS).create(req.body);
+      const result: Entity = await new entityController(dbWS).create(req.body);
 
-      return succesResponse(result, res);
+      return succesResponse(result.toJSON(), res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }

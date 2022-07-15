@@ -1,7 +1,7 @@
 "use strict";
 
 import { dbRoot } from "../../database/connection";
-import { authController } from "../../controller/pa2026/authController";
+import { authController } from "../../controller/PA2026/authController";
 import { Token } from "../../types/models";
 
 dbRoot

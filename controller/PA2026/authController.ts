@@ -30,9 +30,8 @@ export class authController {
 
     let tokenInfo: integrationTokenInfo;
     if (tokens.length <= 0) {
-      console.log("TOKEN CREATED");
-
       tokenInfo = await this.retrieveToken();
+
       return await tokenDefine(this.db).create({
         value: tokenInfo.value,
         instanceUrl: tokenInfo.instanceUrl,
@@ -46,9 +45,8 @@ export class authController {
     const currentDate = Date.now();
 
     if (currentDate > expirationDate) {
-      console.log("TOKEN UPDATED");
-
       tokenInfo = await this.retrieveToken();
+
       return await tokens[0].update({
         value: tokenInfo.value,
         instanceUrl: tokenInfo.instanceUrl,

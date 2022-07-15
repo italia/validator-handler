@@ -48,7 +48,7 @@ const put = async (host, path, headers, payload): Promise<response> => {
 };
 
 const get = async (host, path, headers, params): Promise<response> => {
-  const querystringVal = querystring.stringify(params);
+  const querystringVal = await querystring.stringify(params);
 
   if (querystringVal) {
     path = path + "?" + querystringVal;
