@@ -13,6 +13,8 @@
     "ts-queue-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/queueManager.ts",
     "ts-scan-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/scanManager.ts",
     "ts-token-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/pa2026/authManager.ts",
+    "ts-integration-manager-create": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/pa2026/integrationManager.ts --type create",
+    "ts-integration-manager-update": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/pa2026/integrationManager.ts --type update",
     "ts-test": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./test-command.ts",
     "build": "tsc && cp -rp ./.env ./dist && cp -rp ./.env.example ./dist",
     "format:check": "prettier -c .",
