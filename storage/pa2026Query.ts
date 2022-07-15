@@ -1,0 +1,4 @@
+export const query = {
+  create: "SELECT id,Url_Sito_Internet__c, Codice_amministrativo__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null AND Attivita_completata__c= true",
+  update: "SELECT id,Url_Sito_Internet__c, Codice_amministrativo__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null AND Attivita_completata__c= true",
+};
