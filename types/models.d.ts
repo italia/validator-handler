@@ -49,3 +49,15 @@ export class User extends Model<
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
+
+export class Token extends Model<
+  InferAttributes<Token>,
+  InferCreationAttributes<Token>
+> {
+  declare id: number;
+  declare value: string;
+  declare instanceUrl: string;
+  declare expirationDate: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}

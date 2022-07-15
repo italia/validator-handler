@@ -18,8 +18,8 @@ elif [[ "$DISTRIBUTION_TYPE" == "javascript" ]]; then
 fi
 
 TABLENAME=''
-read -p "Enter table to deploy (all|entity|job|user): " TABLE
-if [[ "$TABLE" != "all" && "$TABLE" != "entity" && "$TABLE" != "job" && "$TABLE" != "user" ]]; then
+read -p "Enter table to deploy (all|entity|job|user|token): " TABLE
+if [[ "$TABLE" != "all" && "$TABLE" != "entity" && "$TABLE" != "job" && "$TABLE" != "user" && "$TABLE" != "token" ]]; then
    echo "Invalid table"
    exit
 fi
@@ -36,6 +36,10 @@ case $TABLE in
 
   user)
     TABLENAME='user'
+    ;;
+
+  token)
+    TABLENAME='token'
     ;;
 
   all)
