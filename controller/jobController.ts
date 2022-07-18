@@ -148,6 +148,8 @@ export class jobController {
   }
 
   async cleanJobs(entityId: number): Promise<number[]> {
+    //TODO: se è PROGRESS o PENDING e si mettono in FAILED se la data di creazione della tupla supera i X giorni --> TBD?
+
     const countJobPreserve = await jobDefine(this.db).count({
       where: {
         entity_id: entityId,
@@ -186,5 +188,62 @@ export class jobController {
     }
 
     return jobDeleted;
+  }
+
+  async manageInProgressJobInError() {
+    const jobsUpdated = []
+
+    try {
+      let date = new Date()
+      date.setTime(date.getTime() + (1000 * 60 * 60 * parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)))
+
+      const inProgressJobsInError: Job[] = await jobDefine(this.db).findAll({
+        where: {
+          status: "IN_PROGRESS",
+          start_at: {
+            [Op.lt]: date
+          }
+        },
+      });
+
+
+      for (const job of inProgressJobsInError) {
+        const result = await job.update({
+          status: "ERROR"
+        })
+
+        if (result) {
+          jobsUpdated.push(result)
+        }
+      }
+
+      return jobsUpdated
+    } catch (e) {
+      return jobsUpdated
+    }
+  }
+
+  async manageInPendingJobs() {
+    const jobsUpdated = []
+
+    try {
+      let date = new Date()
+      date.setTime(date.getTime() + (1000 * 60 * 60 * parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)))
+
+      const inPendingJobs: Job[] = await jobDefine(this.db).findAll({
+        where: {
+          status: "IN_PENDING",
+          createdAt: {
+            [Op.lt]: date
+          }
+        },
+      });
+
+      for (const job of inPendingJobs) {
+        //TODO: verificare coda redis (se elemento è in..)
+      }
+    } catch (e){
+      return jobsUpdated
+    }
   }
 }
