@@ -8,6 +8,7 @@ import { Op, Sequelize } from "sequelize";
 import { entityController } from "./entityController";
 import { preserveReasons } from "../database/models/job";
 import { define as jobDefine } from "../database/models/job";
+import { Queue } from "bullmq";
 
 export class jobController {
   db: Sequelize;
@@ -223,16 +224,22 @@ export class jobController {
     }
   }
 
-  async manageInPendingJobs() {
+  async manageInPendingJobs(queue: Queue) {
     const jobsUpdated = []
 
     try {
       let date = new Date()
       date.setTime(date.getTime() + (1000 * 60 * 60 * parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)))
 
+      const jobInQueue = await queue.getJobs()
+      const ids = jobInQueue.map(function(obj) { return obj.id })
+
       const inPendingJobs: Job[] = await jobDefine(this.db).findAll({
         where: {
           status: "IN_PENDING",
+          id: {
+            [Op.notIn]: ids
+          },
           createdAt: {
             [Op.lt]: date
           }
@@ -240,7 +247,7 @@ export class jobController {
       });
 
       for (const job of inPendingJobs) {
-        //TODO: verificare coda redis (se elemento è in..)
+        await queue.add("job", { id: job.id });
       }
     } catch (e){
       return jobsUpdated
