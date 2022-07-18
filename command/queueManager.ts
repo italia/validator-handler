@@ -66,7 +66,7 @@ dbQM
     const inProgressJobInError = await new jobController(dbQM).manageInProgressJobInError()
     console.log('MANAGE JOB IN "ERROR": ', inProgressJobInError)
 
-    const inPendingJob = await new jobController(dbQM).manageInPendingJobs()
+    const inPendingJob = await new jobController(dbQM).manageInPendingJobs(crawlerQueue)
     console.log('MANAGE JOB IN "IN_PENDING": ', inPendingJob)
 
     const maxItems: number = parseInt(command.maxItems);
