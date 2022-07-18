@@ -47,13 +47,13 @@ const getRescanEntityToBeAnalyzed = async (
 
 
     const rescanEntityToBeAnalyzed = await dbQM.query(
-      `SELECT E.id as "ENTITY_ID", J.id as "jobID", J.status as "STATUS", J.end_at as "DATE"
+      `SELECT E.id
            FROM "Entities" as E JOIN "Jobs" AS J on E.id = J.entity_id
            WHERE E.enable = TRUE AND E."asseverationJobId" IS NULL AND
               (
                   (J.status = 'ERROR') OR
-                  (J.status = 'PASSED' AND DATE(J."end_at") < DATE(:passedDate) OR
-                  (J.status = 'FAILED' AND DATE(J."end_at") < DATE(:failedDate)
+                  (J.status = 'PASSED' AND DATE(J."end_at") < DATE(:passedDate)) OR
+                  (J.status = 'FAILED' AND DATE(J."end_at") < DATE(:failedDate))
               )
            AND J.id = (
              SELECT max(J2.id)
@@ -96,12 +96,19 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
     filterDate.setDate(filterDate.getDate() + asservationOlderThanDays);
 
     const rescanEntityToBeAnalyzed = await dbQM.query(
-      `SELECT E.id\
-                 FROM "Entities" AS E\
-                 JOIN "Jobs" J1 ON (E.id = J1.entity_id)\
-                 WHERE E.enable = TRUE AND E."asseverationJobId" IS NOT NULL
-                    AND DATE(J1."updatedAt") > DATE(:filterDate)
-                 ORDER BY J1.status DESC, J1."updatedAt" LIMIT :limit`,
+      `SELECT E.id
+           FROM "Entities" as E JOIN "Jobs" AS J on E.id = J.entity_id
+           WHERE E.enable = TRUE AND E."asseverationJobId" IS NOT NULL AND
+              (
+                  ((J.status != 'PASSED' OR J.status != 'FAILED') AND DATE(J."updatedAt") < DATE(:filterDate)) OR
+                  ((J.status = 'PASSED' OR J.status = 'FAILED') AND DATE(J."end_at") < DATE(:filterDate))
+              )
+           AND J.id = (
+             SELECT max(J2.id)
+             FROM "Entities" as E2 JOIN "Jobs" J2 ON E2.id = J2.entity_id
+             WHERE E.id = J2.entity_id
+            )
+           LIMIT :limit`,
       {
         replacements: {
           limit: limit,
