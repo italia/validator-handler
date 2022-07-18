@@ -67,6 +67,8 @@ const scan = async (jobId) => {
       start_at: Date.now(),
     });
 
+    //TODO: funcion che prende start at __> se è in progress e start date > 2h --> mette in Error
+
     const jobObjParsed = jobObj.toJSON();
     const lighthouseResult = await run(
       jobObjParsed.scan_url,
