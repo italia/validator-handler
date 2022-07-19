@@ -68,7 +68,7 @@ const mapPA2026Body = async (
 
   const key = isFirstScan ? "1" : "n";
 
-  let initialBody = [];
+  const initialBody = [];
   initialBody[`Status_Generale_${key}__c`] = generalStatus;
   (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
     (initialBody[`ID_Crawler_Job_${key}__c`] = job.id),

@@ -21,7 +21,6 @@ import {
 } from "../controller/auditController";
 import { jobController } from "../controller/jobController";
 import { mapPA2026Body } from "../utils/utils";
-import { patch } from "../utils/https-request";
 import { callPatch } from "../controller/PA2026/integrationController";
 import { entityController } from "../controller/entityController";
 

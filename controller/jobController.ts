@@ -9,7 +9,6 @@ import { entityController } from "./entityController";
 import { preserveReasons } from "../database/models/job";
 import { define as jobDefine } from "../database/models/job";
 import { Queue } from "bullmq";
-import { define as entityDefine } from "../database/models/entity";
 
 export class jobController {
   db: Sequelize;
@@ -203,7 +202,7 @@ export class jobController {
     const jobsUpdated = [];
 
     try {
-      let date = new Date();
+      const date = new Date();
       date.setTime(
         date.getTime() +
           1000 * 60 * 60 * parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)
@@ -238,7 +237,7 @@ export class jobController {
     const jobsUpdated = [];
 
     try {
-      let date = new Date();
+      const date = new Date();
       date.setTime(
         date.getTime() +
           1000 * 60 * 60 * parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)

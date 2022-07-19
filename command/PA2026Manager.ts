@@ -36,7 +36,7 @@ const create = async () => {
     "AND Url_Sito_Internet__c !=null " +
     "AND ID_Crawler__c=null " +
     "AND Attivita_completata__c= true ";
-  let returnIds = [];
+  const returnIds = [];
 
   try {
     const createResult = await callQuery(createQuery);
@@ -109,7 +109,7 @@ const update = async () => {
     "AND ID_Crawler__c!=null " +
     "AND Stato_Progetto__c= ’COMPLETATO’ " +
     "AND Controllo_URL__c=false ";
-  let returnIds = [];
+  const returnIds = [];
 
   try {
     const updateResult = await callQuery(updateQuery);
@@ -128,7 +128,7 @@ const update = async () => {
         const externalId = record.Id ?? "";
         const url = record.Url_Sito_Internet__c ?? "";
 
-        let entity: Entity = await new entityController(dbWS).retrieve(
+        const entity: Entity = await new entityController(dbWS).retrieve(
           externalId
         );
 
@@ -161,7 +161,7 @@ const asseveration = async () => {
     "FROM outfunds__Funding_Request__c " +
     "WHERE Stato_Progetto__c IN ('IN VERIFICA', 'RESPINTO', 'IN LIQUIDAZIONE', 'LIQUIDATO', 'ANNULLATO', 'RINUNCIATO') " +
     "AND Progetto_Terminato__c=false ";
-  let returnIds = [];
+  const returnIds = [];
   try {
     const asseverationResult = await callQuery(asseverationQuery);
 
@@ -180,7 +180,7 @@ const asseveration = async () => {
         const asseverationJobId = record.ID_Crawler_Job_definitiva__c ?? "";
         const projectState = record.Stato_Progetto__c ?? "";
 
-        let entity: Entity = await new entityController(dbWS).retrieve(
+        const entity: Entity = await new entityController(dbWS).retrieve(
           externalId
         );
         if (!entity) {
@@ -197,7 +197,7 @@ const asseveration = async () => {
           projectState !== "ANNULLATO" &&
           projectState !== "RINUNCIATO"
         ) {
-          let job: Job = await new jobController(dbWS).getJobFromIdAndEntityId(
+          const job: Job = await new jobController(dbWS).getJobFromIdAndEntityId(
             asseverationJobId,
             entity.id
           );
@@ -273,7 +273,7 @@ const calculateTypeSubtype = async (packet) => {
 };
 
 const sendRetryJobInError = async () => {
-  let date = new Date();
+  const date = new Date();
   date.setHours(date.getHours() - 1);
 
   const jobs: Job[] = await jobDefine(dbWS).findAll({
