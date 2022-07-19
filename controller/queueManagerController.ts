@@ -35,8 +35,8 @@ const getRescanEntityToBeAnalyzed = async (
   let returnValues = [];
 
   try {
-    let passedOlderThanDays: number = parseInt(passedOlderThanDaysParam);
-    let failedOlderThanDays: number = parseInt(failedOlderThanDaysParam);
+    const passedOlderThanDays: number = parseInt(passedOlderThanDaysParam);
+    const failedOlderThanDays: number = parseInt(failedOlderThanDaysParam);
 
     const passedDate = new Date();
     passedDate.setDate(passedDate.getDate() - passedOlderThanDays);
@@ -86,7 +86,7 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
   let returnValues = [];
 
   try {
-    let asservationOlderThanDays: number = parseInt(jobOlderThanDaysParam);
+    const asservationOlderThanDays: number = parseInt(jobOlderThanDaysParam);
 
     const filterDate = new Date();
     filterDate.setDate(filterDate.getDate() + asservationOlderThanDays);
@@ -153,15 +153,10 @@ const generateJobs = async (
         preserve_reason: null,
       };
 
-      //TODO: Push a PA2026
-      //TODO: Quelli che hanno la reason "prima scansione" sono quelli a cui mando i dati della prima scansione e scansione N
-      //TODO: Quelli 1 e N sono popolati con gli stessi valori
       if (preserve) {
         createObj.preserve = true;
         createObj.preserve_reason = preserve_reason;
       }
-
-      //TODO: se non sono in una prima scansione mandare solo i campi N
 
       const jobObj = await jobDefine(dbQM, false).create(createObj);
       const parsedJob = jobObj.toJSON();

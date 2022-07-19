@@ -45,7 +45,7 @@ const callQuery = async (query: string, retry = 3) => {
   }
 
   try {
-    let tokenValues = await new tokenController(dbWS).retrieve();
+    const tokenValues = await new tokenController(dbWS).retrieve();
 
     const result = await get(
       tokenValues.instanceUrl,
@@ -72,7 +72,7 @@ const callPatch = async (body: object, path: string, retry = 3) => {
   }
 
   try {
-    let tokenValues = await new tokenController(dbWS).retrieve();
+    const tokenValues = await new tokenController(dbWS).retrieve();
 
     const result = await patch(
       tokenValues.instanceUrl,
