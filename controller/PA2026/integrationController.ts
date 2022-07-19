@@ -61,7 +61,9 @@ const callQuery = async (query: string, retry = 3) => {
     } else if (result?.statusCode === 401) {
       await new tokenController(dbWS).create();
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log("CALL QUERY EXCEPTION: ", JSON.stringify(e));
+  }
 
   return await callQuery(query, retry - 1);
 };
@@ -89,7 +91,9 @@ const callPatch = async (body: object, path: string, retry = 3) => {
     } else if (result?.statusCode === 401) {
       await new tokenController(dbWS).create();
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log("CALL PATCH EXCEPTION: ", JSON.stringify(e));
+  }
 
   return await callPatch(body, path, retry - 1);
 };

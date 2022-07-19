@@ -197,10 +197,9 @@ const asseveration = async () => {
           projectState !== "ANNULLATO" &&
           projectState !== "RINUNCIATO"
         ) {
-          const job: Job = await new jobController(dbWS).getJobFromIdAndEntityId(
-            asseverationJobId,
-            entity.id
-          );
+          const job: Job = await new jobController(
+            dbWS
+          ).getJobFromIdAndEntityId(asseverationJobId, entity.id);
 
           if (!job) {
             throw new Error(
@@ -273,31 +272,35 @@ const calculateTypeSubtype = async (packet) => {
 };
 
 const sendRetryJobInError = async () => {
-  const date = new Date();
-  date.setHours(date.getHours() - 1);
+  try {
+    const date = new Date();
+    date.setHours(date.getHours() - 1);
 
-  const jobs: Job[] = await jobDefine(dbWS).findAll({
-    where: {
-      [Op.and]: [
-        {
-          [Op.or]: [{ status: "PASSED" }, { status: "FAILED" }],
-        },
-        {
-          [Op.or]: [
-            { data_sent_status: "ERROR" },
-            {
-              [Op.and]: [
-                { data_sent_status: null },
-                { end_date: { [Op.lt]: date } },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  });
+    const jobs: Job[] = await jobDefine(dbWS).findAll({
+      where: {
+        [Op.and]: [
+          {
+            [Op.or]: [{ status: "PASSED" }, { status: "FAILED" }],
+          },
+          {
+            [Op.or]: [
+              { data_sent_status: "ERROR" },
+              {
+                [Op.and]: [
+                  { data_sent_status: null },
+                  { end_date: { [Op.lt]: date } },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
 
-  for (const job of jobs) {
-    await sendToPA2026(job, job.json_result, job.status === "PASSED");
+    for (const job of jobs) {
+      await sendToPA2026(job, job.json_result, job.status === "PASSED");
+    }
+  } catch (e) {
+    console.log("SEND RETRY JOB EXCEPTION: ", JSON.stringify(e));
   }
 };
