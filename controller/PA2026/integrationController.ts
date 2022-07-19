@@ -70,7 +70,7 @@ export class integrationController {
       integrationValues.instanceUrl,
       process.env.PA2026_QUERY_PATH,
       {
-      Authorization: "Bearer " + integrationValues.token
+        Authorization: "Bearer " + integrationValues.token
       },
       { q: query }
     );
@@ -201,54 +201,50 @@ export class integrationController {
 
     const statusComplianceCriteria = cleanSchoolJsonBody["criteri-conformita"].status
     const statusComplianceCriteriaUserExperience = cleanSchoolJsonBody["criteri-conformita"].groups["esperienza-utente"].status
-    const idCrawlerJob = entityId.toString()
     const statusLegislation = cleanSchoolJsonBody["criteri-conformita"].groups["normativa"].status
     const statusPerformance = cleanSchoolJsonBody["criteri-conformita"].groups["prestazioni"].status
     const statusRecomandation = cleanSchoolJsonBody["raccomandazioni"].status
     const statusSecurity = cleanSchoolJsonBody["criteri-conformita"].groups["sicurezza"].status
+
     const userExperienceDescription = JSON.stringify(cleanSchoolJsonBody["criteri-conformita"].groups["esperienza-utente"].failAudit)
     const legislationDescription = JSON.stringify(cleanSchoolJsonBody["criteri-conformita"].groups["normativa"].failAudit)
     const reccomandationDescription = JSON.stringify(cleanSchoolJsonBody["raccomandazioni"].failAudit)
     const securityDescription = JSON.stringify(cleanSchoolJsonBody["criteri-conformita"].groups["sicurezza"].failAudit)
 
-    const generalStatus = statusComplianceCriteria &&
-      statusComplianceCriteriaUserExperience &&
-      statusLegislation &&
-      statusPerformance &&
-      statusRecomandation &&
-      statusSecurity
+    const idCrawlerJob = entityId.toString()
+    const generalStatus = statusComplianceCriteria
 
-      let body = {
-        Criteri_Conformita_1__c: statusComplianceCriteria,
-        Esperienza_Utente_1__c: statusComplianceCriteriaUserExperience,
-        ID_Crawler_Job_1__c: idCrawlerJob,
-        Normativa_1__c:	statusLegislation,
-        Prestazioni_1__c:	statusPerformance,
-        Raccomandazioni_1__c:	statusRecomandation,
-        Sicurezza_1__c: statusSecurity,
-        Status_Generale_1__c:	generalStatus,
-        URL_Scansione_1__c: scanUrl,
+    const body = {
+      Criteri_Conformita_1__c: statusComplianceCriteria,
+      Esperienza_Utente_1__c: statusComplianceCriteriaUserExperience,
+      ID_Crawler_Job_1__c: idCrawlerJob,
+      Normativa_1__c:	statusLegislation,
+      Prestazioni_1__c:	statusPerformance,
+      Raccomandazioni_1__c:	statusRecomandation,
+      Sicurezza_1__c: statusSecurity,
+      Status_Generale_1__c:	generalStatus,
+      URL_Scansione_1__c: scanUrl,
 
-        Esperienza_Utente_Descrizione__c: userExperienceDescription,
-        Normativa_Descrizione__c: legislationDescription,
-        Raccomandazioni_Descrizione__c: reccomandationDescription,
-        Sicurezza_Descrizione__c: securityDescription,
+      Esperienza_Utente_Descrizione__c: userExperienceDescription,
+      Normativa_Descrizione__c: legislationDescription,
+      Raccomandazioni_Descrizione__c: reccomandationDescription,
+      Sicurezza_Descrizione__c: securityDescription,
 
 
-        Criteri_Conformita_n__c: statusComplianceCriteria,
-        Esperienza_Utente_n__c: statusComplianceCriteriaUserExperience,
-        ID_Crawler_Job_n__c: idCrawlerJob,
-        Normativa_n__c: statusLegislation,
-        Prestazioni_n__c: statusPerformance,
-        Raccomandazioni_n__c: statusRecomandation,
-        Sicurezza_n__c: statusSecurity,
-        Status_Generale_n__c:	generalStatus,
-        URL_Scansione_n__c: scanUrl,
+      Criteri_Conformita_n__c: statusComplianceCriteria,
+      Esperienza_Utente_n__c: statusComplianceCriteriaUserExperience,
+      ID_Crawler_Job_n__c: idCrawlerJob,
+      Normativa_n__c: statusLegislation,
+      Prestazioni_n__c: statusPerformance,
+      Raccomandazioni_n__c: statusRecomandation,
+      Sicurezza_n__c: statusSecurity,
+      Status_Generale_n__c:	generalStatus,
+      URL_Scansione_n__c: scanUrl,
 
-        Esperienza_Utente_n_Descrizione__c: userExperienceDescription,
-        Normativa_n_Descrizione__c: legislationDescription,
-        Raccomandazioni_n_Descrizione__c: reccomandationDescription,
-        Sicurezza_n_Descrizione__c: securityDescription
+      Esperienza_Utente_n_Descrizione__c: userExperienceDescription,
+      Normativa_n_Descrizione__c: legislationDescription,
+      Raccomandazioni_n_Descrizione__c: reccomandationDescription,
+      Sicurezza_n_Descrizione__c: securityDescription
     }
 
     return await patch(
@@ -261,7 +257,78 @@ export class integrationController {
     )
   }
 
-  async pushFirstCheckMunicipality (cleanMunicipalityJsonBody: object, entityExternalId: string) {
+  async pushFirstCheckMunicipality (cleanMunicipalityJsonBody: object, entityExternalId: string, entityId: number, scanUrl: string) {
+    const integrationValues = await this.getIntegrationValues()
+
+    const activeCitizenStatus = cleanMunicipalityJsonBody["cittadino-attivo"].status
+    const informedCitizenStatus = cleanMunicipalityJsonBody["cittadino-informato"].status
+    const userExperienceStatus = cleanMunicipalityJsonBody["cittadino-informato"].groups["esperienza-utente"].status
+    const functionStatus = cleanMunicipalityJsonBody["cittadino-informato"].groups["funzionalita"].status
+    const legislationStatus = cleanMunicipalityJsonBody["cittadino-informato"].groups["normativa"].status
+    const performancesStatus = cleanMunicipalityJsonBody["cittadino-informato"].groups["prestazioni"].status
+    const reccomandationStatus = cleanMunicipalityJsonBody["raccomandazioni"].status
+    const securityStatus = cleanMunicipalityJsonBody["cittadino-informato"].groups["sicurezza"].status
+
+    const activeCitizenDescription = JSON.stringify(cleanMunicipalityJsonBody["cittadino-attivo"].failAudit)
+    const userExperienceDescription = JSON.stringify(cleanMunicipalityJsonBody["cittadino-informato"].groups["esperienza-utente"].failAudit)
+    const functionDescription = JSON.stringify(cleanMunicipalityJsonBody["cittadino-informato"].groups["funzionalita"].failAudit)
+    const legislationDescription = JSON.stringify(cleanMunicipalityJsonBody["cittadino-informato"].groups["normativa"].failAudit)
+    const securityDescription = JSON.stringify(cleanMunicipalityJsonBody["cittadino-informato"].groups["sicurezza"].failAudit)
+    const reccomandationDescription = JSON.stringify(cleanMunicipalityJsonBody["raccomandazioni"].failAudit)
+
+    const generalStatus = informedCitizenStatus && activeCitizenStatus
+    const idCrawlerJob = entityId
+
+    const body = {
+      Cittadino_Attivo_1__c: activeCitizenStatus,
+      Cittadino_Informato_1__c:	informedCitizenStatus,
+      Esperienza_Utente_1__c: userExperienceStatus,
+      Funzionalita_1__c: functionStatus,
+      ID_Crawler_Job_1__c: idCrawlerJob,
+      Normativa_1__c:	legislationStatus,
+      Prestazioni_1__c:	performancesStatus,
+      Raccomandazioni_1__c:	reccomandationStatus,
+      Sicurezza_1__c:	securityStatus,
+
+      Status_Generale_1__c:	generalStatus,
+      URL_Scansione_1__c: scanUrl,
+
+      Cittadino_Attivo_Descrizione__c: activeCitizenDescription,
+      Esperienza_Utente_Descrizione__c: userExperienceDescription,
+      Funzionalita_Descrizione__c: functionDescription,
+      Normativa_Descrizione__c: legislationDescription,
+      Raccomandazioni_Descrizione__c: reccomandationDescription,
+      Sicurezza_Descrizione__c: securityDescription,
+
+      Cittadino_Attivo_n__c: activeCitizenStatus,
+      Cittadino_Informato_n__c:	informedCitizenStatus,
+      Criteri_Conformita_n__c: userExperienceStatus,
+      Funzionalita_n__c: functionStatus,
+      ID_Crawler_Job_n__c: idCrawlerJob,
+      Normativa_n__c: legislationStatus,
+      Prestazioni_n__c: performancesStatus,
+      Raccomandazioni_n__c: reccomandationStatus,
+      Sicurezza_n__c: securityStatus,
+
+      Status_Generale_n__c:	generalStatus,
+      URL_Scansione_n__c: scanUrl,
+
+      Cittadino_Attivo_n_Descrizione__c: activeCitizenDescription,
+      Esperienza_Utente_n_Descrizione__c: userExperienceDescription,
+      Funzionalita_n_Descrizione__c: functionDescription,
+      Normativa_n_Descrizione__c: legislationDescription,
+      Raccomandazioni_n_Descrizione__c: reccomandationDescription,
+      Sicurezza_n_Descrizione__c: securityDescription
+    }
+
+    return await patch(
+      integrationValues.instanceUrl,
+      process.env.PA2026_QUERY_PATH.replace('{entity_external_id}', entityExternalId),
+      {
+        Authorization: "Bearer " + integrationValues.token
+      },
+      JSON.stringify(body)
+    )
   }
 
   async pushNCheck () {
