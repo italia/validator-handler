@@ -18,6 +18,17 @@ dbRoot
   .then(async () => {
     try {
       console.log("[PA2026 MANAGER]: START");
+
+      const createResult = await create()
+      console.log('[PA2026 MANAGER]: CREATE RESULT - ', createResult)
+
+      const updateResult = await update()
+      console.log('[PA2026 MANAGER]: UPDATE RESULT - ', updateResult)
+
+      const asseverationResult = await asseveration()
+      console.log('[PA2026 MANAGER]: ASSEVERATION RESULT - ', asseverationResult)
+
+      await sendRetryJobInError()
     } catch (e) {
       console.log("[PA2026 MANAGER]: EXCEPTION - ", e);
     }
