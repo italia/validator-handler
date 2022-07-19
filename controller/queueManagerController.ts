@@ -1,8 +1,8 @@
-import {dbQM} from "../database/connection";
-import {QueryTypes} from "sequelize";
-import {Entity} from "../types/models";
-import {define as entityDefine} from "../database/models/entity";
-import {define as jobDefine} from "../database/models/job";
+import { dbQM } from "../database/connection";
+import { QueryTypes } from "sequelize";
+import { Entity } from "../types/models";
+import { define as entityDefine } from "../database/models/entity";
+import { define as jobDefine } from "../database/models/job";
 import dateFormat from "dateformat";
 
 const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
@@ -44,8 +44,6 @@ const getRescanEntityToBeAnalyzed = async (
     const failedDate = new Date();
     failedDate.setDate(failedDate.getDate() - failedOlderThanDays);
 
-
-
     const rescanEntityToBeAnalyzed = await dbQM.query(
       `SELECT E.id
            FROM "Entities" as E JOIN "Jobs" AS J on E.id = J.entity_id
@@ -77,7 +75,7 @@ const getRescanEntityToBeAnalyzed = async (
 
     return returnValues;
   } catch (e) {
-    return returnValues
+    return returnValues;
   }
 };
 
@@ -88,9 +86,7 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
   let returnValues = [];
 
   try {
-    let asservationOlderThanDays: number = parseInt(
-      jobOlderThanDaysParam
-    );
+    let asservationOlderThanDays: number = parseInt(jobOlderThanDaysParam);
 
     const filterDate = new Date();
     filterDate.setDate(filterDate.getDate() + asservationOlderThanDays);
@@ -124,7 +120,7 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
 
     return returnValues;
   } catch (e) {
-    return returnValues
+    return returnValues;
   }
 };
 
@@ -177,4 +173,9 @@ const generateJobs = async (
   }
 };
 
-export { getFirstTimeEntityToBeAnalyzed, getRescanEntityToBeAnalyzed, getRescanEntityAsseveratedToBeAnalyzed, generateJobs }
+export {
+  getFirstTimeEntityToBeAnalyzed,
+  getRescanEntityToBeAnalyzed,
+  getRescanEntityAsseveratedToBeAnalyzed,
+  generateJobs,
+};

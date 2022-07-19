@@ -8,8 +8,8 @@ const primaryKey = "id";
 const modelName = "Entity";
 const allowedTypes = ["school", "municipality"] as const;
 const allowedMunicipalitySubTypes = [
-  "municipality-informed-citizen",
-  "municipality-informed-active-citizen",
+  "informed-citizen",
+  "informed-active-citizen",
 ];
 
 const structure: ModelAttributes<Entity, Attributes<Entity>> = {

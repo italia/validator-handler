@@ -57,7 +57,6 @@ export class Token extends Model<
   declare id: number;
   declare value: string;
   declare instanceUrl: string;
-  declare expirationDate: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

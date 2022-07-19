@@ -1,16 +1,16 @@
 "use strict";
 
-import {dbQM, dbRoot} from "./database/connection";
-import {define as jobDefine} from "./database/models/job";
+import { dbQM, dbRoot } from "./database/connection";
+import { define as jobDefine } from "./database/models/job";
 import { v4 } from "uuid";
-import {entityController} from "./controller/entityController";
-import {integrationController} from "./controller/PA2026/integrationController";
+import { entityController } from "./controller/entityController";
+import { integrationController } from "./controller/PA2026/integrationController";
 
 dbRoot
   .authenticate()
   .then(async () => {
-    const result = await new integrationController(dbRoot).create()
-   /* const status = [
+    const result = await new integrationController(dbRoot).create();
+    /* const status = [
       "IN_PROGRESS",
       "PENDING",
       "ERROR",

@@ -19,10 +19,6 @@ const structure: ModelAttributes<Token, Attributes<Token>> = {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  expirationDate: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 };
