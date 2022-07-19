@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { dbSM } from "../database/connection";
-import { define as jobDefine } from "../database/models/job";
+import { define as jobDefine, preserveReasons } from "../database/models/job";
 import { run } from "pa-website-validator/dist/controller/launchLighthouse";
 import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
 import { Job } from "../types/models";
@@ -20,6 +20,10 @@ import {
   isPassedReport,
 } from "../controller/auditController";
 import { jobController } from "../controller/jobController";
+import { mapPA2026Body } from "../utils/utils";
+import { patch } from "../utils/https-request";
+import { callPatch } from "../controller/PA2026/integrationController";
+import { entityController } from "../controller/entityController";
 
 dbSM
   .authenticate()
@@ -67,8 +71,6 @@ const scan = async (jobId) => {
       start_at: Date.now(),
     });
 
-    //TODO: funcion che prende start at __> se è in progress e start date > 2h --> mette in Error
-
     const jobObjParsed = jobObj.toJSON();
     const lighthouseResult = await run(
       jobObjParsed.scan_url,
@@ -105,22 +107,26 @@ const scan = async (jobId) => {
       throw new Error("Upload error");
     }
 
-    const status = (await isPassedReport(
+    const status = await isPassedReport(
       jsonResult,
       jobObjParsed.type,
       jobObjParsed.entity_id
-    ))
-      ? "PASSED"
-      : "FAILED";
+    );
 
-    await jobObj.update({
-      status: status,
+    const job: Job = await jobObj.update({
+      status: status ? "PASSED" : "FAILED",
       end_at: Date.now(),
       json_result: jsonResult,
       s3_json_url: uploadResult.jsonLocationUrl,
       s3_html_url: uploadResult.htmlLocationUrl,
       s3_clean_json_result_url: uploadResult.cleanJsonLocationUrl,
     });
+
+    if (!job) {
+      throw new Error("Update job failed");
+    }
+
+    await sendToPA2026(job, jsonResult, status);
 
     await new jobController(dbSM).cleanJobs(jobObjParsed.entity_id);
 
@@ -198,3 +204,48 @@ const uploadFiles = async (
     };
   }
 };
+
+const sendToPA2026 = async (
+  job: Job,
+  cleanJsonReport,
+  generalStatus: boolean
+) => {
+  try {
+    const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
+    const isFirstScan =
+      job.preserve && job.preserve_reason === preserveReasons[0];
+
+    let body = await mapPA2026Body(job, cleanJsonReport, generalStatus, false);
+
+    if (isFirstScan) {
+      body = {
+        ...body,
+        ...(await mapPA2026Body(job, cleanJsonReport, generalStatus, true)),
+      };
+    }
+
+    const result = await callPatch(
+      body,
+      process.env.PA2026_UPDATE_RECORDS_PATH.replace(
+        "{external_entity_id}",
+        entity.external_id
+      )
+    );
+
+    if (!result) {
+      throw new Error("Send data failed");
+    }
+
+    await job.update({
+      data_sent_status: "COMPLETED",
+      data_sent_date: new Date(),
+    });
+  } catch (e) {
+    await job.update({
+      data_sent_status: "ERROR",
+      data_sent_date: new Date(),
+    });
+  }
+};
+
+export { sendToPA2026 };

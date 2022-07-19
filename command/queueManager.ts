@@ -14,8 +14,8 @@ import {
   getFirstTimeEntityToBeAnalyzed,
   getRescanEntityToBeAnalyzed,
   getRescanEntityAsseveratedToBeAnalyzed,
-  generateJobs
-} from "../controller/queueManagerController"
+  generateJobs,
+} from "../controller/queueManagerController";
 
 const command = yargs(hideBin(process.argv))
   .usage(
@@ -63,11 +63,15 @@ dbQM
       },
     });
 
-    const inProgressJobInError = await new jobController(dbQM).manageInProgressJobInError()
-    console.log('MANAGE JOB IN "ERROR": ', inProgressJobInError)
+    const inProgressJobInError = await new jobController(
+      dbQM
+    ).manageInProgressJobInError();
+    console.log('MANAGE JOB IN "ERROR": ', inProgressJobInError);
 
-    const inPendingJob = await new jobController(dbQM).manageInPendingJobs(crawlerQueue)
-    console.log('MANAGE JOB IN "IN_PENDING": ', inPendingJob)
+    const inPendingJob = await new jobController(dbQM).manageInPendingJobs(
+      crawlerQueue
+    );
+    console.log('MANAGE JOB IN "IN_PENDING": ', inPendingJob);
 
     const maxItems: number = parseInt(command.maxItems);
 
@@ -97,7 +101,10 @@ dbQM
 
     console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
     console.log("RESCAN ENTITIES", rescanEntityToBeAnalyzed.length);
-    console.log("RESCAN ASSEVERATED ENTITIES", rescanEntityAsseveratedToBeAnalyzed.length);
+    console.log(
+      "RESCAN ASSEVERATED ENTITIES",
+      rescanEntityAsseveratedToBeAnalyzed.length
+    );
 
     if (firstTimeEntityToBeAnalyzed.length > 0) {
       await generateJobs(
@@ -108,12 +115,15 @@ dbQM
       );
     }
 
-    if (rescanEntityToBeAnalyzed.length > 0 || rescanEntityAsseveratedToBeAnalyzed.length > 0) {
+    if (
+      rescanEntityToBeAnalyzed.length > 0 ||
+      rescanEntityAsseveratedToBeAnalyzed.length > 0
+    ) {
       await generateJobs(
-        [
-          ...rescanEntityToBeAnalyzed,
-          ...rescanEntityAsseveratedToBeAnalyzed
-        ], crawlerQueue, false);
+        [...rescanEntityToBeAnalyzed, ...rescanEntityAsseveratedToBeAnalyzed],
+        crawlerQueue,
+        false
+      );
     }
 
     const counts = await crawlerQueue.getJobCounts(

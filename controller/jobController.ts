@@ -9,12 +9,22 @@ import { entityController } from "./entityController";
 import { preserveReasons } from "../database/models/job";
 import { define as jobDefine } from "../database/models/job";
 import { Queue } from "bullmq";
+import { define as entityDefine } from "../database/models/entity";
 
 export class jobController {
   db: Sequelize;
 
   constructor(db: Sequelize) {
     this.db = db;
+  }
+
+  async getJobFromIdAndEntityId(id: string, entityId: number): Promise<Job> {
+    return await jobDefine(this.db).findOne({
+      where: {
+        id: id,
+        entity_id: entityId,
+      },
+    });
   }
 
   async list(
@@ -149,8 +159,6 @@ export class jobController {
   }
 
   async cleanJobs(entityId: number): Promise<number[]> {
-    //TODO: se è PROGRESS o PENDING e si mettono in FAILED se la data di creazione della tupla supera i X giorni --> TBD?
-
     const countJobPreserve = await jobDefine(this.db).count({
       where: {
         entity_id: entityId,
@@ -192,65 +200,72 @@ export class jobController {
   }
 
   async manageInProgressJobInError() {
-    const jobsUpdated = []
+    const jobsUpdated = [];
 
     try {
-      let date = new Date()
-      date.setTime(date.getTime() + (1000 * 60 * 60 * parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)))
+      let date = new Date();
+      date.setTime(
+        date.getTime() +
+          1000 * 60 * 60 * parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)
+      );
 
       const inProgressJobsInError: Job[] = await jobDefine(this.db).findAll({
         where: {
           status: "IN_PROGRESS",
           start_at: {
-            [Op.lt]: date
-          }
+            [Op.lt]: date,
+          },
         },
       });
 
-
       for (const job of inProgressJobsInError) {
         const result = await job.update({
-          status: "ERROR"
-        })
+          status: "ERROR",
+        });
 
         if (result) {
-          jobsUpdated.push(result)
+          jobsUpdated.push(result);
         }
       }
 
-      return jobsUpdated
+      return jobsUpdated;
     } catch (e) {
-      return jobsUpdated
+      return jobsUpdated;
     }
   }
 
   async manageInPendingJobs(queue: Queue) {
-    const jobsUpdated = []
+    const jobsUpdated = [];
 
     try {
-      let date = new Date()
-      date.setTime(date.getTime() + (1000 * 60 * 60 * parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)))
+      let date = new Date();
+      date.setTime(
+        date.getTime() +
+          1000 * 60 * 60 * parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)
+      );
 
-      const jobInQueue = await queue.getJobs()
-      const ids = jobInQueue.map(function(obj) { return obj.id })
+      const jobInQueue = await queue.getJobs();
+      const ids = jobInQueue.map(function (obj) {
+        return obj.id;
+      });
 
       const inPendingJobs: Job[] = await jobDefine(this.db).findAll({
         where: {
           status: "IN_PENDING",
           id: {
-            [Op.notIn]: ids
+            [Op.notIn]: ids,
           },
           createdAt: {
-            [Op.lt]: date
-          }
+            [Op.lt]: date,
+          },
         },
       });
 
       for (const job of inPendingJobs) {
         await queue.add("job", { id: job.id });
       }
-    } catch (e){
-      return jobsUpdated
+    } catch (e) {
+      return jobsUpdated;
     }
   }
 }
