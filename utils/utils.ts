@@ -92,6 +92,7 @@ const mapPA2026Body = async (
 
   switch (job.type) {
     case "municipality":
+      // eslint-disable-next-line
       const functionObj = cleanJsonResult[mainObjKey]["funzionalita"];
       (initialBody[`Cittadino_Informato_${key}__c`] =
         cleanJsonResult[mainObjKey].status),
