@@ -38,7 +38,7 @@ export class tokenController {
   retrieve = async (): Promise<Token | null> => {
     try {
       const token = await tokenDefine(this.db).findOne({
-        order: ["id", "DESC"],
+        order: [["id", "DESC"]],
       });
 
       if (!token) {
