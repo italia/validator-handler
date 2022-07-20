@@ -4,6 +4,7 @@ import { dbRoot, dbWS } from "../database/connection";
 import {
   callPatch,
   callQuery,
+  pushResult,
 } from "../controller/PA2026/integrationController";
 import { allowedMunicipalitySubTypes } from "../database/models/entity";
 import { entityController } from "../controller/entityController";
@@ -11,7 +12,6 @@ import { Entity, Job } from "../types/models";
 import { jobController } from "../controller/jobController";
 import { preserveReasons, define as jobDefine } from "../database/models/job";
 import { Op } from "sequelize";
-import { sendToPA2026 } from "./scanManager";
 
 dbRoot
   .authenticate()
@@ -22,7 +22,7 @@ dbRoot
       const createResult = await create();
       console.log("[PA2026 MANAGER]: CREATE RESULT - ", createResult);
 
-      /*const updateResult = await update();
+      const updateResult = await update();
       console.log("[PA2026 MANAGER]: UPDATE RESULT - ", updateResult);
 
       const asseverationResult = await asseveration();
@@ -31,9 +31,9 @@ dbRoot
         asseverationResult
       );
 
-      await sendRetryJobInError();*/
+      await sendRetryJobInError();
     } catch (e) {
-      console.log("[PA2026 MANAGER]: EXCEPTION - ", e);
+      console.log("[PA2026 MANAGER]: EXCEPTION - ", e.toString());
     }
   })
   .catch((err) => {
@@ -43,13 +43,7 @@ dbRoot
 
 const create = async () => {
   const createQuery =
-    "SELECT id,Url_Sito_Internet__c, Codice_amministrativo__c, Pacchetto_1_4_1__c, ID_Crawler__c " +
-    "FROM outfunds__Funding_Request__c " +
-    "WHERE outfunds__Status__c ='Finanziata' " +
-    "AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' " +
-    "AND Url_Sito_Internet__c !=null " +
-    "AND ID_Crawler__c=null " +
-    "AND Attivita_completata__c= true ";
+    "SELECT id,Url_Sito_Internet__c, Codice_amministrativo__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c  WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141'  AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null AND Stato_Progetto__c= 'COMPLETATO'";
   const returnIds = [];
 
   try {
@@ -59,7 +53,7 @@ const create = async () => {
       throw new Error("Empty values from create query");
     }
 
-    const records = createResult.data.records;
+    const records = createResult?.records;
     if (records.length <= 0) {
       return [];
     }
@@ -100,14 +94,11 @@ const create = async () => {
 
         returnIds.push(entity.id);
       } catch (e) {
-        console.log(
-          "CREATE QUERY FOR-STATEMENT EXCEPTION: ",
-          JSON.stringify(e)
-        );
+        console.log("CREATE QUERY FOR-STATEMENT EXCEPTION: ", e.toString());
       }
     }
   } catch (e) {
-    console.log("CREATE QUERY EXCEPTION: ", JSON.stringify(e));
+    console.log("CREATE QUERY EXCEPTION: ", e.toString());
   }
 
   return returnIds;
@@ -121,7 +112,7 @@ const update = async () => {
     "AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' " +
     "AND Url_Sito_Internet__c !=null " +
     "AND ID_Crawler__c!=null " +
-    "AND Stato_Progetto__c= ’COMPLETATO’ " +
+    "AND Stato_Progetto__c= 'COMPLETATO' " +
     "AND Controllo_URL__c=false ";
   const returnIds = [];
 
@@ -132,7 +123,7 @@ const update = async () => {
       throw new Error("Empty values from create query");
     }
 
-    const records = updateResult.data.records;
+    const records = updateResult?.records;
     if (records.length <= 0) {
       return [];
     }
@@ -147,7 +138,7 @@ const update = async () => {
         );
 
         if (!entity) {
-          throw new Error("Create entity failed");
+          throw new Error("Entity not found: " + externalId);
         }
 
         const updateEntity = await entity.update({
@@ -156,14 +147,11 @@ const update = async () => {
 
         returnIds.push(updateEntity.id);
       } catch (e) {
-        console.log(
-          "UPDATE QUERY FOR-STATEMENT EXCEPTION: ",
-          JSON.stringify(e)
-        );
+        console.log("UPDATE QUERY FOR-STATEMENT EXCEPTION: ", e.toString());
       }
     }
   } catch (e) {
-    console.log("UPDATE QUERY EXCEPTION: ", JSON.stringify(e));
+    console.log("UPDATE QUERY EXCEPTION: ", e.toString());
   }
 
   return returnIds;
@@ -174,7 +162,7 @@ const asseveration = async () => {
     "SELECT id, Codice_amministrativo__c, ID_Crawler__c, ID_Crawler_Job_definitiva__c, Stato_Progetto__c " +
     "FROM outfunds__Funding_Request__c " +
     "WHERE Stato_Progetto__c IN ('IN VERIFICA', 'RESPINTO', 'IN LIQUIDAZIONE', 'LIQUIDATO', 'ANNULLATO', 'RINUNCIATO') " +
-    "AND Progetto_Terminato__c=false ";
+    "AND Progetto_Terminato__c=false AND ID_Crawler__c != null";
   const returnIds = [];
   try {
     const asseverationResult = await callQuery(asseverationQuery);
@@ -183,7 +171,7 @@ const asseveration = async () => {
       throw new Error("Empty values from create query");
     }
 
-    const records = asseverationResult.data.records;
+    const records = asseverationResult?.records;
     if (records.length <= 0) {
       return [];
     }
@@ -256,14 +244,11 @@ const asseveration = async () => {
 
         returnIds.push(entityUpdated.id);
       } catch (e) {
-        console.log(
-          "UPDATE QUERY FOR-STATEMENT EXCEPTION: ",
-          JSON.stringify(e)
-        );
+        console.log("UPDATE QUERY FOR-STATEMENT EXCEPTION: ", e.toString());
       }
     }
   } catch (e) {
-    console.log("UPDATE QUERY EXCEPTION: ", JSON.stringify(e));
+    console.log("UPDATE QUERY EXCEPTION: ", e.toString());
   }
   return returnIds;
 };
@@ -302,7 +287,7 @@ const sendRetryJobInError = async () => {
               {
                 [Op.and]: [
                   { data_sent_status: null },
-                  { end_date: { [Op.lt]: date } },
+                  { end_at: { [Op.lt]: date } },
                 ],
               },
             ],
@@ -312,9 +297,9 @@ const sendRetryJobInError = async () => {
     });
 
     for (const job of jobs) {
-      await sendToPA2026(job, job.json_result, job.status === "PASSED");
+      await pushResult(job, job.json_result, job.status === "PASSED");
     }
   } catch (e) {
-    console.log("SEND RETRY JOB EXCEPTION: ", JSON.stringify(e));
+    console.log("SEND RETRY JOB EXCEPTION: ", e.toString());
   }
 };

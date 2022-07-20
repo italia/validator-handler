@@ -31,22 +31,24 @@ export class tokenController {
         instanceUrl: token.instanceUrl,
       });
     } catch (e) {
-      console.log('CREATE EXCEPTION', e)
+      console.log("CREATE EXCEPTION", e.toString());
       return null;
     }
   };
 
   retrieve = async (): Promise<Token | null> => {
     try {
-      const token = await tokenDefine(this.db).findOne({
+      const token: Token = await tokenDefine(this.db).findOne({
         order: [["id", "DESC"]],
       });
 
       if (!token) {
         return await this.create();
       }
+
+      return token;
     } catch (e) {
-      console.log('RETRIEVE EXCEPTION', e)
+      console.log("RETRIEVE EXCEPTION", e.toString());
       return null;
     }
   };
