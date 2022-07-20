@@ -24,6 +24,7 @@
   "dependencies": {
     "@types/sequelize": "^4.28.13",
     "aws-sdk": "^2.1143.0",
+    "axios": "^0.27.2",
     "body-parser": "^1.19.2",
     "bullmq": "^1.85.1",
     "child_process": "^1.0.2",

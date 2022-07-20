@@ -31,6 +31,7 @@ export class tokenController {
         instanceUrl: token.instanceUrl,
       });
     } catch (e) {
+      console.log('CREATE EXCEPTION', e)
       return null;
     }
   };
@@ -45,6 +46,7 @@ export class tokenController {
         return await this.create();
       }
     } catch (e) {
+      console.log('RETRIEVE EXCEPTION', e)
       return null;
     }
   };

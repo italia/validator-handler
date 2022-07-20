@@ -5,7 +5,7 @@ dotenv.config();
 
 import { get, patch, post } from "../../utils/https-request";
 import { response } from "../../types/https-request";
-import querystring from "querystring";
+import qs from "qs"
 import { tokenController } from "./tokenController";
 import { dbWS } from "../../database/connection";
 
@@ -17,7 +17,7 @@ const retrieveToken = async () => {
       {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      querystring.stringify({
+      qs.stringify({
         grant_type: process.env.PA2026_AUTH_GRANT_TYPE,
         client_id: process.env.PA2026_AUTH_CLIENT_ID,
         client_secret: process.env.PA2026_AUTH_CLIENT_SECRET,
@@ -25,6 +25,9 @@ const retrieveToken = async () => {
         password: process.env.PA2026_AUTH_PASSWORD,
       })
     );
+
+    console.log('RESPONSE', result)
+    process.exit(0)
 
     if (result?.statusCode === 200) {
       return {
@@ -35,6 +38,7 @@ const retrieveToken = async () => {
 
     return null;
   } catch (e) {
+    console.log('RETRIEVE EXCEPTION', e)
     return null;
   }
 };
@@ -47,6 +51,8 @@ const callQuery = async (query: string, retry = 3) => {
   try {
     const tokenValues = await new tokenController(dbWS).retrieve();
 
+    console.log('CALL QUERY TOKEN VALUES', tokenValues)
+    process.exit(0)
     const result = await get(
       tokenValues.instanceUrl,
       process.env.PA2026_QUERY_PATH,
