@@ -163,7 +163,7 @@ const generateJobs = async (
 
       await crawlerQueue.add("job", { id: parsedJob.id });
     } catch (e) {
-      console.log(e);
+      console.log("QUEUE MANAGER EXCEPTION: ", e.toString());
     }
   }
 };

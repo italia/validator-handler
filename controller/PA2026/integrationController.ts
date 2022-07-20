@@ -3,15 +3,20 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { get, patch, post } from "../../utils/https-request";
+import { call } from "../../utils/https-request";
 import { response } from "../../types/https-request";
-import qs from "qs"
+import qs from "qs";
 import { tokenController } from "./tokenController";
-import { dbWS } from "../../database/connection";
+import { dbSM, dbWS } from "../../database/connection";
+import { Job, Token } from "../../types/models";
+import { entityController } from "../entityController";
+import { preserveReasons } from "../../database/models/job";
+import { mapPA2026Body } from "../../utils/utils";
 
 const retrieveToken = async () => {
   try {
-    const result: response = await post(
+    const result: response = await call(
+      "post",
       process.env.PA2026_HOST,
       process.env.PA2026_AUTH_PATH,
       {
@@ -26,9 +31,6 @@ const retrieveToken = async () => {
       })
     );
 
-    console.log('RESPONSE', result)
-    process.exit(0)
-
     if (result?.statusCode === 200) {
       return {
         value: result.data.access_token ?? "",
@@ -38,7 +40,7 @@ const retrieveToken = async () => {
 
     return null;
   } catch (e) {
-    console.log('RETRIEVE EXCEPTION', e)
+    console.log("RETRIEVE EXCEPTION", e.toString());
     return null;
   }
 };
@@ -49,18 +51,12 @@ const callQuery = async (query: string, retry = 3) => {
   }
 
   try {
-    const tokenValues = await new tokenController(dbWS).retrieve();
+    const tokenObj: Token = await new tokenController(dbWS).retrieve();
 
-    console.log('CALL QUERY TOKEN VALUES', tokenValues)
-    process.exit(0)
-    const result = await get(
-      tokenValues.instanceUrl,
-      process.env.PA2026_QUERY_PATH,
-      {
-        Authorization: "Bearer " + tokenValues.value,
-      },
-      { q: query }
-    );
+    const path = process.env.PA2026_QUERY_PATH + "/?q=" + query;
+    const result = await call("get", tokenObj.instanceUrl, path, {
+      Authorization: "Bearer " + tokenObj.value,
+    });
 
     if (result?.statusCode === 200) {
       return result.data;
@@ -68,7 +64,7 @@ const callQuery = async (query: string, retry = 3) => {
       await new tokenController(dbWS).create();
     }
   } catch (e) {
-    console.log("CALL QUERY EXCEPTION: ", JSON.stringify(e));
+    console.log("CALL QUERY EXCEPTION: ", e.toString());
   }
 
   return await callQuery(query, retry - 1);
@@ -82,14 +78,15 @@ const callPatch = async (body: object, path: string, retry = 3) => {
   try {
     const tokenValues = await new tokenController(dbWS).retrieve();
 
-    const result = await patch(
+    const result = await call(
+      "patch",
       tokenValues.instanceUrl,
       path,
       {
         Authorization: "Bearer " + tokenValues.value,
         "Content-Type": "application/json",
       },
-      JSON.stringify(body)
+      body
     );
 
     if (result?.statusCode >= 200 && result?.statusCode <= 204) {
@@ -98,10 +95,53 @@ const callPatch = async (body: object, path: string, retry = 3) => {
       await new tokenController(dbWS).create();
     }
   } catch (e) {
-    console.log("CALL PATCH EXCEPTION: ", JSON.stringify(e));
+    console.log("CALL PATCH EXCEPTION: ", e.toString());
   }
 
   return await callPatch(body, path, retry - 1);
 };
 
-export { retrieveToken, callQuery, callPatch };
+const pushResult = async (
+  job: Job,
+  cleanJsonReport,
+  generalStatus: boolean
+) => {
+  try {
+    const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
+    const isFirstScan =
+      job.preserve && job.preserve_reason === preserveReasons[0];
+
+    let body = await mapPA2026Body(job, cleanJsonReport, generalStatus, false);
+
+    if (isFirstScan) {
+      body = {
+        ...body,
+        ...(await mapPA2026Body(job, cleanJsonReport, generalStatus, true)),
+      };
+    }
+
+    const result = await callPatch(
+      body,
+      process.env.PA2026_UPDATE_RECORDS_PATH.replace(
+        "{external_entity_id}",
+        entity.external_id
+      )
+    );
+
+    if (!result) {
+      throw new Error("Send data failed");
+    }
+
+    await job.update({
+      data_sent_status: "COMPLETED",
+      data_sent_date: new Date(),
+    });
+  } catch (e) {
+    await job.update({
+      data_sent_status: "ERROR",
+      data_sent_date: new Date(),
+    });
+  }
+};
+
+export { retrieveToken, callQuery, callPatch, pushResult };

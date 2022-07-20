@@ -21,6 +21,7 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
   external_id: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   url: {
     type: DataTypes.STRING,
