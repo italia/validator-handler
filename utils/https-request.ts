@@ -1,5 +1,6 @@
 import https from "https";
 import querystring from "querystring";
+import axios from "axios"
 
 import { response } from "../types/https-request";
 
@@ -21,28 +22,15 @@ const post = async (
     path = path + "?" + querystringVal;
   }
 
-  headers = {
-    ...headers,
-    "Content-Length": Buffer.byteLength(payload),
-  };
-
   return await call("POST", host, path, headers, payload);
 };
 
 const patch = async (host, path, headers, payload): Promise<response> => {
-  headers = {
-    ...headers,
-    "Content-Length": Buffer.byteLength(payload),
-  };
 
   return await call("PATCH", host, path, headers, payload);
 };
 
 const put = async (host, path, headers, payload): Promise<response> => {
-  headers = {
-    ...headers,
-    "Content-Length": Buffer.byteLength(payload),
-  };
 
   return await call("PUT", host, path, headers, payload);
 };
@@ -67,39 +55,49 @@ const del = async (host, path, headers, params): Promise<response> => {
   return await call("DELETE", host, path, headers, "");
 };
 
-const call = (method, host, path, headers, payload): Promise<response> =>
-  new Promise((resolve, reject) => {
-    const options = {
-      host,
-      path,
-      method,
-      mode: "cors",
-      cache: "no-cache",
-      headers,
-    };
+const call = async (method, host, path, headers, payload) : Promise<any> => {
+    if (!Boolean(host) || !Boolean(path)) {
+      throw new Error ('Empty host or path in Axios post form data')
+    }
 
-    const req = https.request(options, (res) => {
-      let buffer = "";
-      res.setEncoding("utf8");
-      res.on("data", (chunk) => (buffer += chunk));
+    let responseObj = {
+      statusCode: 500,
+      headers: null,
+      data: { message: 'Empty response from axios-request' }
+    }
 
-      res.on("end", () => {
-        let data = {};
-        if (buffer) {
-          data = JSON.parse(buffer);
+    try {
+      const config = {
+        method: method,
+        url: host + path,
+        data: payload,
+        headers: headers
+      }
+
+      console.log('CONFIG', config)
+
+
+      const res = await axios(config)
+
+      console.log('RES', res)
+
+      process.exit(0)
+      responseObj = {
+        statusCode: res.status,
+        headers: res.headers,
+        data: res.data
+      }
+    } catch(e) {
+      if (e.response) {
+        responseObj = {
+          statusCode: e.response.status,
+          headers: e.response.headers,
+          data: e.response.data
         }
+      }
+    }
 
-        resolve({
-          statusCode: res.statusCode,
-          headers: res.headers,
-          data: data,
-        });
-      });
-    });
-
-    req.on("error", (e) => reject(e.message));
-    req.write(payload);
-    req.end();
-  });
+    return responseObj
+  };
 
 export { post, patch, put, get, del };
