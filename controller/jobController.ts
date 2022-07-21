@@ -203,9 +203,8 @@ export class jobController {
 
     try {
       const date = new Date();
-      date.setTime(
-        date.getTime() +
-          1000 * 60 * 60 * parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)
+      date.setHours(
+        date.getHours() - parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)
       );
 
       const inProgressJobsInError: Job[] = await jobDefine(this.db).findAll({
@@ -238,9 +237,8 @@ export class jobController {
 
     try {
       const date = new Date();
-      date.setTime(
-        date.getTime() +
-          1000 * 60 * 60 * parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)
+      date.setHours(
+        date.getHours() - parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)
       );
 
       const jobInQueue = await queue.getJobs();
