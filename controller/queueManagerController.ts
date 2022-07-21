@@ -151,6 +151,7 @@ const generateJobs = async (
         json_result: null,
         preserve: false,
         preserve_reason: null,
+        data_sent_status: null,
       };
 
       if (preserve) {

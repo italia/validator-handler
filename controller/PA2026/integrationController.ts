@@ -108,6 +108,7 @@ const pushResult = async (
 ) => {
   try {
     const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
+
     const isFirstScan =
       job.preserve && job.preserve_reason === preserveReasons[0];
 
@@ -128,7 +129,8 @@ const pushResult = async (
       )
     );
 
-    if (!result) {
+    //Warn: API returns empty string when it success
+    if (result !== "") {
       throw new Error("Send data failed");
     }
 
@@ -137,6 +139,8 @@ const pushResult = async (
       data_sent_date: new Date(),
     });
   } catch (e) {
+    console.log("PUSH RESULT EXCEPTION", e.toString());
+
     await job.update({
       data_sent_status: "ERROR",
       data_sent_date: new Date(),
