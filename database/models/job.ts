@@ -92,6 +92,7 @@ const structure: ModelAttributes<Job, Attributes<Job>> = {
   },
   data_sent_status: {
     type: DataTypes.STRING,
+    defaultValue: null,
     allowNull: true,
     validate: {
       isIn: [allowedDataSentStatus],

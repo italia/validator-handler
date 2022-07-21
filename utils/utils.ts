@@ -61,10 +61,11 @@ const mapPA2026Body = async (
     job.type === "municipality" ? "cittadino-informato" : "criteri-conformita";
 
   const raccomandationObj = cleanJsonResult["raccomandazioni"];
-  const userExperienceObj = cleanJsonResult[mainObjKey]["esperienza-utente"];
-  const legislationObj = cleanJsonResult[mainObjKey]["normativa"];
-  const performanceObj = cleanJsonResult[mainObjKey]["prestazioni"];
-  const securityObj = cleanJsonResult[mainObjKey]["sicurezza"];
+  const userExperienceObj =
+    cleanJsonResult[mainObjKey].groups["esperienza-utente"];
+  const legislationObj = cleanJsonResult[mainObjKey].groups["normativa"];
+  const performanceObj = cleanJsonResult[mainObjKey].groups["prestazioni"];
+  const securityObj = cleanJsonResult[mainObjKey].groups["sicurezza"];
 
   const key = isFirstScan ? "1" : "n";
 
@@ -89,7 +90,7 @@ const mapPA2026Body = async (
   switch (job.type) {
     case "municipality":
       // eslint-disable-next-line
-      const functionObj = cleanJsonResult[mainObjKey]["funzionalita"];
+      const functionObj = cleanJsonResult[mainObjKey].groups["funzionalita"];
       (initialBody[`Cittadino_Informato_${key}__c`] =
         cleanJsonResult[mainObjKey].status),
         (initialBody[`Cittadino_Attivo_${key}__c`] =
