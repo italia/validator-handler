@@ -79,13 +79,13 @@ const mapPA2026Body = async (
     (initialBody[`Sicurezza_${key}__c`] = securityObj.status),
     (initialBody[`Raccomandazioni_${key}__c`] = raccomandationObj.status),
     (initialBody[`Esperienza_Utente_${key}_Descrizione__c`] =
-      userExperienceObj.failAudit.join(";")),
+      userExperienceObj.failAudit.join("|")),
     (initialBody[`Normativa_${key}_Descrizione__c`] =
-      legislationObj.failAudit.join(";")),
+      legislationObj.failAudit.join("|")),
     (initialBody[`Sicurezza_${key}_Descrizione__c`] =
-      securityObj.failAudit.join(";")),
+      securityObj.failAudit.join("|")),
     (initialBody[`Raccomandazioni_${key}_Descrizione__c`] =
-      raccomandationObj.failAudit.join(";"));
+      raccomandationObj.failAudit.join("|"));
 
   switch (job.type) {
     case "municipality":
@@ -97,9 +97,9 @@ const mapPA2026Body = async (
           cleanJsonResult["cittadino-attivo"].status),
         (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
         (initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
-          cleanJsonResult["cittadino-attivo"].failAudit.join(";")),
+          cleanJsonResult["cittadino-attivo"].failAudit.join("|")),
         (initialBody[`Funzionalita_${key}_Descrizione__c`] =
-          functionObj.failAudit.join(";"));
+          functionObj.failAudit.join("|"));
       break;
     case "school":
       initialBody[`Criteri_Conformita_${key}__c`] =
