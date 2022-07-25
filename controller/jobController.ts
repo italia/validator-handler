@@ -222,12 +222,13 @@ export class jobController {
         });
 
         if (result) {
-          jobsUpdated.push(result);
+          jobsUpdated.push(result.id);
         }
       }
 
       return jobsUpdated;
     } catch (e) {
+      console.log("EXCEPTION IN MANAGE IN PROGRESS JOBS: ", e.toString());
       return jobsUpdated;
     }
   }

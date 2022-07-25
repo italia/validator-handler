@@ -125,7 +125,10 @@ const scan = async (jobId) => {
 
     await pushResult(job, jsonResult, status);
 
-    await new jobController(dbSM).cleanJobs(jobObjParsed.entity_id);
+    const jobDeleted = await new jobController(dbSM).cleanJobs(
+      jobObjParsed.entity_id
+    );
+    console.log("JOB DELETED: ", jobDeleted);
 
     return true;
   } catch (e) {
