@@ -179,7 +179,8 @@ const asseveration = async () => {
     for (const record of records) {
       try {
         const externalId = record.Id ?? "";
-        const asseverationJobId = record.ID_Crawler_Job_definitiva__c ?? "";
+        const asseverationJobId =
+          parseInt(record.ID_Crawler_Job_definitiva__c) ?? null;
         const projectState = record.Stato_Progetto__c ?? "";
 
         const entity: Entity = await new entityController(dbWS).retrieve(
@@ -199,6 +200,12 @@ const asseveration = async () => {
           projectState !== "ANNULLATO" &&
           projectState !== "RINUNCIATO"
         ) {
+          if (!asseverationJobId) {
+            throw new Error(
+              "Asseveration job id from PA2026 is null for entity: " + entity.id
+            );
+          }
+
           const job: Job = await new jobController(
             dbWS
           ).getJobFromIdAndEntityId(asseverationJobId, entity.id);
@@ -223,7 +230,7 @@ const asseveration = async () => {
 
           entityUpdateObj = {
             enable: true,
-            asseverationJobId: parseInt(asseverationJobId),
+            asseverationJobId: asseverationJobId,
           };
         }
 
