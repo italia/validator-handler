@@ -10,7 +10,10 @@ import { tokenController } from "./tokenController";
 import { dbSM, dbWS } from "../../database/connection";
 import { Job, Token } from "../../types/models";
 import { entityController } from "../entityController";
-import { preserveReasons } from "../../database/models/job";
+import {
+  define as jobDefine,
+  preserveReasons,
+} from "../../database/models/job";
 import { mapPA2026Body } from "../../utils/utils";
 
 const retrieveToken = async () => {
@@ -112,17 +115,39 @@ const pushResult = async (
     const isFirstScan =
       job.preserve && job.preserve_reason === preserveReasons[0];
 
-    let body = await mapPA2026Body(job, cleanJsonReport, generalStatus, false);
+    let scanBody = await mapPA2026Body(
+      job,
+      cleanJsonReport,
+      generalStatus,
+      false
+    );
 
     if (isFirstScan) {
-      body = {
-        ...body,
-        ...(await mapPA2026Body(job, cleanJsonReport, generalStatus, true)),
+      let firsScanBody = await mapPA2026Body(
+        job,
+        cleanJsonReport,
+        generalStatus,
+        true
+      );
+
+      scanBody = {
+        ...scanBody,
+        ...firsScanBody,
       };
+
+      const countJobsFromEntityId = await jobDefine(dbSM).count({
+        where: {
+          entity_id: entity.id,
+        },
+      });
+
+      if (countJobsFromEntityId > 1) {
+        scanBody = firsScanBody;
+      }
     }
 
     const result = await callPatch(
-      body,
+      scanBody,
       process.env.PA2026_UPDATE_RECORDS_PATH.replace(
         "{external_entity_id}",
         entity.external_id
