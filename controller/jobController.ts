@@ -17,7 +17,7 @@ export class jobController {
     this.db = db;
   }
 
-  async getJobFromIdAndEntityId(id: string, entityId: number): Promise<Job> {
+  async getJobFromIdAndEntityId(id: number, entityId: number): Promise<Job> {
     return await jobDefine(this.db).findOne({
       where: {
         id: id,
