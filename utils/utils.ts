@@ -1,6 +1,7 @@
 "use strict";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
+import { idToTitle } from "../storage/auditIdToTitle";
 
 const arrayChunkify = async (
   inputArray: [],
@@ -51,6 +52,11 @@ const mapValidationErrors = async (
   return errorMessages.join(" | ");
 };
 
+function mapAuditTitle(id) {
+  if (id in idToTitle) return idToTitle[id];
+  return id;
+}
+
 const mapPA2026Body = async (
   job: Job,
   cleanJsonResult,
@@ -79,13 +85,15 @@ const mapPA2026Body = async (
     (initialBody[`Sicurezza_${key}__c`] = securityObj.status),
     (initialBody[`Raccomandazioni_${key}__c`] = raccomandationObj.status),
     (initialBody[`Esperienza_Utente_${key}_Descrizione__c`] =
-      userExperienceObj.failAudit.join("|")),
-    (initialBody[`Normativa_${key}_Descrizione__c`] =
-      legislationObj.failAudit.join("|")),
-    (initialBody[`Sicurezza_${key}_Descrizione__c`] =
-      securityObj.failAudit.join("|")),
+      userExperienceObj.failAudit.map((x) => mapAuditTitle(x)).join("|") ?? ""),
+    (initialBody[`Normativa_${key}_Descrizione__c`] = legislationObj.failAudit
+      .map((x) => mapAuditTitle(x))
+      .join("|")),
+    (initialBody[`Sicurezza_${key}_Descrizione__c`] = securityObj.failAudit
+      .map((x) => mapAuditTitle(x))
+      .join("|")),
     (initialBody[`Raccomandazioni_${key}_Descrizione__c`] =
-      raccomandationObj.failAudit.join("|"));
+      raccomandationObj.failAudit.map((x) => mapAuditTitle(x)).join("|"));
 
   switch (job.type) {
     case "municipality":
@@ -97,9 +105,11 @@ const mapPA2026Body = async (
           cleanJsonResult["cittadino-attivo"].status),
         (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
         (initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
-          cleanJsonResult["cittadino-attivo"].failAudit.join("|")),
+          cleanJsonResult["cittadino-attivo"].failAudit
+            .map((x) => mapAuditTitle(x))
+            .join("|")),
         (initialBody[`Funzionalita_${key}_Descrizione__c`] =
-          functionObj.failAudit.join("|"));
+          functionObj.failAudit.map((x) => mapAuditTitle(x)).join("|"));
       break;
     case "school":
       initialBody[`Criteri_Conformita_${key}__c`] =
