@@ -89,7 +89,7 @@ const getRescanEntityAsseveratedToBeAnalyzed = async (
     const asservationOlderThanDays: number = parseInt(jobOlderThanDaysParam);
 
     const filterDate = new Date();
-    filterDate.setDate(filterDate.getDate() + asservationOlderThanDays);
+    filterDate.setDate(filterDate.getDate() - asservationOlderThanDays);
 
     const rescanEntityToBeAnalyzed = await dbQM.query(
       `SELECT E.id
