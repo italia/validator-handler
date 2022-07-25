@@ -232,7 +232,7 @@ export class jobController {
     }
   }
 
-  async manageInPendingJobs(queue: Queue) {
+  async managePendingJobs(queue: Queue) {
     const jobsUpdated = [];
 
     try {
@@ -243,12 +243,12 @@ export class jobController {
 
       const jobInQueue = await queue.getJobs();
       const ids = jobInQueue.map(function (obj) {
-        return obj.id;
+        return obj.data.id;
       });
 
       const inPendingJobs: Job[] = await jobDefine(this.db).findAll({
         where: {
-          status: "IN_PENDING",
+          status: "PENDING",
           id: {
             [Op.notIn]: ids,
           },
@@ -258,10 +258,15 @@ export class jobController {
         },
       });
 
+      const returnValues = [];
       for (const job of inPendingJobs) {
         await queue.add("job", { id: job.id });
+        returnValues.push(job.id);
       }
+
+      return returnValues;
     } catch (e) {
+      console.log("EXCEPTION IN MANAGE PENDING JOBS: ", e.toString());
       return jobsUpdated;
     }
   }
