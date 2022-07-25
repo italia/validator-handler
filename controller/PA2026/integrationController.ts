@@ -123,7 +123,7 @@ const pushResult = async (
     );
 
     if (isFirstScan) {
-      let firsScanBody = await mapPA2026Body(
+      const firsScanBody = await mapPA2026Body(
         job,
         cleanJsonReport,
         generalStatus,
