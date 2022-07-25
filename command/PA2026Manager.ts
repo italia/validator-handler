@@ -31,7 +31,7 @@ dbRoot
         asseverationResult
       );
 
-      await sendRetryJobInError();
+      await sendRetryJobInSendError();
     } catch (e) {
       console.log("[PA2026 MANAGER]: EXCEPTION - ", e.toString());
     }
@@ -223,7 +223,7 @@ const asseveration = async () => {
 
           entityUpdateObj = {
             enable: true,
-            asseverationJobId: asseverationJobId,
+            asseverationJobId: parseInt(asseverationJobId),
           };
         }
 
@@ -270,7 +270,7 @@ const calculateTypeSubtype = async (packet) => {
   return [type, subtype];
 };
 
-const sendRetryJobInError = async () => {
+const sendRetryJobInSendError = async () => {
   try {
     const date = new Date();
     date.setHours(date.getHours() - 1);
