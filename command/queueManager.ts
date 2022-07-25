@@ -100,7 +100,10 @@ dbQM
     }
 
     console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
-    console.log("RESCAN ENTITIES", rescanEntityToBeAnalyzed.length);
+    console.log(
+      "RESCAN ENTITIES TO BE ANALYZED",
+      rescanEntityToBeAnalyzed.length
+    );
     console.log(
       "RESCAN ASSEVERATED ENTITIES",
       rescanEntityAsseveratedToBeAnalyzed.length
