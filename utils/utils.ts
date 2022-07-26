@@ -1,7 +1,7 @@
 "use strict";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
-import { idToTitle } from "../storage/auditIdToTitle";
+import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
 
 const arrayChunkify = async (
   inputArray: [],
@@ -53,7 +53,7 @@ const mapValidationErrors = async (
 };
 
 function mapAuditTitle(id) {
-  if (id in idToTitle) return idToTitle[id];
+  if (id in auditDictionary) return auditDictionary[id].title;
   return id;
 }
 

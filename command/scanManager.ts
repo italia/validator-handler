@@ -73,7 +73,7 @@ const scan = async (jobId) => {
       jobObjParsed.scan_url,
       jobObjParsed.type,
       "online",
-      logLevels.display_info,
+      logLevels.display_none,
       false
     );
 
