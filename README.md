@@ -9,6 +9,7 @@ PA Website validator handler è un tool che gestisce le scansioni effettuate da 
 - Creazione e gestione di code di PA da scansionare.
 - Integra Pa Website Validator per eseguire scansioni programmate e salvarne i risultati.
 - Espone API.
+- Si integra con la piattaforma PA2026
 
 ## Tecnologie
 
@@ -19,6 +20,7 @@ PA Website Validator handler utilizza le seguenti tecnologie
 - [Typescript] - Linguaggio di programmazione fortemente tipizzato che si basa su JavaScript
 - [PostgreSQL] - Sistema database relazionale a oggetti
 - [Redis] - Archivio dati in memoria e di tipo chiave-valore
+- [Swagger] - Libreria per documentazione API
 
 ## Requirements
 
@@ -47,30 +49,36 @@ Comando di build:
 npm run build
 ```
 
-Comando di creazione coda:
+Comando di **creazione coda**:
 
 ```bash
-npm run queue-manager --maxItems <number> --passedOlderThanDays <number> --failedOlderThanDays <number> --asservationOlderThanDays <number>
+npm run dist-queue-manager --maxItems <number> --passedOlderThanDays <number> --failedOlderThanDays <number> --asservationOlderThanDays <number>
 ```
 
 Mappa opzioni comando
-| Parametro Comando | Descrizione | Obbligatorio | Possibili valori | Default
-| ------ | ------ | ------ | ------ | ------ |
-| - -maxItems | Numero massimo di PA da accodare | ❌ | | 100
-| - -passedOlderThanDays | Giorni dopo i quali le entity con Job che ha fornito risultato PASSED vengono riaccodate per essere scansionate | ❌ | |28
-| - -failedOlderThanDays | Giorni dopo i quali le entity con Job che ha fornito risultato FAILED vengono riaccodate per essere scansionate | ❌ | | 14
-| - -asservationOlderThanDays | Giorni dopo i quali le entity asseverate vengono riaccodate per essere scansionate | ❌ | | 28
+| Parametro Comando | Descrizione | Obbligatorio | Default
+| ------- | ------- | ------- | ------- |
+| - -maxItems | Numero massimo di PA da accodare | ❌ | 100
+| - -passedOlderThanDays | Giorni dopo i quali le entity con Job che ha fornito risultato PASSED vengono riaccodate per essere scansionate | ❌ |28
+| - -failedOlderThanDays | Giorni dopo i quali le entity con Job che ha fornito risultato FAILED vengono riaccodate per essere scansionate | ❌ | 14
+| - -asservationOlderThanDays | Giorni dopo i quali le entity asseverate vengono riaccodate per essere scansionate | ❌ | 28
 
-Comando di prelievo da coda e start scansione:
+Comando di prelievo Job da coda e **start scansione**:
 
 ```bash
-npm run scan-manager
+npm run dist-scan-manager
 ```
 
-Comando di start webserver:
+Comando di **esecuzione flusso integrazione PA2026**:
 
 ```bash
-npm run webserver
+npm run dist-PA2026-manager
+```
+
+Comando di start **webserver**:
+
+```bash
+npm run dist-webserver
 ```
 
 ## API DOC
@@ -89,3 +97,4 @@ Per visualizzare la documentazione API avviare il webserver e andare sulla rotta
 [swagger-ui-url]: https://github.com/scottie1984/swagger-ui-express
 [swagger-jsondoc-url]: https://github.com/Surnet/swagger-jsdoc
 [pa-website-validator-url]: https://github.com/italia/pa-website-validator
+[swagger]: https://swagger.io/
