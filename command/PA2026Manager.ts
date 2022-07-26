@@ -280,7 +280,9 @@ const calculateTypeSubtype = async (packet) => {
 const sendRetryJobInSendError = async () => {
   try {
     const date = new Date();
-    date.setHours(date.getHours() - 1);
+    date.setHours(
+      date.getHours() - parseInt(process.env.SEND_RETRY_JOB_IN_ERROR)
+    );
 
     const jobs: Job[] = await jobDefine(dbWS).findAll({
       where: {
