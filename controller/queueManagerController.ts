@@ -10,7 +10,15 @@ const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
 
   try {
     const firstTimeEntityToBeAnalyzed = await dbQM.query(
-      'SELECT E.id FROM "Entities" as E LEFT JOIN "Jobs" as J ON E.id = J.entity_id WHERE J.id IS NULL AND E.enable = TRUE LIMIT :limit',
+      `SELECT E.id
+            FROM "Entities" as E
+            WHERE 0 = (
+                SELECT count(*)
+                FROM "Jobs" as J
+                WHERE J.entity_id = E.id
+                AND J.status != 'ERROR'
+            )
+            LIMIT :limit`,
       {
         replacements: { limit: limit },
         type: QueryTypes.RAW,
