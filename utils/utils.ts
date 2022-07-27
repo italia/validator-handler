@@ -93,6 +93,7 @@ const mapPA2026Body = async (
 
     const initialBody = [];
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
+    initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
     (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
       (initialBody[`ID_Crawler_Job_${key}__c`] = job.id),
       (initialBody[`Esperienza_Utente_${key}__c`] = userExperienceObj.status),
