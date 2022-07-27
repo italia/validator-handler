@@ -179,7 +179,7 @@ const asseveration = async () => {
     for (const record of records) {
       try {
         const externalId = record.Id ?? "";
-        const asseverationJobId =
+        let asseverationJobId =
           parseInt(record.ID_Crawler_Job_definitiva__c) ?? null;
         const projectState = record.Stato_Progetto__c ?? "";
 
@@ -226,6 +226,10 @@ const asseveration = async () => {
 
           if (!updateJob) {
             throw new Error("Job update fail");
+          }
+
+          if (projectState === "IN VERIFICA") {
+            asseverationJobId = null;
           }
 
           entityUpdateObj = {
