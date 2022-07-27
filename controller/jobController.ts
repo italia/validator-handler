@@ -219,6 +219,8 @@ export class jobController {
       for (const job of inProgressJobsInError) {
         const result = await job.update({
           status: "ERROR",
+          preserve: false,
+          preserve_reason: null,
         });
 
         if (result) {
