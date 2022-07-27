@@ -9,48 +9,60 @@ import { allowedMunicipalitySubTypes } from "../database/models/entity";
 const cleanMunicipalityJSONReport = async (jsonResult: string) => {
   const parsedResult = JSON.parse(jsonResult);
 
-  const userExperienceFailAudits = await getFailAuditByClusterGroup(
+  const userExperienceAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
     "informed-citizen",
     "user-experience"
   );
-  let userExperienceStatus = true;
-  if (userExperienceFailAudits.length > 0) {
-    userExperienceStatus = false;
+  let userExperienceStatus = false;
+  if (
+    Object.keys(userExperienceAudits.passed).length > 0 &&
+    Object.keys(userExperienceAudits.failed).length === 0
+  ) {
+    userExperienceStatus = true;
   }
 
-  const functionFailAudits = await getFailAuditByClusterGroup(
+  const functionAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
     "informed-citizen",
     "function"
   );
-  let functionStatus = true;
-  if (functionFailAudits.length > 0) {
-    functionStatus = false;
+  let functionStatus = false;
+  if (
+    Object.keys(functionAudits.passed).length > 0 &&
+    Object.keys(functionAudits.failed).length === 0
+  ) {
+    functionStatus = true;
   }
 
-  const legislationFailAudits = await getFailAuditByClusterGroup(
+  const legislationAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
     "informed-citizen",
     "legislation"
   );
-  let legislationStatus = true;
-  if (legislationFailAudits.length > 0) {
-    legislationStatus = false;
+  let legislationStatus = false;
+  if (
+    Object.keys(legislationAudits.passed).length > 0 &&
+    Object.keys(legislationAudits.failed).length === 0
+  ) {
+    legislationStatus = true;
   }
 
-  const securityFailAudits = await getFailAuditByClusterGroup(
+  const securityAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
     "informed-citizen",
     "security"
   );
-  let securityStatus = true;
-  if (securityFailAudits.length > 0) {
-    securityStatus = false;
+  let securityStatus = false;
+  if (
+    Object.keys(securityAudits.passed).length > 0 &&
+    Object.keys(securityAudits.failed).length === 0
+  ) {
+    securityStatus = true;
   }
 
   const performanceScore = await getPerformanceScore(parsedResult);
@@ -70,24 +82,30 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     informedCitizenStatus = true;
   }
 
-  const activeCitizenFailAudits = await getFailAuditByClusterGroup(
+  const activeCitizenAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
     "active-citizen"
   );
-  let activeCitizenStatus = true;
-  if (activeCitizenFailAudits.length > 0) {
-    activeCitizenStatus = false;
+  let activeCitizenStatus = false;
+  if (
+    Object.keys(activeCitizenAudits.passed).length > 0 &&
+    Object.keys(activeCitizenAudits.failed).length === 0
+  ) {
+    activeCitizenStatus = true;
   }
 
-  const recommendationsFailAudits = await getFailAuditByClusterGroup(
+  const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
     "recommendations"
   );
-  let recommendationsStatus = true;
-  if (recommendationsFailAudits.length > 0) {
-    recommendationsStatus = false;
+  let recommendationsStatus = false;
+  if (
+    Object.keys(recommendationsAudits.passed).length > 0 &&
+    Object.keys(recommendationsAudits.failed).length === 0
+  ) {
+    recommendationsStatus = true;
   }
 
   return {
@@ -97,19 +115,22 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
       groups: {
         "esperienza-utente": {
           status: userExperienceStatus,
-          failAudit: userExperienceFailAudits,
+          audit: {
+            ...userExperienceAudits.passed,
+            ...userExperienceAudits.failed,
+          },
         },
         funzionalita: {
           status: functionStatus,
-          failAudit: functionFailAudits,
+          audit: { ...functionAudits.passed, ...functionAudits.failed },
         },
         normativa: {
           status: legislationStatus,
-          failAudit: legislationFailAudits,
+          audit: { ...legislationAudits.passed, ...legislationAudits.failed },
         },
         sicurezza: {
           status: securityStatus,
-          failAudit: securityFailAudits,
+          audit: { ...securityAudits.passed, ...securityAudits.failed },
         },
         prestazioni: {
           status: performanceStatus,
@@ -119,12 +140,15 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
 
     "cittadino-attivo": {
       status: activeCitizenStatus,
-      failAudit: activeCitizenFailAudits,
+      audit: { ...activeCitizenAudits.passed, ...activeCitizenAudits.failed },
     },
 
     raccomandazioni: {
       status: recommendationsStatus,
-      failAudit: recommendationsFailAudits,
+      audit: {
+        ...recommendationsAudits.passed,
+        ...recommendationsAudits.failed,
+      },
     },
   };
 };
@@ -132,37 +156,46 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
 const cleanSchoolJSONReport = async (jsonResult: string) => {
   const parsedResult = JSON.parse(jsonResult);
 
-  const userExperienceFailAudits = await getFailAuditByClusterGroup(
+  const userExperienceAudits = await getAuditByClusterGroup(
     parsedResult,
     schoolAudits,
     "compliance-criteria",
     "user-experience"
   );
-  let userExperienceStatus = true;
-  if (userExperienceFailAudits.length > 0) {
-    userExperienceStatus = false;
+  let userExperienceStatus = false;
+  if (
+    Object.keys(userExperienceAudits.passed).length > 0 &&
+    Object.keys(userExperienceAudits.failed).length === 0
+  ) {
+    userExperienceStatus = true;
   }
 
-  const legislationFailAudits = await getFailAuditByClusterGroup(
+  const legislationAudits = await getAuditByClusterGroup(
     parsedResult,
     schoolAudits,
     "compliance-criteria",
     "legislation"
   );
-  let legislationStatus = true;
-  if (legislationFailAudits.length > 0) {
-    legislationStatus = false;
+  let legislationStatus = false;
+  if (
+    Object.keys(legislationAudits.passed).length > 0 &&
+    Object.keys(legislationAudits.failed).length === 0
+  ) {
+    legislationStatus = true;
   }
 
-  const securityFailAudits = await getFailAuditByClusterGroup(
+  const securityAudits = await getAuditByClusterGroup(
     parsedResult,
     schoolAudits,
     "compliance-criteria",
     "security"
   );
-  let securityStatus = true;
-  if (securityFailAudits.length > 0) {
-    securityStatus = false;
+  let securityStatus = false;
+  if (
+    Object.keys(securityAudits.passed).length > 0 &&
+    Object.keys(securityAudits.failed).length === 0
+  ) {
+    securityStatus = true;
   }
 
   const performanceScore = await getPerformanceScore(parsedResult);
@@ -181,14 +214,17 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     complianceCriteriaStatus = true;
   }
 
-  const recommendationsFailAudits = await getFailAuditByClusterGroup(
+  const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
     schoolAudits,
     "recommendations"
   );
-  let recommendationsStatus = true;
-  if (recommendationsFailAudits.length > 0) {
-    recommendationsStatus = false;
+  let recommendationsStatus = false;
+  if (
+    Object.keys(recommendationsAudits.passed).length > 0 &&
+    Object.keys(recommendationsAudits.failed).length === 0
+  ) {
+    recommendationsStatus = true;
   }
 
   return {
@@ -198,15 +234,18 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
       groups: {
         "esperienza-utente": {
           status: userExperienceStatus,
-          failAudit: userExperienceFailAudits,
+          audit: {
+            ...userExperienceAudits.passed,
+            ...userExperienceAudits.failed,
+          },
         },
         normativa: {
           status: legislationStatus,
-          failAudit: legislationFailAudits,
+          audit: { ...legislationAudits.passed, ...legislationAudits.failed },
         },
         sicurezza: {
           status: securityStatus,
-          failAudit: securityFailAudits,
+          audit: { ...securityAudits.passed, ...securityAudits.failed },
         },
         prestazioni: {
           status: performanceStatus,
@@ -216,29 +255,36 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
 
     raccomandazioni: {
       status: recommendationsStatus,
-      failAudit: recommendationsFailAudits,
+      audit: {
+        ...recommendationsAudits.passed,
+        ...recommendationsAudits.failed,
+      },
     },
   };
 };
 
-const getFailAuditByClusterGroup = async (
+const getAuditByClusterGroup = async (
   jsonResult,
   audits,
   cluster,
   group = ""
 ) => {
+  const auditList = {
+    passed: {},
+    failed: {},
+  };
+
   let auditsToGet: string[];
   if (group !== "") {
-    auditsToGet = audits[cluster][group] ?? ["error"];
+    auditsToGet = audits[cluster][group] ?? null;
   } else {
-    auditsToGet = audits[cluster] ?? ["error"];
+    auditsToGet = audits[cluster] ?? null;
   }
 
-  if (!("audits" in jsonResult)) {
-    return auditsToGet;
+  if (!("audits" in jsonResult) || auditsToGet === null) {
+    return auditList;
   }
 
-  const failAudits = [];
   for (const auditId of auditsToGet) {
     let auditScore = 0;
     if (
@@ -249,14 +295,20 @@ const getFailAuditByClusterGroup = async (
     }
 
     if (auditScore < 0.5) {
-      failAudits.push(auditId);
+      auditList.failed[auditId] = auditScore;
+    } else {
+      auditList.passed[auditId] = auditScore;
     }
   }
 
-  return failAudits;
+  return auditList;
 };
 
 const getPerformanceScore = async (jsonResult) => {
+  if (jsonResult === undefined || jsonResult === null) {
+    return 0;
+  }
+
   if (!("categories" in jsonResult)) {
     return 0;
   }
