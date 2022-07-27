@@ -115,22 +115,22 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
       groups: {
         "esperienza-utente": {
           status: userExperienceStatus,
-          audit: {
+          audits: {
             ...userExperienceAudits.passed,
             ...userExperienceAudits.failed,
           },
         },
         funzionalita: {
           status: functionStatus,
-          audit: { ...functionAudits.passed, ...functionAudits.failed },
+          audits: { ...functionAudits.passed, ...functionAudits.failed },
         },
         normativa: {
           status: legislationStatus,
-          audit: { ...legislationAudits.passed, ...legislationAudits.failed },
+          audits: { ...legislationAudits.passed, ...legislationAudits.failed },
         },
         sicurezza: {
           status: securityStatus,
-          audit: { ...securityAudits.passed, ...securityAudits.failed },
+          audits: { ...securityAudits.passed, ...securityAudits.failed },
         },
         prestazioni: {
           status: performanceStatus,
@@ -140,12 +140,12 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
 
     "cittadino-attivo": {
       status: activeCitizenStatus,
-      audit: { ...activeCitizenAudits.passed, ...activeCitizenAudits.failed },
+      audits: { ...activeCitizenAudits.passed, ...activeCitizenAudits.failed },
     },
 
     raccomandazioni: {
       status: recommendationsStatus,
-      audit: {
+      audits: {
         ...recommendationsAudits.passed,
         ...recommendationsAudits.failed,
       },
@@ -234,18 +234,18 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
       groups: {
         "esperienza-utente": {
           status: userExperienceStatus,
-          audit: {
+          audits: {
             ...userExperienceAudits.passed,
             ...userExperienceAudits.failed,
           },
         },
         normativa: {
           status: legislationStatus,
-          audit: { ...legislationAudits.passed, ...legislationAudits.failed },
+          audits: { ...legislationAudits.passed, ...legislationAudits.failed },
         },
         sicurezza: {
           status: securityStatus,
-          audit: { ...securityAudits.passed, ...securityAudits.failed },
+          audits: { ...securityAudits.passed, ...securityAudits.failed },
         },
         prestazioni: {
           status: performanceStatus,
@@ -255,7 +255,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
 
     raccomandazioni: {
       status: recommendationsStatus,
-      audit: {
+      audits: {
         ...recommendationsAudits.passed,
         ...recommendationsAudits.failed,
       },
