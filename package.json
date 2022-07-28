@@ -1,7 +1,7 @@
 {
   "name": "crawler-handler",
   "version": "1.0.0",
-  "description": "TBD",
+  "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
   "engines": {
@@ -22,8 +22,8 @@
     "prepack": "npm run build",
     "type:check": "tsc --noEmit"
   },
-  "author": "Andrea Cattaneo",
-  "license": "ISC",
+  "author": "Presidenza del Consiglio dei Ministri",
+  "license": "BSD-3-Clause",
   "dependencies": {
     "@types/sequelize": "^4.28.13",
     "aws-sdk": "^2.1143.0",
