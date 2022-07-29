@@ -5,10 +5,10 @@ dotenv.config();
 
 import * as AWS from "aws-sdk";
 
-/*AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-})*/
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
 
 const upload = async (fileContent: string, bucketFolderPath: string) => {
   const s3 = new AWS.S3();

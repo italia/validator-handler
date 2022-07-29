@@ -156,12 +156,15 @@ const uploadFiles = async (
   cleanJsonLocationUrl: string | null;
 }> => {
   try {
-    return {
-      status: true,
-      htmlLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.html",
-      jsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.json",
-      cleanJsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "summary.json",
-    };
+    if (parseInt(process.env.BYPASS_S3_UPLOAD) === 1) {
+      return {
+        status: true,
+        htmlLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.html",
+        jsonLocationUrl: "/" + entityId + "/" + jobId + "/" + "report.json",
+        cleanJsonLocationUrl:
+          "/" + entityId + "/" + jobId + "/" + "summary.json",
+      };
+    }
 
     //TODO: Integrazione completata - In attesa di bucket S3 per testing
     const htmlLocationUrl = await s3Upload(
