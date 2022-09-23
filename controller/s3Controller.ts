@@ -3,7 +3,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import * as AWS from "aws-sdk";
+import AWS from "aws-sdk";
 
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

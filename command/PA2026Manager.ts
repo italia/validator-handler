@@ -32,6 +32,8 @@ dbRoot
       );
 
       await sendRetryJobInSendError();
+
+      console.log("[PA2026 MANAGER]: FINISH");
     } catch (e) {
       console.log("[PA2026 MANAGER]: EXCEPTION - ", e.toString());
     }

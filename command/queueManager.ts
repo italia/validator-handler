@@ -53,6 +53,8 @@ const command = yargs(hideBin(process.argv))
 dbQM
   .authenticate()
   .then(async () => {
+    console.log("[QUEUE MANAGER]: start");
+
     const crawlerQueue: Queue = new Queue("crawler-queue", {
       connection: new Redis.Cluster([
         {
@@ -140,6 +142,7 @@ dbQM
     );
     console.log("QUEUE STATUS", counts);
 
+    console.log("[QUEUE MANAGER]: finish");
     process.exit(0);
   })
   .catch((err) => {

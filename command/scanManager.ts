@@ -26,6 +26,8 @@ import { pushResult } from "../controller/PA2026/integrationController";
 dbSM
   .authenticate()
   .then(async () => {
+    console.log("[SCAN MANAGER]: start");
+
     const worker: Worker = new Worker("crawler-queue", null, {
       lockDuration: 10000000,
       connection: new Redis.Cluster([
@@ -34,6 +36,7 @@ dbSM
           port: parseInt(process.env.REDIS_PORT),
         },
       ]),
+      prefix: "{1}",
     });
     const token = v4();
     let job: bullJob;
@@ -51,6 +54,7 @@ dbSM
 
     await worker.close();
 
+    console.log("[SCAN MANAGER]: finish");
     process.exit(0);
   })
   .catch((err) => {
