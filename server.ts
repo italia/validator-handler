@@ -7,10 +7,10 @@ const port = process.env.PORT || 3000;
 import router from "./routes/routes";
 import { dbWS } from "./database/connection";
 
-import basicAuth from "express-basic-auth";
 /*
-
 ** Managed by APIGateway **
+
+import basicAuth from "express-basic-auth";
 
 const basicAuthMiddleware = basicAuth({
 challenge: true,

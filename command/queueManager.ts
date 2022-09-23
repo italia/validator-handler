@@ -61,7 +61,7 @@ dbQM
         removeOnComplete: true,
         removeOnFail: true,
       },
-      prefix: '{1}',
+      prefix: "{1}",
     });
 
     const inProgressJobInError = await new jobController(
