@@ -58,5 +58,5 @@ COMMAND="$INITIALCOMMAND$TABLENAME"
 if [[ "$DISTRIBUTION_TYPE" == "typescript" ]]; then
   (cd "$PRJPATH" && eval "$COMMAND")
 elif [[ "$DISTRIBUTION_TYPE" == "javascript" ]]; then
-  (cd "$PRJPATH"/distribution && eval "$COMMAND")
+  (cd "$PRJPATH"/dist && eval "$COMMAND")
 fi

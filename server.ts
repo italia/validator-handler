@@ -8,10 +8,15 @@ import router from "./routes/routes";
 import { dbWS } from "./database/connection";
 
 import basicAuth from "express-basic-auth";
+/*
+
+** Managed by APIGateway **
+
 const basicAuthMiddleware = basicAuth({
-  challenge: true,
-  users: { [process.env.BASIC_AUTH_USERNAME]: process.env.BASIC_AUTH_PASSWORD },
+challenge: true,
+users: { [process.env.BASIC_AUTH_USERNAME]: process.env.BASIC_AUTH_PASSWORD },
 });
+*/
 
 import { options } from "./swagger/config";
 import swaggerJSDoc from "swagger-jsdoc";
@@ -23,7 +28,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(
   "/docs",
-  basicAuthMiddleware,
+  //basicAuthMiddleware,
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec)
 );
