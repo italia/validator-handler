@@ -5,6 +5,7 @@ dotenv.config();
 
 import { dbQM } from "../database/connection";
 
+import Redis from "ioredis";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Queue } from "bullmq";
@@ -53,10 +54,12 @@ dbQM
   .authenticate()
   .then(async () => {
     const crawlerQueue: Queue = new Queue("crawler-queue", {
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
-      },
+      connection: new Redis.Cluster([
+        {
+          host: process.env.REDIS_HOST,
+          port: parseInt(process.env.REDIS_PORT),
+        },
+      ]),
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: true,

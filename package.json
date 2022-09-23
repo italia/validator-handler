@@ -1,6 +1,6 @@
 {
   "name": "crawler-handler",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
@@ -34,6 +34,7 @@
     "dateformat": "^5.0.3",
     "express": "^4.17.3",
     "express-basic-auth": "^1.2.1",
+    "ioredis": "^5.2.3",
     "jsonschema": "^1.4.1",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
