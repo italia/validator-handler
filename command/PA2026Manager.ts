@@ -45,7 +45,7 @@ dbRoot
 
 const create = async () => {
   const createQuery =
-    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c  WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141'  AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null AND Stato_Progetto__c= 'COMPLETATO'";
+    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c  WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141'  AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null";
   const returnIds = [];
 
   try {
@@ -163,7 +163,7 @@ const asseveration = async () => {
   const asseverationQuery =
     "SELECT id, Codice_amministrativo__c, ID_Crawler__c, ID_Crawler_Job_definitiva__c, Stato_Progetto__c " +
     "FROM outfunds__Funding_Request__c " +
-    "WHERE Stato_Progetto__c IN ('IN VERIFICA', 'RESPINTO', 'IN LIQUIDAZIONE', 'LIQUIDATO', 'ANNULLATO', 'RINUNCIATO') " +
+    "WHERE Stato_Progetto__c IN ('COMPLETATO', 'RESPINTO', 'IN LIQUIDAZIONE', 'LIQUIDATO', 'ANNULLATO', 'RINUNCIATO') " +
     "AND Progetto_Terminato__c=false AND ID_Crawler__c != null";
   const returnIds = [];
   try {
