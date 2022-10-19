@@ -114,7 +114,6 @@ const update = async () => {
     "AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' " +
     "AND Url_Sito_Internet__c !=null " +
     "AND ID_Crawler__c!=null " +
-    "AND Stato_Progetto__c= 'COMPLETATO' " +
     "AND Controllo_URL__c=false ";
   const returnIds = [];
 
