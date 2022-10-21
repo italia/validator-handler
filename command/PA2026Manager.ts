@@ -82,7 +82,9 @@ const create = async () => {
           });
 
           if (!entity) {
-            throw new Error("Create entity failed");
+            throw new Error(
+              "Create entity failed for entity external id: " + externalId
+            );
           }
         }
 
@@ -188,7 +190,9 @@ const asseveration = async () => {
           externalId
         );
         if (!entity) {
-          throw new Error("Retrieve entity failed");
+          throw new Error(
+            "Retrieve entity failed for entity external id: " + externalId
+          );
         }
 
         let entityUpdateObj = {
