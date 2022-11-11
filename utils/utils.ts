@@ -104,19 +104,19 @@ const mapPA2026Body = async (
       (initialBody[`Esperienza_Utente_${key}_Descrizione__c`] =
         getFailAudits(userExperienceObj.audits)
           .map((x) => mapAuditTitle(x))
-          .join("|") ?? ""),
+          .join(" | ") ?? ""),
       (initialBody[`Normativa_${key}_Descrizione__c`] =
         getFailAudits(legislationObj.audits)
           .map((x) => mapAuditTitle(x))
-          .join("|") ?? ""),
+          .join(" | ") ?? ""),
       (initialBody[`Sicurezza_${key}_Descrizione__c`] =
         getFailAudits(securityObj.audits)
           .map((x) => mapAuditTitle(x))
-          .join("|") ?? ""),
+          .join(" | ") ?? ""),
       (initialBody[`Raccomandazioni_${key}_Descrizione__c`] =
         getFailAudits(raccomandationObj.audits)
           .map((x) => mapAuditTitle(x))
-          .join("|") ?? "");
+          .join(" | ") ?? "");
 
     switch (job.type) {
       case "municipality":
@@ -130,11 +130,11 @@ const mapPA2026Body = async (
           (initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
             getFailAudits(cleanJsonResult["cittadino-attivo"].audits)
               .map((x) => mapAuditTitle(x))
-              .join("|") ?? ""),
+              .join(" | ") ?? ""),
           (initialBody[`Funzionalita_${key}_Descrizione__c`] =
             getFailAudits(functionObj.audits)
               .map((x) => mapAuditTitle(x))
-              .join("|") ?? "");
+              .join(" | ") ?? "");
         break;
       case "school":
         initialBody[`Criteri_Conformita_${key}__c`] =
