@@ -124,6 +124,15 @@ dbQM
       );
     }
 
+    rescanEntityToBeAnalyzed = rescanEntityToBeAnalyzed.filter(
+      (elem) => !firstTimeEntityToBeAnalyzed.find(({ id }) => elem.id === id)
+    );
+
+    rescanEntityAsseveratedToBeAnalyzed =
+      rescanEntityAsseveratedToBeAnalyzed.filter(
+        (elem) => !firstTimeEntityToBeAnalyzed.find(({ id }) => elem.id === id)
+      );
+
     if (
       rescanEntityToBeAnalyzed.length > 0 ||
       rescanEntityAsseveratedToBeAnalyzed.length > 0
