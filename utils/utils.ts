@@ -124,13 +124,13 @@ const mapPA2026Body = async (
         const functionObj = cleanJsonResult[mainObjKey].groups["funzionalita"];
         (initialBody[`Cittadino_Informato_${key}__c`] =
           cleanJsonResult[mainObjKey].status),
-          (initialBody[`Cittadino_Attivo_${key}__c`] =
-            cleanJsonResult["cittadino-attivo"].status),
+          //(initialBody[`Cittadino_Attivo_${key}__c`] =
+          //  cleanJsonResult["cittadino-attivo"].status),
           (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
-          (initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
-            getFailAudits(cleanJsonResult["cittadino-attivo"].audits)
-              .map((x) => mapAuditTitle(x))
-              .join(" | ") ?? ""),
+          //(initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
+          //  getFailAudits(cleanJsonResult["cittadino-attivo"].audits)
+          //    .map((x) => mapAuditTitle(x))
+          //    .join(" | ") ?? ""),
           (initialBody[`Funzionalita_${key}_Descrizione__c`] =
             getFailAudits(functionObj.audits)
               .map((x) => mapAuditTitle(x))

@@ -145,12 +145,12 @@ const options = {
         Sequelize.literal(
           "((json_result->'raccomandazioni'->'audits'->>'municipality-metatag')::float)"
         ),
-        Sequelize.literal(
-          "((json_result->'cittadino-attivo'->'audits'->>'municipality-subdomain')::float)"
-        ),
-        Sequelize.literal(
-          "((json_result->'cittadino-attivo'->'audits'->>'municipality-personal-area-security')::float)"
-        ),
+        //Sequelize.literal(
+        //  "((json_result->'cittadino-attivo'->'audits'->>'municipality-subdomain')::float)"
+        //),
+        //Sequelize.literal(
+        //  "((json_result->'cittadino-attivo'->'audits'->>'municipality-personal-area-security')::float)"
+        //),
         Sequelize.literal(
           "((json_result->'cittadino-informato'->'groups'->'normativa'->'audits'->>'municipality-legislation-privacy-is-present')::float)"
         ),
