@@ -82,18 +82,18 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     informedCitizenStatus = true;
   }
 
-  const activeCitizenAudits = await getAuditByClusterGroup(
-    parsedResult,
-    municipalityAudits,
-    "active-citizen"
-  );
-  let activeCitizenStatus = false;
-  if (
-    Object.keys(activeCitizenAudits.passed).length > 0 &&
-    Object.keys(activeCitizenAudits.failed).length === 0
-  ) {
-    activeCitizenStatus = true;
-  }
+  //const activeCitizenAudits = await getAuditByClusterGroup(
+  //  parsedResult,
+  //  municipalityAudits,
+  //  "active-citizen"
+  //);
+  //let activeCitizenStatus = false;
+  //if (
+  //  Object.keys(activeCitizenAudits.passed).length > 0 &&
+  //  Object.keys(activeCitizenAudits.failed).length === 0
+  //) {
+  //  activeCitizenStatus = true;
+  //}
 
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
@@ -138,10 +138,10 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
       },
     },
 
-    "cittadino-attivo": {
-      status: activeCitizenStatus,
-      audits: { ...activeCitizenAudits.passed, ...activeCitizenAudits.failed },
-    },
+    //"cittadino-attivo": {
+    //  status: activeCitizenStatus,
+    //  audits: { ...activeCitizenAudits.passed, ...activeCitizenAudits.failed },
+    //},
 
     raccomandazioni: {
       status: recommendationsStatus,
@@ -348,9 +348,8 @@ const isPassedReport = async (
         passed = jsonReport["cittadino-informato"].status;
       } else if (subtype === allowedMunicipalitySubTypes[1]) {
         // eslint-disable-next-line
-        passed =
-          jsonReport["cittadino-informato"].status &&
-          jsonReport["cittadino-attivo"].status;
+        passed = jsonReport["cittadino-informato"].status;
+        //&& jsonReport["cittadino-attivo"].status;
       } else {
         passed = false;
       }
