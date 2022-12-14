@@ -348,8 +348,7 @@ const isPassedReport = async (
         passed = jsonReport["cittadino-informato"].status;
       } else if (subtype === allowedMunicipalitySubTypes[1]) {
         // eslint-disable-next-line
-        passed =
-          jsonReport["cittadino-informato"].status;
+        passed = jsonReport["cittadino-informato"].status;
         //&& jsonReport["cittadino-attivo"].status;
       } else {
         passed = false;
