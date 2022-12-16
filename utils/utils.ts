@@ -1,7 +1,10 @@
 "use strict";
+import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
 import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
+
+const packageJSON = JSON.parse(readFileSync('../package.json').toString()) ?? {};
 
 const arrayChunkify = async (
   inputArray: [],
@@ -92,6 +95,8 @@ const mapPA2026Body = async (
     const key = isFirstScan ? "1" : "n";
 
     const initialBody = [];
+    initialBody[`Versione_Crawler_${key}__c`] =
+      packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
     (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
