@@ -4,7 +4,8 @@ import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
 import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
 
-const packageJSON = JSON.parse(readFileSync('../package.json').toString()) ?? {};
+const packageJSON =
+  JSON.parse(readFileSync("../package.json").toString()) ?? {};
 
 const arrayChunkify = async (
   inputArray: [],
@@ -77,7 +78,8 @@ const mapPA2026Body = async (
   job: Job,
   cleanJsonResult,
   generalStatus: boolean,
-  isFirstScan: boolean
+  isFirstScan: boolean,
+  passedAuditsPercentage: string
 ) => {
   try {
     const mainObjKey =
@@ -97,6 +99,8 @@ const mapPA2026Body = async (
     const initialBody = [];
     initialBody[`Versione_Crawler_${key}__c`] =
       packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
+    initialBody[`Criteri_Superati_Crawler_${key}__c`] =
+      passedAuditsPercentage ?? 0;
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
     (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
@@ -153,4 +157,56 @@ const mapPA2026Body = async (
   }
 };
 
-export { arrayChunkify, mapValidationErrors, mapPA2026Body };
+const calculatePassedAuditPercentage = async (
+  job: Job,
+  cleanJsonResult
+): Promise<string> => {
+  let passed = 0;
+  let total = 0;
+  let totalAudits = {};
+
+  const mainObjKey =
+    job.type === "municipality" ? "cittadino-informato" : "criteri-conformita";
+
+  const raccomandationAuditsObj =
+    cleanJsonResult["raccomandazioni"]["audits"] ?? {};
+  const legislationAudits =
+    cleanJsonResult[mainObjKey]["groups"]["normativa"]["audits"] ?? {};
+  const securityAudits =
+    cleanJsonResult[mainObjKey]["groups"]["sicurezza"]["audits"] ?? {};
+  const userExperienceAudits =
+    cleanJsonResult[mainObjKey]["groups"]["esperienza-utente"]["audits"] ?? {};
+  totalAudits = {
+    ...raccomandationAuditsObj,
+    ...legislationAudits,
+    ...securityAudits,
+    ...userExperienceAudits,
+  };
+
+  if (job.type === "municipality") {
+    const functionalityAudits =
+      cleanJsonResult[mainObjKey]["groups"]["funzionalita"]["audits"] ?? {};
+    totalAudits = { ...totalAudits, ...functionalityAudits };
+  }
+
+  for (const auditResult of Object.values(totalAudits)) {
+    total++;
+
+    if (auditResult > 0) {
+      passed++;
+    }
+  }
+
+  if (total > 0) {
+    return (passed / total).toFixed(2);
+  }
+
+  return "0";
+};
+
+export {
+  arrayChunkify,
+  mapValidationErrors,
+  mapPA2026Body,
+  calculatePassedAuditPercentage,
+};

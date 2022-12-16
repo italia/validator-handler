@@ -14,7 +14,10 @@ import {
   define as jobDefine,
   preserveReasons,
 } from "../../database/models/job";
-import { mapPA2026Body } from "../../utils/utils";
+import {
+  calculatePassedAuditPercentage,
+  mapPA2026Body,
+} from "../../utils/utils";
 
 const retrieveToken = async () => {
   try {
@@ -115,11 +118,17 @@ const pushResult = async (
     const isFirstScan =
       job.preserve && job.preserve_reason === preserveReasons[0];
 
+    const passedAuditsPercentage = await calculatePassedAuditPercentage(
+      job,
+      cleanJsonReport
+    );
+
     let scanBody = await mapPA2026Body(
       job,
       cleanJsonReport,
       generalStatus,
-      false
+      false,
+      passedAuditsPercentage
     );
 
     if (isFirstScan) {
@@ -127,7 +136,8 @@ const pushResult = async (
         job,
         cleanJsonReport,
         generalStatus,
-        true
+        true,
+        passedAuditsPercentage
       );
 
       scanBody = {
