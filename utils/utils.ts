@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
 import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
+import axios from "axios";
 
 const packageJSON =
   JSON.parse(readFileSync("../package.json").toString()) ?? {};
@@ -157,6 +158,13 @@ const mapPA2026Body = async (
   }
 };
 
+const mapPA2026BodyUrlNotExists = async () => {
+  const body = [];
+  body[`Data_scansione_fallita__c`] = Date.now().toString();
+
+  return Object.assign({}, body);
+};
+
 const calculatePassedAuditPercentage = async (
   job: Job,
   cleanJsonResult
@@ -204,9 +212,29 @@ const calculatePassedAuditPercentage = async (
   return "0";
 };
 
+const urlExists = async (url) => {
+  try {
+    let statusCode = undefined;
+    const response = await axios.get(url);
+    statusCode = response.status;
+
+    if (statusCode === undefined || statusCode < 200 || statusCode >= 400) {
+      return false;
+    }
+
+    return true;
+  } catch (ex) {
+    console.log("Url Exists Exception: ", ex);
+
+    return false;
+  }
+};
+
 export {
   arrayChunkify,
   mapValidationErrors,
   mapPA2026Body,
   calculatePassedAuditPercentage,
+  urlExists,
+  mapPA2026BodyUrlNotExists,
 };

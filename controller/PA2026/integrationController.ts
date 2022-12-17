@@ -17,6 +17,7 @@ import {
 import {
   calculatePassedAuditPercentage,
   mapPA2026Body,
+  mapPA2026BodyUrlNotExists,
 } from "../../utils/utils";
 
 const retrieveToken = async () => {
@@ -183,4 +184,43 @@ const pushResult = async (
   }
 };
 
-export { retrieveToken, callQuery, callPatch, pushResult };
+const pushResultUrlNotExists = async (job: Job) => {
+  try {
+    const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
+
+    const scanBody = await mapPA2026BodyUrlNotExists();
+
+    const result = await callPatch(
+      scanBody,
+      process.env.PA2026_UPDATE_RECORDS_PATH.replace(
+        "{external_entity_id}",
+        entity.external_id
+      )
+    );
+
+    //Warn: API returns empty string when it success
+    if (result !== "") {
+      throw new Error("Send data failed");
+    }
+
+    await job.update({
+      data_sent_status: "COMPLETED",
+      data_sent_date: new Date(),
+    });
+  } catch (e) {
+    console.log("PUSH RESULT EXCEPTION", e.toString());
+
+    await job.update({
+      data_sent_status: "ERROR",
+      data_sent_date: new Date(),
+    });
+  }
+};
+
+export {
+  retrieveToken,
+  callQuery,
+  callPatch,
+  pushResult,
+  pushResultUrlNotExists,
+};
