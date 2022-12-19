@@ -157,6 +157,7 @@ const pushResult = async (
       }
     }
 
+/*
     const result = await callPatch(
       scanBody,
       process.env.PA2026_UPDATE_RECORDS_PATH.replace(
@@ -169,6 +170,9 @@ const pushResult = async (
     if (result !== "") {
       throw new Error("Send data failed");
     }
+*/
+
+    console.log('SCAN BODY: ', scanBody)
 
     await job.update({
       data_sent_status: "COMPLETED",
@@ -190,6 +194,7 @@ const pushResultUrlNotExists = async (job: Job) => {
 
     const scanBody = await mapPA2026BodyUrlNotExists();
 
+/*
     const result = await callPatch(
       scanBody,
       process.env.PA2026_UPDATE_RECORDS_PATH.replace(
@@ -202,6 +207,8 @@ const pushResultUrlNotExists = async (job: Job) => {
     if (result !== "") {
       throw new Error("Send data failed");
     }
+*/
+    console.log('PUSH RESULT URL NOT EXISTS SCAN BODY: ', scanBody)
 
     await job.update({
       data_sent_status: "COMPLETED",

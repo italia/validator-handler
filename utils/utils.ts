@@ -1,12 +1,17 @@
 "use strict";
+
+import { dirname } from "path";
 import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
 import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
 import axios from "axios";
+import path from "path";
+import {fileURLToPath} from "url";
 
-const packageJSON =
-  JSON.parse(readFileSync("../package.json").toString()) ?? {};
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const arrayChunkify = async (
   inputArray: [],
@@ -97,11 +102,20 @@ const mapPA2026Body = async (
 
     const key = isFirstScan ? "1" : "n";
 
+    let packageJSON
+    try {
+      packageJSON =
+        JSON.parse(await readFileSync(path.resolve(__dirname, '../package.json')).toString()) ?? {};
+    } catch (e) {
+      packageJSON = null
+      console.log("MAP PA2026 BODY EXCEPTION 01: ", e)
+    }
+
     const initialBody = [];
     initialBody[`Versione_Crawler_${key}__c`] =
       packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
     initialBody[`Criteri_Superati_Crawler_${key}__c`] =
-      passedAuditsPercentage ?? 0;
+      passedAuditsPercentage + "%" ?? "0%";
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
     (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
@@ -154,13 +168,13 @@ const mapPA2026Body = async (
 
     return Object.assign({}, initialBody);
   } catch (e) {
-    console.log("MAP PA2026 BODY EXCEPTION: ", e.toString());
+    console.log("MAP PA2026 BODY EXCEPTION 02: ", e.toString());
   }
 };
 
 const mapPA2026BodyUrlNotExists = async () => {
   const body = [];
-  body[`Data_scansione_fallita__c`] = Date.now().toString();
+  body[`Data_scansione_fallita__c`] = (new Date()).toISOString().split('T')[0];
 
   return Object.assign({}, body);
 };
@@ -206,7 +220,7 @@ const calculatePassedAuditPercentage = async (
   }
 
   if (total > 0) {
-    return (passed / total).toFixed(2);
+    return ((passed / total) * 100).toFixed(0);
   }
 
   return "0";
@@ -224,7 +238,7 @@ const urlExists = async (url) => {
 
     return true;
   } catch (ex) {
-    console.log("Url Exists Exception: ", ex);
+    console.log("Url Exists Exception: ", ex.toString());
 
     return false;
   }

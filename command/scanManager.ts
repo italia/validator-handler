@@ -34,13 +34,10 @@ dbSM
 
     const worker: Worker = new Worker("crawler-queue", null, {
       lockDuration: 10000000,
-      connection: new Redis.Cluster([
-        {
+      connection: {
           host: process.env.REDIS_HOST,
           port: parseInt(process.env.REDIS_PORT),
-        },
-      ]),
-      prefix: "{1}",
+      },
     });
     const token = v4();
     let job: bullJob;
