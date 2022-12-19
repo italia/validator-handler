@@ -170,8 +170,6 @@ const pushResult = async (
       throw new Error("Send data failed");
     }
 
-    console.log("SCAN BODY: ", scanBody);
-
     await job.update({
       data_sent_status: "COMPLETED",
       data_sent_date: new Date(),
