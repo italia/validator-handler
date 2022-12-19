@@ -35,8 +35,8 @@ dbSM
     const worker: Worker = new Worker("crawler-queue", null, {
       lockDuration: 10000000,
       connection: {
-          host: process.env.REDIS_HOST,
-          port: parseInt(process.env.REDIS_PORT),
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT),
       },
     });
     const token = v4();

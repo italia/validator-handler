@@ -7,7 +7,7 @@ import { Job } from "../types/models";
 import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
 import axios from "axios";
 import path from "path";
-import {fileURLToPath} from "url";
+import { fileURLToPath } from "url";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -102,13 +102,17 @@ const mapPA2026Body = async (
 
     const key = isFirstScan ? "1" : "n";
 
-    let packageJSON
+    let packageJSON;
     try {
       packageJSON =
-        JSON.parse(await readFileSync(path.resolve(__dirname, '../package.json')).toString()) ?? {};
+        JSON.parse(
+          await readFileSync(
+            path.resolve(__dirname, "../package.json")
+          ).toString()
+        ) ?? {};
     } catch (e) {
-      packageJSON = null
-      console.log("MAP PA2026 BODY EXCEPTION 01: ", e)
+      packageJSON = null;
+      console.log("MAP PA2026 BODY EXCEPTION 01: ", e);
     }
 
     const initialBody = [];
@@ -148,13 +152,7 @@ const mapPA2026Body = async (
         const functionObj = cleanJsonResult[mainObjKey].groups["funzionalita"];
         (initialBody[`Cittadino_Informato_${key}__c`] =
           cleanJsonResult[mainObjKey].status),
-          //(initialBody[`Cittadino_Attivo_${key}__c`] =
-          //  cleanJsonResult["cittadino-attivo"].status),
           (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
-          //(initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
-          //  getFailAudits(cleanJsonResult["cittadino-attivo"].audits)
-          //    .map((x) => mapAuditTitle(x))
-          //    .join(" | ") ?? ""),
           (initialBody[`Funzionalita_${key}_Descrizione__c`] =
             getFailAudits(functionObj.audits)
               .map((x) => mapAuditTitle(x))
@@ -174,7 +172,7 @@ const mapPA2026Body = async (
 
 const mapPA2026BodyUrlNotExists = async () => {
   const body = [];
-  body[`Data_scansione_fallita__c`] = (new Date()).toISOString().split('T')[0];
+  body[`Data_scansione_fallita__c`] = new Date().toISOString().split("T")[0];
 
   return Object.assign({}, body);
 };

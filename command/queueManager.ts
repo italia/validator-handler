@@ -57,13 +57,13 @@ dbQM
 
     const crawlerQueue: Queue = new Queue("crawler-queue", {
       connection: {
-          host: process.env.REDIS_HOST,
-          port: parseInt(process.env.REDIS_PORT),
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT),
       },
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: true,
-      }
+      },
     });
 
     const inProgressJobInError = await new jobController(
