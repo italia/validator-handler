@@ -102,16 +102,6 @@ dbQM
         );
     }
 
-    console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
-    console.log(
-      "RESCAN ENTITIES TO BE ANALYZED",
-      rescanEntityToBeAnalyzed.length
-    );
-    console.log(
-      "RESCAN ASSEVERATED ENTITIES",
-      rescanEntityAsseveratedToBeAnalyzed.length
-    );
-
     if (firstTimeEntityToBeAnalyzed.length > 0) {
       await generateJobs(
         firstTimeEntityToBeAnalyzed,
@@ -140,6 +130,16 @@ dbQM
         false
       );
     }
+
+    console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
+    console.log(
+      "RESCAN ENTITIES TO BE ANALYZED",
+      rescanEntityToBeAnalyzed.length
+    );
+    console.log(
+      "RESCAN ASSEVERATED ENTITIES",
+      rescanEntityAsseveratedToBeAnalyzed.length
+    );
 
     const counts = await crawlerQueue.getJobCounts(
       "wait",
