@@ -55,16 +55,18 @@ dbQM
   .then(async () => {
     console.log("[QUEUE MANAGER]: start");
 
-    //TODO: re-integrare Redis-Cluster
     const crawlerQueue: Queue = new Queue("crawler-queue", {
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: parseInt(process.env.REDIS_PORT),
-      },
+      connection: new Redis.Cluster([
+        {
+          host: process.env.REDIS_HOST,
+          port: parseInt(process.env.REDIS_PORT),
+        },
+      ]),
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: true,
       },
+      prefix: "{1}",
     });
 
     const inProgressJobInError = await new jobController(
