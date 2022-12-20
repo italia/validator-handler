@@ -32,13 +32,15 @@ dbSM
   .then(async () => {
     console.log("[SCAN MANAGER]: start");
 
-    //TODO: re-integrare Redis-Cluster
     const worker: Worker = new Worker("crawler-queue", null, {
       lockDuration: 10000000,
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: parseInt(process.env.REDIS_PORT),
-      },
+      connection: new Redis.Cluster([
+        {
+          host: process.env.REDIS_HOST,
+          port: parseInt(process.env.REDIS_PORT),
+        },
+      ]),
+      prefix: "{1}",
     });
     const token = v4();
     let job: bullJob;
