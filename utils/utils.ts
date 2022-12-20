@@ -118,8 +118,7 @@ const mapPA2026Body = async (
     const initialBody = [];
     initialBody[`Versione_Crawler_${key}__c`] =
       packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
-    initialBody[`Criteri_Superati_Crawler_${key}__c`] =
-      passedAuditsPercentage + "%" ?? "0%";
+    initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
     (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
@@ -206,7 +205,17 @@ const calculatePassedAuditPercentage = async (
   if (job.type === "municipality") {
     const functionalityAudits =
       cleanJsonResult[mainObjKey]["groups"]["funzionalita"]["audits"] ?? {};
-    totalAudits = { ...totalAudits, ...functionalityAudits };
+    const performancesResult =
+      cleanJsonResult[mainObjKey]["groups"]["prestazioni"]["status"] ?? 0;
+    const performancesAudits = {
+      "municipality-status": performancesResult === true ? 1 : 0,
+    };
+
+    totalAudits = {
+      ...totalAudits,
+      ...functionalityAudits,
+      ...performancesAudits,
+    };
   }
 
   for (const auditResult of Object.values(totalAudits)) {
@@ -218,10 +227,10 @@ const calculatePassedAuditPercentage = async (
   }
 
   if (total > 0) {
-    return ((passed / total) * 100).toFixed(0);
+    return passed + " su " + total;
   }
 
-  return "0";
+  return "0" + " su " + total;
 };
 
 const urlExists = async (url) => {

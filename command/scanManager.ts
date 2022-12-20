@@ -32,6 +32,7 @@ dbSM
   .then(async () => {
     console.log("[SCAN MANAGER]: start");
 
+    //TODO: re-integrare Redis-Cluster
     const worker: Worker = new Worker("crawler-queue", null, {
       lockDuration: 10000000,
       connection: {

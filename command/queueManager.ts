@@ -55,6 +55,7 @@ dbQM
   .then(async () => {
     console.log("[QUEUE MANAGER]: start");
 
+    //TODO: re-integrare Redis-Cluster
     const crawlerQueue: Queue = new Queue("crawler-queue", {
       connection: {
         host: process.env.REDIS_HOST,
