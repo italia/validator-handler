@@ -71,16 +71,12 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     performanceStatus = false;
   }
 
-  let informedCitizenStatus = false;
-  if (
+  let informedCitizenStatus =
     userExperienceStatus &&
     functionStatus &&
     legislationStatus &&
     securityStatus &&
-    performanceStatus
-  ) {
-    informedCitizenStatus = true;
-  }
+    performanceStatus;
 
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
@@ -186,10 +182,8 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     performanceStatus = false;
   }
 
-  let complianceCriteriaStatus = false;
-  if (userExperienceStatus && legislationStatus && securityStatus) {
-    complianceCriteriaStatus = true;
-  }
+  let complianceCriteriaStatus =
+    userExperienceStatus && legislationStatus && securityStatus;
 
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,

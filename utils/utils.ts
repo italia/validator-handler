@@ -180,8 +180,6 @@ const calculatePassedAuditPercentage = async (
   job: Job,
   cleanJsonResult
 ): Promise<string> => {
-  let passed = 0;
-  let total = 0;
   let totalAudits = {};
 
   const mainObjKey =
@@ -215,6 +213,8 @@ const calculatePassedAuditPercentage = async (
     };
   }
 
+  let passed = 0;
+  let total = 0;
   for (const auditResult of Object.values(totalAudits)) {
     total++;
 
@@ -223,11 +223,7 @@ const calculatePassedAuditPercentage = async (
     }
   }
 
-  if (total > 0) {
-    return passed + " su " + total;
-  }
-
-  return "0" + " su " + total;
+  return passed + " su " + total;
 };
 
 const urlExists = async (url) => {
