@@ -615,7 +615,7 @@ router.post(
 router.get(
   "/api/info",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
-    succesResponse({ version: "1.1.8" }, res, 200);
+    succesResponse({ version: "1.2.1" }, res, 200);
   }
 );
 
