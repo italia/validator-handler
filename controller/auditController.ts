@@ -187,12 +187,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
   }
 
   let complianceCriteriaStatus = false;
-  if (
-    userExperienceStatus &&
-    legislationStatus &&
-    securityStatus &&
-    performanceStatus
-  ) {
+  if (userExperienceStatus && legislationStatus && securityStatus) {
     complianceCriteriaStatus = true;
   }
 
