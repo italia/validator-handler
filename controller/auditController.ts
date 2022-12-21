@@ -71,7 +71,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     performanceStatus = false;
   }
 
-  let informedCitizenStatus =
+  const informedCitizenStatus =
     userExperienceStatus &&
     functionStatus &&
     legislationStatus &&
@@ -182,7 +182,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     performanceStatus = false;
   }
 
-  let complianceCriteriaStatus =
+  const complianceCriteriaStatus =
     userExperienceStatus && legislationStatus && securityStatus;
 
   const recommendationsAudits = await getAuditByClusterGroup(
