@@ -21,7 +21,11 @@ import {
   isPassedReport,
 } from "../controller/auditController";
 import { jobController } from "../controller/jobController";
-import { pushResult } from "../controller/PA2026/integrationController";
+import {
+  pushResult,
+  pushResultUrlNotExists,
+} from "../controller/PA2026/integrationController";
+import { urlExists } from "../utils/utils";
 
 dbSM
   .authenticate()
@@ -76,8 +80,16 @@ const scan = async (jobId) => {
     });
 
     const jobObjParsed = jobObj.toJSON();
+    const urlToBeScanned = jobObjParsed.scan_url;
+
+    const urlToBeScannedExists = await urlExists(urlToBeScanned);
+    if (!urlToBeScannedExists) {
+      await pushResultUrlNotExists(jobObj);
+      throw new Error("Scan URL does not exists");
+    }
+
     const lighthouseResult = await run(
-      jobObjParsed.scan_url,
+      urlToBeScanned,
       jobObjParsed.type,
       "online",
       logLevels.display_none,

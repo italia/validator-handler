@@ -71,29 +71,12 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     performanceStatus = false;
   }
 
-  let informedCitizenStatus = false;
-  if (
+  const informedCitizenStatus =
     userExperienceStatus &&
     functionStatus &&
     legislationStatus &&
     securityStatus &&
-    performanceStatus
-  ) {
-    informedCitizenStatus = true;
-  }
-
-  //const activeCitizenAudits = await getAuditByClusterGroup(
-  //  parsedResult,
-  //  municipalityAudits,
-  //  "active-citizen"
-  //);
-  //let activeCitizenStatus = false;
-  //if (
-  //  Object.keys(activeCitizenAudits.passed).length > 0 &&
-  //  Object.keys(activeCitizenAudits.failed).length === 0
-  //) {
-  //  activeCitizenStatus = true;
-  //}
+    performanceStatus;
 
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
@@ -137,11 +120,6 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
         },
       },
     },
-
-    //"cittadino-attivo": {
-    //  status: activeCitizenStatus,
-    //  audits: { ...activeCitizenAudits.passed, ...activeCitizenAudits.failed },
-    //},
 
     raccomandazioni: {
       status: recommendationsStatus,
@@ -204,15 +182,8 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     performanceStatus = false;
   }
 
-  let complianceCriteriaStatus = false;
-  if (
-    userExperienceStatus &&
-    legislationStatus &&
-    securityStatus &&
-    performanceStatus
-  ) {
-    complianceCriteriaStatus = true;
-  }
+  const complianceCriteriaStatus =
+    userExperienceStatus && legislationStatus && securityStatus;
 
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
@@ -349,7 +320,6 @@ const isPassedReport = async (
       } else if (subtype === allowedMunicipalitySubTypes[1]) {
         // eslint-disable-next-line
         passed = jsonReport["cittadino-informato"].status;
-        //&& jsonReport["cittadino-attivo"].status;
       } else {
         passed = false;
       }

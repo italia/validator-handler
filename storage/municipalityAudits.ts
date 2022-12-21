@@ -23,9 +23,5 @@ export const audits = {
     ],
     security: ["municipality-security", "municipality-domain"],
   },
-  //"active-citizen": [
-  //  "municipality-personal-area-security",
-  //  "municipality-subdomain",
-  //],
   recommendations: ["municipality-metatag"],
 };

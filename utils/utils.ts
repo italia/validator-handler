@@ -1,7 +1,17 @@
 "use strict";
+
+import { dirname } from "path";
+import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
 import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
+import axios from "axios";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const arrayChunkify = async (
   inputArray: [],
@@ -74,7 +84,8 @@ const mapPA2026Body = async (
   job: Job,
   cleanJsonResult,
   generalStatus: boolean,
-  isFirstScan: boolean
+  isFirstScan: boolean,
+  passedAuditsPercentage: string
 ) => {
   try {
     const mainObjKey =
@@ -91,7 +102,23 @@ const mapPA2026Body = async (
 
     const key = isFirstScan ? "1" : "n";
 
+    let packageJSON;
+    try {
+      packageJSON =
+        JSON.parse(
+          await readFileSync(
+            path.resolve(__dirname, "../package.json")
+          ).toString()
+        ) ?? {};
+    } catch (e) {
+      packageJSON = null;
+      console.log("MAP PA2026 BODY EXCEPTION 01: ", e);
+    }
+
     const initialBody = [];
+    initialBody[`Versione_Crawler_${key}__c`] =
+      packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
+    initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
     (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
@@ -124,13 +151,7 @@ const mapPA2026Body = async (
         const functionObj = cleanJsonResult[mainObjKey].groups["funzionalita"];
         (initialBody[`Cittadino_Informato_${key}__c`] =
           cleanJsonResult[mainObjKey].status),
-          //(initialBody[`Cittadino_Attivo_${key}__c`] =
-          //  cleanJsonResult["cittadino-attivo"].status),
           (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
-          //(initialBody[`Cittadino_Attivo_${key}_Descrizione__c`] =
-          //  getFailAudits(cleanJsonResult["cittadino-attivo"].audits)
-          //    .map((x) => mapAuditTitle(x))
-          //    .join(" | ") ?? ""),
           (initialBody[`Funzionalita_${key}_Descrizione__c`] =
             getFailAudits(functionObj.audits)
               .map((x) => mapAuditTitle(x))
@@ -144,8 +165,90 @@ const mapPA2026Body = async (
 
     return Object.assign({}, initialBody);
   } catch (e) {
-    console.log("MAP PA2026 BODY EXCEPTION: ", e.toString());
+    console.log("MAP PA2026 BODY EXCEPTION 02: ", e.toString());
   }
 };
 
-export { arrayChunkify, mapValidationErrors, mapPA2026Body };
+const mapPA2026BodyUrlNotExists = async () => {
+  const body = [];
+  body[`Data_scansione_fallita__c`] = new Date().toISOString().split("T")[0];
+
+  return Object.assign({}, body);
+};
+
+const calculatePassedAuditPercentage = async (
+  job: Job,
+  cleanJsonResult
+): Promise<string> => {
+  let totalAudits = {};
+
+  const mainObjKey =
+    job.type === "municipality" ? "cittadino-informato" : "criteri-conformita";
+
+  const legislationAudits =
+    cleanJsonResult[mainObjKey]["groups"]["normativa"]["audits"] ?? {};
+  const securityAudits =
+    cleanJsonResult[mainObjKey]["groups"]["sicurezza"]["audits"] ?? {};
+  const userExperienceAudits =
+    cleanJsonResult[mainObjKey]["groups"]["esperienza-utente"]["audits"] ?? {};
+  totalAudits = {
+    ...legislationAudits,
+    ...securityAudits,
+    ...userExperienceAudits,
+  };
+
+  if (job.type === "municipality") {
+    const functionalityAudits =
+      cleanJsonResult[mainObjKey]["groups"]["funzionalita"]["audits"] ?? {};
+    const performancesResult =
+      cleanJsonResult[mainObjKey]["groups"]["prestazioni"]["status"] ?? 0;
+    const performancesAudits = {
+      "municipality-status": performancesResult === true ? 1 : 0,
+    };
+
+    totalAudits = {
+      ...totalAudits,
+      ...functionalityAudits,
+      ...performancesAudits,
+    };
+  }
+
+  let passed = 0;
+  let total = 0;
+  for (const auditResult of Object.values(totalAudits)) {
+    total++;
+
+    if (auditResult > 0) {
+      passed++;
+    }
+  }
+
+  return passed + " su " + total;
+};
+
+const urlExists = async (url) => {
+  try {
+    let statusCode = undefined;
+    const response = await axios.get(url);
+    statusCode = response.status;
+
+    if (statusCode === undefined || statusCode < 200 || statusCode >= 400) {
+      return false;
+    }
+
+    return true;
+  } catch (ex) {
+    console.log("Url Exists Exception: ", ex.toString());
+
+    return false;
+  }
+};
+
+export {
+  arrayChunkify,
+  mapValidationErrors,
+  mapPA2026Body,
+  calculatePassedAuditPercentage,
+  urlExists,
+  mapPA2026BodyUrlNotExists,
+};
