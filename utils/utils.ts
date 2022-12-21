@@ -187,8 +187,6 @@ const calculatePassedAuditPercentage = async (
   const mainObjKey =
     job.type === "municipality" ? "cittadino-informato" : "criteri-conformita";
 
-  const raccomandationAuditsObj =
-    cleanJsonResult["raccomandazioni"]["audits"] ?? {};
   const legislationAudits =
     cleanJsonResult[mainObjKey]["groups"]["normativa"]["audits"] ?? {};
   const securityAudits =
@@ -196,7 +194,6 @@ const calculatePassedAuditPercentage = async (
   const userExperienceAudits =
     cleanJsonResult[mainObjKey]["groups"]["esperienza-utente"]["audits"] ?? {};
   totalAudits = {
-    ...raccomandationAuditsObj,
     ...legislationAudits,
     ...securityAudits,
     ...userExperienceAudits,
