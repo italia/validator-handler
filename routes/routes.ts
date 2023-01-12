@@ -34,6 +34,14 @@ import { jobController } from "../controller/jobController";
 import { dbWS } from "../database/connection";
 import { allowedMunicipalitySubTypes } from "../database/models/entity";
 import { Entity } from "../types/models";
+import { readFileSync } from "fs";
+import path from "path";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * @openapi
@@ -614,8 +622,29 @@ router.post(
 
 router.get(
   "/api/info",
-  (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
-    succesResponse({ version: "1.2.1" }, res, 200);
+  async (req: emptyBodyType, res: successResponseType | errorResponseType) => {
+    let packageJSON;
+    try {
+      packageJSON =
+        JSON.parse(
+          await readFileSync(
+            path.resolve(__dirname, "../package.json")
+          ).toString()
+        ) ?? {};
+    } catch (e) {
+      packageJSON = null;
+      errorResponse(0, { message: e.toString() }, 400, res);
+    }
+
+    const handlerVersion = packageJSON?.version ?? "";
+    const validatorVersion =
+      packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
+
+    succesResponse(
+      { handlerVersion: handlerVersion, validatorVersion: validatorVersion },
+      res,
+      200
+    );
   }
 );
 
