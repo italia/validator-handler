@@ -1,6 +1,6 @@
 {
   "name": "crawler-handler",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
@@ -16,7 +16,7 @@
     "ts-queue-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/queueManager.ts",
     "ts-scan-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/scanManager.ts",
     "ts-PA2026-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/PA2026Manager.ts",
-    "build": "tsc && cp -rp ./.env ./dist && cp -rp ./.env.example ./dist",
+    "build": "tsc && cp -rp ./.env ./dist && cp -rp ./.env.example ./dist && cp -rp ./package.json ./dist",
     "format:check": "prettier -c .",
     "lint:check": "eslint --ext .js,.ts --max-warnings 0 .",
     "prepack": "npm run build",
