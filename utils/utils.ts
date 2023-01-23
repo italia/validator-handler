@@ -116,6 +116,7 @@ const mapPA2026Body = async (
     }
 
     const initialBody = [];
+    initialBody[`Data_scansione_fallita__c`] = null;
     initialBody[`Versione_Crawler_${key}__c`] =
       packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
     initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
