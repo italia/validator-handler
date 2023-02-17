@@ -273,4 +273,14 @@ export class jobController {
       return jobsUpdated;
     }
   }
+
+  async entityHasJob(entityId: number) {
+    const entityJobs: Job[] = await jobDefine(this.db).findAll({
+      where: {
+        entity_id: entityId,
+      },
+    });
+
+    return entityJobs.length > 0;
+  }
 }
