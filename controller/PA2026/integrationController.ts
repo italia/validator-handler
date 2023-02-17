@@ -108,10 +108,44 @@ const callPatch = async (body: object, path: string, retry = 3) => {
   return await callPatch(body, path, retry - 1);
 };
 
+const callPostFileUpload = async (file: string, path: string, retry = 3) => {
+  if (retry <= 0) {
+    return null;
+  }
+
+  try {
+    const tokenValues = await new tokenController(dbWS).retrieve();
+
+    const result = await call(
+      "post",
+      tokenValues.instanceUrl,
+      path,
+      {
+        Authorization: "Bearer " + tokenValues.value,
+        "X-PrettyPrint": "1",
+        "Content-Type": "text/html",
+      },
+      file,
+      true
+    );
+
+    if (result?.statusCode >= 200 && result?.statusCode <= 204) {
+      return result?.data ?? {};
+    } else if (result?.statusCode === 401) {
+      await new tokenController(dbWS).create();
+    }
+  } catch (e) {
+    console.log("CALL POST FILE UPLOAD EXCEPTION: ", e.toString());
+  }
+
+  return await callPostFileUpload(file, path, retry - 1);
+};
+
 const pushResult = async (
   job: Job,
   cleanJsonReport,
-  generalStatus: boolean
+  generalStatus: boolean,
+  htmlReportFile: string
 ) => {
   try {
     const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
@@ -170,12 +204,24 @@ const pushResult = async (
       throw new Error("Send data failed");
     }
 
+    const uploadResult = await callPostFileUpload(
+      htmlReportFile,
+      process.env.PA2026_UPLOAD_FILE_PATH.replace(
+        "{external_entity_id}",
+        entity.external_id
+      ).replace("{scan_number}", isFirstScan ? "1" : "N")
+    );
+
+    if (uploadResult !== "") {
+      throw new Error("Upload report failed");
+    }
+
     await job.update({
       data_sent_status: "COMPLETED",
       data_sent_date: new Date(),
     });
   } catch (e) {
-    console.log("PUSH RESULT EXCEPTION", e.toString());
+    console.log("PUSH RESULT EXCEPTION: ", e.toString());
 
     await job.update({
       data_sent_status: "ERROR",

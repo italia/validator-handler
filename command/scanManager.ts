@@ -142,7 +142,7 @@ const scan = async (jobId) => {
       throw new Error("Update job failed");
     }
 
-    await pushResult(job, jsonResult, status);
+    await pushResult(job, jsonResult, status, lighthouseResult.data.htmlReport);
 
     const jobDeleted = await new jobController(dbSM).cleanJobs(
       jobObjParsed.entity_id

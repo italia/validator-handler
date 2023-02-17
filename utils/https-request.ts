@@ -1,6 +1,13 @@
 import axios from "axios";
 
-const call = async (method, host, path, headers, payload = null) => {
+const call = async (
+  method,
+  host,
+  path,
+  headers,
+  payload = null,
+  isDataBinary = false
+) => {
   if (!host || !path) {
     throw new Error("Empty host or path in Axios post form data");
   }
@@ -12,11 +19,18 @@ const call = async (method, host, path, headers, payload = null) => {
   };
 
   try {
-    const config = {
+    let config = {
       method: method,
       url: host + path,
       headers: headers,
     };
+
+    if (isDataBinary) {
+      config = {
+        ...config,
+        ...{ maxContentLength: Infinity, maxBodyLength: Infinity },
+      };
+    }
 
     if (payload) {
       config["data"] = payload;

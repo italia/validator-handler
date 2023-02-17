@@ -314,6 +314,7 @@ const sendRetryJobInSendError = async () => {
       },
     });
 
+    //TODO: handle html report file
     for (const job of jobs) {
       await pushResult(job, job.json_result, job.status === "PASSED");
     }
