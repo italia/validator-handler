@@ -15,6 +15,7 @@ import { Op } from "sequelize";
 import { Queue } from "bullmq";
 import Redis from "ioredis";
 import { generateJobs } from "../controller/queueManagerController";
+import { getFile } from "../controller/s3Controller";
 
 dbRoot
   .authenticate()
@@ -317,9 +318,18 @@ const sendRetryJobInSendError = async () => {
       },
     });
 
-    //TODO: handle html report file
     for (const job of jobs) {
-      await pushResult(job, job.json_result, job.status === "PASSED", "");
+      const s3FilePath = job.s3_html_url;
+      if (!s3FilePath) {
+        continue;
+      }
+
+      const file: string = await getFile(s3FilePath);
+      if (!file) {
+        continue;
+      }
+
+      await pushResult(job, job.json_result, job.status === "PASSED", file);
     }
   } catch (e) {
     console.log("SEND RETRY JOB EXCEPTION: ", e.toString());
