@@ -16,6 +16,7 @@
     "ts-queue-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/queueManager.ts",
     "ts-scan-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/scanManager.ts",
     "ts-PA2026-manager": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/PA2026Manager.ts",
+    "migrate": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./database/migrate.ts --tablename all",
     "build": "tsc && cp -rp ./.env ./dist && cp -rp ./.env.example ./dist && cp -rp ./package.json ./dist",
     "format:check": "prettier -c .",
     "lint:check": "eslint --ext .js,.ts --max-warnings 0 .",

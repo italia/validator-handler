@@ -5,11 +5,14 @@ import { define as entityDefine } from "../database/models/entity";
 import { define as jobDefine } from "../database/models/job";
 import dateFormat from "dateformat";
 
-const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
+const getFirstTimeEntityToBeAnalyzed = async (
+  limit: number,
+  onlyForcedScan = false
+) => {
   let returnValues = [];
 
   try {
-    const firstTimeEntityToBeAnalyzed = await dbQM.query(
+    const querySql =
       `SELECT E.id
             FROM "Entities" as E
             WHERE 0 = (
@@ -18,15 +21,58 @@ const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
                 WHERE J.entity_id = E.id
                 AND J.status != 'ERROR'
             )
-            LIMIT :limit`,
-      {
-        replacements: { limit: limit },
-        type: QueryTypes.RAW,
-      }
-    );
+            ` +
+      (onlyForcedScan ? ` AND E."forcedScan" = TRUE ` : ``) +
+      `LIMIT :limit`;
+    console.log(querySql);
+    const firstTimeEntityToBeAnalyzed = await dbQM.query(querySql, {
+      replacements: { limit: limit },
+      type: QueryTypes.RAW,
+    });
 
     if (firstTimeEntityToBeAnalyzed[0].length > 0) {
       returnValues = firstTimeEntityToBeAnalyzed[0];
+    }
+
+    return returnValues;
+  } catch (e) {
+    return returnValues;
+  }
+};
+
+const getForcedRescanEntitiesToBeAnalyzed = async (limit: number) => {
+  let returnValues = [];
+
+  try {
+    const querySql = `SELECT E.id
+            FROM "Entities" as E
+            WHERE 0 < (
+                SELECT count(*)
+                FROM "Jobs" as J
+                WHERE J.entity_id = E.id 
+                AND J.status != 'ERROR'
+            )
+            AND
+            0 = (
+                SELECT count(*)
+                FROM "Jobs" as J
+                WHERE J.entity_id = E.id 
+                AND 
+                (
+                  J.status = 'PENDING' OR
+                  J.status = 'IN_PROGRESS'
+                )
+            )
+            AND E."forcedScan" = TRUE
+            LIMIT :limit`;
+
+    const forcedEntityToBeRescanned = await dbQM.query(querySql, {
+      replacements: { limit: limit },
+      type: QueryTypes.RAW,
+    });
+
+    if (forcedEntityToBeRescanned[0].length > 0) {
+      returnValues = forcedEntityToBeRescanned[0];
     }
 
     return returnValues;
@@ -179,6 +225,7 @@ const generateJobs = async (
 
 export {
   getFirstTimeEntityToBeAnalyzed,
+  getForcedRescanEntitiesToBeAnalyzed,
   getRescanEntityToBeAnalyzed,
   getRescanEntityAsseveratedToBeAnalyzed,
   generateJobs,

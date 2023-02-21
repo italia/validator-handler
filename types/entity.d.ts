@@ -4,6 +4,7 @@ export interface createBody {
   enable: boolean;
   type: string;
   subtype: string;
+  forcedScan: boolean;
 }
 
 export interface updateBody {

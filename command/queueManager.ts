@@ -5,7 +5,6 @@ dotenv.config();
 
 import { dbQM } from "../database/connection";
 
-import Redis from "ioredis";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Queue } from "bullmq";
@@ -16,11 +15,16 @@ import {
   getRescanEntityToBeAnalyzed,
   getRescanEntityAsseveratedToBeAnalyzed,
   generateJobs,
+  getForcedRescanEntitiesToBeAnalyzed,
 } from "../controller/queueManagerController";
 
 const command = yargs(hideBin(process.argv))
   .usage(
-    "Usage: --maxItems <maxItems> --passedOlderThanDays <passedOlderThanDays> --failedOlderThanDays <failedOlderThanDays>"
+    "Usage: " +
+      "--maxItems <maxItems> " +
+      "--passedOlderThanDays <passedOlderThanDays> " +
+      "--failedOlderThanDays <failedOlderThanDays> " +
+      "--onlyForcedScan <onlyForcedScan>"
   )
   .option("maxItems", {
     describe: "Numero massimo di entity da analizzare",
@@ -48,6 +52,13 @@ const command = yargs(hideBin(process.argv))
     type: "integer",
     demandOption: true,
     default: 28,
+  })
+  .option("onlyForcedScan", {
+    describe:
+      "Flag per permettere solo alle entity flaggate come 'forcedScan' di entrare in coda di scansione",
+    type: "boolean",
+    demandOption: true,
+    default: true,
   }).argv;
 
 dbQM
@@ -56,17 +67,21 @@ dbQM
     console.log("[QUEUE MANAGER]: start");
 
     const crawlerQueue: Queue = new Queue("crawler-queue", {
-      connection: new Redis.Cluster([
-        {
-          host: process.env.REDIS_HOST,
-          port: parseInt(process.env.REDIS_PORT),
-        },
-      ]),
+      connection: {
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT),
+      },
+      //connection: new Redis.Cluster([
+      //  {
+      //    host: process.env.REDIS_HOST,
+      //    port: parseInt(process.env.REDIS_PORT),
+      //  },
+      //]),
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: true,
       },
-      prefix: "{1}",
+      //prefix: "{1}",
     });
 
     const inProgressJobInError = await new jobController(
@@ -81,13 +96,24 @@ dbQM
 
     const maxItems: number = parseInt(command.maxItems);
 
+    const onlyForcedScan = command.onlyForcedScan;
+
     const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
-      maxItems
+      maxItems,
+      onlyForcedScan
     );
 
-    let rescanEntityToBeAnalyzed = [];
     let gapLimit: number = maxItems - firstTimeEntityToBeAnalyzed.length;
-    if (gapLimit > 0) {
+    let forcedRescanEntitiesToBeAnalyzed = [];
+    if (gapLimit > 0 && onlyForcedScan) {
+      forcedRescanEntitiesToBeAnalyzed =
+        await getForcedRescanEntitiesToBeAnalyzed(gapLimit);
+    }
+
+    gapLimit = gapLimit - forcedRescanEntitiesToBeAnalyzed.length;
+
+    let rescanEntityToBeAnalyzed = [];
+    if (gapLimit > 0 && !onlyForcedScan) {
       rescanEntityToBeAnalyzed = await getRescanEntityToBeAnalyzed(
         command.passedOlderThanDays,
         command.failedOlderThanDays,
@@ -97,7 +123,7 @@ dbQM
 
     let rescanEntityAsseveratedToBeAnalyzed = [];
     gapLimit = gapLimit - rescanEntityToBeAnalyzed.length;
-    if (gapLimit > 0) {
+    if (gapLimit > 0 && !onlyForcedScan) {
       rescanEntityAsseveratedToBeAnalyzed =
         await getRescanEntityAsseveratedToBeAnalyzed(
           command.asservationOlderThanDays,
@@ -125,16 +151,25 @@ dbQM
 
     if (
       rescanEntityToBeAnalyzed.length > 0 ||
-      rescanEntityAsseveratedToBeAnalyzed.length > 0
+      rescanEntityAsseveratedToBeAnalyzed.length > 0 ||
+      forcedRescanEntitiesToBeAnalyzed.length > 0
     ) {
       await generateJobs(
-        [...rescanEntityToBeAnalyzed, ...rescanEntityAsseveratedToBeAnalyzed],
+        [
+          ...rescanEntityToBeAnalyzed,
+          ...rescanEntityAsseveratedToBeAnalyzed,
+          ...forcedRescanEntitiesToBeAnalyzed,
+        ],
         crawlerQueue,
         false
       );
     }
 
     console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
+    console.log(
+      "FORCED RESCAN ENTITIES",
+      forcedRescanEntitiesToBeAnalyzed.length
+    );
     console.log(
       "RESCAN ENTITIES TO BE ANALYZED",
       rescanEntityToBeAnalyzed.length

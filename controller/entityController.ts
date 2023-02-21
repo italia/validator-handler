@@ -38,6 +38,7 @@ export class entityController {
       enable: entityCreateBody.enable,
       type: entityCreateBody.type,
       subtype: entityCreateBody.subtype,
+      forcedScan: entityCreateBody.forcedScan,
     });
   }
 

@@ -12,9 +12,6 @@ import { Entity, Job } from "../types/models";
 import { jobController } from "../controller/jobController";
 import { preserveReasons, define as jobDefine } from "../database/models/job";
 import { Op } from "sequelize";
-import { Queue } from "bullmq";
-import Redis from "ioredis";
-import { generateJobs } from "../controller/queueManagerController";
 import { getFile } from "../controller/s3Controller";
 
 dbRoot
@@ -28,6 +25,9 @@ dbRoot
 
       const updateResult = await update();
       console.log("[PA2026 MANAGER]: UPDATE RESULT - ", updateResult);
+
+      const forcedScanResult = await forcedScanEntities();
+      console.log("[PA2026 MANAGER]: FORCED SCAN RESULT - ", forcedScanResult);
 
       const asseverationResult = await asseveration();
       console.log(
@@ -49,7 +49,12 @@ dbRoot
 
 const create = async () => {
   const createQuery =
-    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c  WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141'  AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null";
+    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c " +
+    "FROM outfunds__Funding_Request__c " +
+    "WHERE outfunds__Status__c ='Finanziata' " +
+    "AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' " +
+    "AND Url_Sito_Internet__c !=null " +
+    "AND ID_Crawler__c=null";
   const returnIds = [];
 
   try {
@@ -83,6 +88,7 @@ const create = async () => {
             enable: true,
             type: type,
             subtype: subtype,
+            forcedScan: false,
           });
 
           if (!entity) {
@@ -336,8 +342,8 @@ const sendRetryJobInSendError = async () => {
   }
 };
 
-const scanFromPA2026 = async () => {
-  const scanFromPA2026Query =
+const forcedScanEntities = async () => {
+  const forcedScanEntitiesQuery =
     "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c " +
     "FROM outfunds__Funding_Request__c  " +
     "WHERE outfunds__Status__c ='Finanziata' " +
@@ -348,7 +354,7 @@ const scanFromPA2026 = async () => {
   const returnIds = [];
 
   try {
-    const scanFromPA2026Result = await callQuery(scanFromPA2026Query);
+    const scanFromPA2026Result = await callQuery(forcedScanEntitiesQuery);
 
     if (!scanFromPA2026Result) {
       throw new Error("Empty values from create query");
@@ -359,121 +365,39 @@ const scanFromPA2026 = async () => {
       return [];
     }
 
-    let firstScanEntities = [];
-    let scanEntities = [];
-
     for (const record of records) {
       try {
         const externalId = record.Id ?? "";
-        let entity: Entity = await new entityController(dbWS).retrieve(
+        const entity: Entity = await new entityController(dbWS).retrieve(
           externalId
         );
 
         if (!entity) {
-          const packet = record?.Pacchetto_1_4_1__c ?? "";
-          const [type, subtype] = await calculateTypeSubtype(packet);
-          const url = record.Url_Sito_Internet__c ?? "";
-
-          entity = await new entityController(dbWS).create({
-            external_id: externalId,
-            url: url,
-            enable: true,
-            type: type,
-            subtype: subtype,
-          });
-
-          if (!entity) {
-            throw new Error(
-              "Create entity failed for entity external id: " + externalId
-            );
-          }
-
-          firstScanEntities.push({ id: entity.id });
-          continue;
+          throw new Error("Entity not found: " + externalId);
         }
 
-        let hasJob: boolean = await new jobController(dbWS).entityHasJob(
-          entity.id
+        const updateEntity = await entity.update({
+          forcedScan: true,
+        });
+
+        returnIds.push(updateEntity.id);
+
+        await callPatch(
+          { Da_Scansionare__c: false },
+          process.env.PA2026_UPDATE_RECORDS_PATH.replace(
+            "{external_entity_id}",
+            entity.external_id
+          )
         );
-        if (!hasJob) {
-          firstScanEntities.push({ id: entity.id });
-          continue;
-        }
-
-        scanEntities.push({ id: entity.id });
       } catch (e) {
         console.log(
-          "SCAN FROM PA2026 QUERY FOR-STATEMENT EXCEPTION: ",
+          "FORCED SCAN QUERY FOR-STATEMENT EXCEPTION: ",
           e.toString()
         );
       }
     }
-
-    const crawlerQueue: Queue = new Queue("crawler-queue", {
-      connection: new Redis.Cluster([
-        {
-          host: process.env.REDIS_HOST,
-          port: parseInt(process.env.REDIS_PORT),
-        },
-      ]),
-      defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true,
-      },
-      prefix: "{1}",
-    });
-
-    console.log("FIRST TIME ENTITY TO BE ANALYZED", firstScanEntities);
-    console.log("ENTITY TO BE ANALYZED", scanEntities);
-
-    if (firstScanEntities.length > 0) {
-      await generateJobs(
-        firstScanEntities,
-        crawlerQueue,
-        true,
-        preserveReasons[0]
-      );
-    }
-
-    if (scanEntities.length > 0) {
-      await generateJobs(scanEntities, crawlerQueue, false);
-    }
-
-    const counts = await crawlerQueue.getJobCounts(
-      "wait",
-      "completed",
-      "failed"
-    );
-    console.log("QUEUE STATUS", counts);
-
-    const totalEntities = [...firstScanEntities, ...scanEntities];
-    const body = [];
-    body["Da_Scansionare__c"] = false;
-    for (const entity of totalEntities) {
-      try {
-        const entityObj: Entity = await new entityController(dbWS).retrieveByPk(
-          entity.id
-        );
-
-        const result = await callPatch(
-          body,
-          process.env.PA2026_UPDATE_RECORDS_PATH.replace(
-            "{external_entity_id}",
-            entityObj.external_id
-          )
-        );
-
-        if (result !== "") {
-          throw new Error(
-            "Send data failed for entity: " + entityObj.external_id
-          );
-        }
-      } catch (e) {
-        console.log("PUSH UPDATE TO BE SCANNED ERROR: ", e.toString());
-      }
-    }
   } catch (e) {
-    console.log("CREATE QUERY EXCEPTION: ", e.toString());
+    console.log("FORCED SCAN QUERY EXCEPTION: ", e.toString());
   }
 
   return returnIds;
