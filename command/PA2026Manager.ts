@@ -325,10 +325,13 @@ const sendRetryJobInSendError = async () => {
     });
 
     for (const job of jobs) {
-      const s3FilePath = job.s3_html_url;
+      let s3FilePath = job.s3_html_url;
       if (!s3FilePath) {
         continue;
       }
+
+      //Remove the first /
+      s3FilePath = s3FilePath.substring(1);
 
       const file: string = await getFile(s3FilePath);
       if (!file) {
@@ -383,7 +386,10 @@ const forcedScanEntities = async () => {
         returnIds.push(updateEntity.id);
 
         await callPatch(
-          { Da_Scansionare__c: false },
+          {
+            Da_Scansionare__c: false,
+            Da_Scansionare_Data_Scansione__c: new Date().getTime(),
+          },
           process.env.PA2026_UPDATE_RECORDS_PATH.replace(
             "{external_entity_id}",
             entity.external_id

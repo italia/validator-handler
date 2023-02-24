@@ -3,11 +3,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { dbSM } from "../database/connection";
+import { dbSM, dbWS } from "../database/connection";
 import { define as jobDefine } from "../database/models/job";
 import { run } from "pa-website-validator/dist/controller/launchLighthouse";
 import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
-import { Job } from "../types/models";
+import { Entity, Job } from "../types/models";
 import {
   upload as s3Upload,
   empty as s3Delete,
@@ -25,6 +25,7 @@ import {
   pushResultUrlNotExists,
 } from "../controller/PA2026/integrationController";
 import { urlExists } from "../utils/utils";
+import { entityController } from "../controller/entityController";
 
 dbSM
   .authenticate()
@@ -51,6 +52,23 @@ dbSM
     while ((job = await worker.getNextJob(token)) !== undefined) {
       console.log("JOB START FOR jobID: ", job.data.id);
       const result = await scan(job.data.id);
+
+      const jobObj: Job | null = await jobDefine(dbSM).findByPk(job.data.id);
+      if (!jobObj) {
+        continue;
+      }
+
+      const entity: Entity | null = await new entityController(
+        dbWS
+      ).retrieveById(jobObj.entity_id);
+
+      if (!entity) {
+        continue;
+      }
+
+      await entity.update({
+        forcedScan: false,
+      });
 
       if (result) {
         await job.moveToCompleted("completed", token, false);

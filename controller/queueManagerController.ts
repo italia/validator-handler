@@ -24,7 +24,7 @@ const getFirstTimeEntityToBeAnalyzed = async (
             ` +
       (onlyForcedScan ? ` AND E."forcedScan" = TRUE ` : ``) +
       `LIMIT :limit`;
-    console.log(querySql);
+
     const firstTimeEntityToBeAnalyzed = await dbQM.query(querySql, {
       replacements: { limit: limit },
       type: QueryTypes.RAW,
