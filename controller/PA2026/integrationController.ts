@@ -230,11 +230,11 @@ const pushResult = async (
   }
 };
 
-const pushResultUrlNotExists = async (job: Job) => {
+const pushResultUrlNotExists = async (job: Job, urlToBeScanned: string) => {
   try {
     const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
 
-    const scanBody = await mapPA2026BodyUrlNotExists();
+    const scanBody = await mapPA2026BodyUrlNotExists(urlToBeScanned);
 
     const result = await callPatch(
       scanBody,

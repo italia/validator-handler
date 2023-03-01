@@ -105,7 +105,7 @@ const scan = async (jobId) => {
 
     const urlToBeScannedExists = await urlExists(urlToBeScanned);
     if (!urlToBeScannedExists) {
-      await pushResultUrlNotExists(jobObj);
+      await pushResultUrlNotExists(jobObj, urlToBeScanned);
       throw new Error("Scan URL does not exists");
     }
 
