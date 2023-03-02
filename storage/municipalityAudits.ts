@@ -15,11 +15,13 @@ export const audits = {
       "municipality-booking-appointment-check",
       "municipality-contacts-assistency",
       "municipality-feedback-element",
+      "municipality-user-experience-evaluation"
     ],
     legislation: [
       "municipality-legislation-cookie-domain-check",
       "municipality-legislation-accessibility-declaration-is-present",
       "municipality-legislation-privacy-is-present",
+      "municipality-license-and-attribution"
     ],
     security: ["municipality-security", "municipality-domain"],
   },
