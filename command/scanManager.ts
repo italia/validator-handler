@@ -115,7 +115,7 @@ const scan = async (jobId) => {
       "online",
       logLevels.display_none,
       false,
-        "all"
+      "all"
     );
 
     if (!lighthouseResult.status) {

@@ -17,6 +17,6 @@ export const audits = {
   recommendations: [
     "school-servizi-structure-match-model",
     "school-controlled-vocabularies",
-    "school-license-and-attribution"
+    "school-license-and-attribution",
   ],
 };
