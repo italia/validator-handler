@@ -110,12 +110,14 @@ const callPatch = async (body: object, path: string, retry = 3) => {
 
 const callPostFileUpload = async (file: string, path: string, retry = 3) => {
   if (retry <= 0) {
-    return null;
+    return false;
   }
 
   try {
     const tokenValues = await new tokenController(dbWS).retrieve();
 
+    console.log("path");
+    console.log(path);
     const result = await call(
       "post",
       tokenValues.instanceUrl,
@@ -129,8 +131,10 @@ const callPostFileUpload = async (file: string, path: string, retry = 3) => {
       true
     );
 
+    console.log("resultAPI");
+    console.log(result);
     if (result?.statusCode >= 200 && result?.statusCode <= 204) {
-      return result?.data ?? {};
+      return true;
     } else if (result?.statusCode === 401) {
       await new tokenController(dbWS).create();
     }
@@ -204,16 +208,30 @@ const pushResult = async (
       throw new Error("Send data failed");
     }
 
-    const uploadResult = await callPostFileUpload(
+    if (isFirstScan) {
+      const upload1Result = await callPostFileUpload(
+        htmlReportFile,
+        process.env.PA2026_UPLOAD_FILE_PATH.replace(
+          "{external_entity_id}",
+          entity.external_id
+        ).replace("{scan_number}", "1")
+      );
+
+      if (!upload1Result) {
+        throw new Error("Upload first report failed");
+      }
+    }
+
+    const uploadNResult = await callPostFileUpload(
       htmlReportFile,
       process.env.PA2026_UPLOAD_FILE_PATH.replace(
         "{external_entity_id}",
         entity.external_id
-      ).replace("{scan_number}", isFirstScan ? "1" : "N")
+      ).replace("{scan_number}", "N")
     );
 
-    if (uploadResult !== "") {
-      throw new Error("Upload report failed");
+    if (!uploadNResult) {
+      throw new Error("Upload N report failed");
     }
 
     await job.update({

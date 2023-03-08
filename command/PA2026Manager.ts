@@ -330,7 +330,7 @@ const sendRetryJobInSendError = async () => {
         continue;
       }
 
-      if(s3FilePath.startsWith("http")){
+      if (s3FilePath.startsWith("http")) {
         s3FilePath = new URL(s3FilePath).pathname;
       }
 

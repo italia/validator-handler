@@ -22,7 +22,7 @@ const getFirstTimeEntityToBeAnalyzed = async (
                 AND J.status != 'ERROR'
             )
             ` +
-      (onlyForcedScan ? ` AND E."forcedScan" = TRUE ` : ``) +
+      (onlyForcedScan ? ` AND E."forcedScan" = TRUE ` : ` `) +
       `LIMIT :limit`;
 
     const firstTimeEntityToBeAnalyzed = await dbQM.query(querySql, {

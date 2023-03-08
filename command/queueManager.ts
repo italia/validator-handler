@@ -58,7 +58,7 @@ const command = yargs(hideBin(process.argv))
       "Flag per permettere solo alle entity flaggate come 'forcedScan' di entrare in coda di scansione",
     type: "boolean",
     demandOption: true,
-    default: true,
+    default: false,
   }).argv;
 
 dbQM
@@ -96,7 +96,7 @@ dbQM
 
     const maxItems: number = parseInt(command.maxItems);
 
-    const onlyForcedScan = command.onlyForcedScan;
+    const onlyForcedScan = command.onlyForcedScan ?? false;
 
     const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
       maxItems,
