@@ -24,7 +24,7 @@ const command = yargs(hideBin(process.argv))
       "--maxItems <maxItems> " +
       "--passedOlderThanDays <passedOlderThanDays> " +
       "--failedOlderThanDays <failedOlderThanDays> " +
-      "--onlyForcedScan <onlyForcedScan>"
+      "--PA2026Scan"
   )
   .option("maxItems", {
     describe: "Numero massimo di entity da analizzare",
@@ -53,12 +53,11 @@ const command = yargs(hideBin(process.argv))
     demandOption: true,
     default: 28,
   })
-  .option("onlyForcedScan", {
+  .option("PA2026Scan", {
     describe:
       "Flag per permettere solo alle entity flaggate come 'forcedScan' di entrare in coda di scansione",
-    type: "boolean",
-    demandOption: true,
-    default: false,
+    type: "string",
+    demandOption: false,
   }).argv;
 
 dbQM
@@ -96,16 +95,16 @@ dbQM
 
     const maxItems: number = parseInt(command.maxItems);
 
-    const onlyForcedScan = command.onlyForcedScan ?? false;
+    const PA2026Scan = "PA2026Scan" in command;
 
     const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
       maxItems,
-      onlyForcedScan
+      PA2026Scan
     );
 
     let gapLimit: number = maxItems - firstTimeEntityToBeAnalyzed.length;
     let forcedRescanEntitiesToBeAnalyzed = [];
-    if (gapLimit > 0 && onlyForcedScan) {
+    if (gapLimit > 0 && PA2026Scan) {
       forcedRescanEntitiesToBeAnalyzed =
         await getForcedRescanEntitiesToBeAnalyzed(gapLimit);
     }
@@ -113,7 +112,7 @@ dbQM
     gapLimit = gapLimit - forcedRescanEntitiesToBeAnalyzed.length;
 
     let rescanEntityToBeAnalyzed = [];
-    if (gapLimit > 0 && !onlyForcedScan) {
+    if (gapLimit > 0 && !PA2026Scan) {
       rescanEntityToBeAnalyzed = await getRescanEntityToBeAnalyzed(
         command.passedOlderThanDays,
         command.failedOlderThanDays,
@@ -121,9 +120,10 @@ dbQM
       );
     }
 
-    let rescanEntityAsseveratedToBeAnalyzed = [];
     gapLimit = gapLimit - rescanEntityToBeAnalyzed.length;
-    if (gapLimit > 0 && !onlyForcedScan) {
+
+    let rescanEntityAsseveratedToBeAnalyzed = [];
+    if (gapLimit > 0 && !PA2026Scan) {
       rescanEntityAsseveratedToBeAnalyzed =
         await getRescanEntityAsseveratedToBeAnalyzed(
           command.asservationOlderThanDays,
