@@ -116,8 +116,6 @@ const callPostFileUpload = async (file: string, path: string, retry = 3) => {
   try {
     const tokenValues = await new tokenController(dbWS).retrieve();
 
-    console.log("path");
-    console.log(path);
     const result = await call(
       "post",
       tokenValues.instanceUrl,
@@ -131,8 +129,6 @@ const callPostFileUpload = async (file: string, path: string, retry = 3) => {
       true
     );
 
-    console.log("resultAPI");
-    console.log(result);
     if (result?.statusCode >= 200 && result?.statusCode <= 204) {
       return true;
     } else if (result?.statusCode === 401) {
