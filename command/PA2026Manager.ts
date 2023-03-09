@@ -127,6 +127,7 @@ const update = async () => {
     "AND Url_Sito_Internet__c !=null " +
     "AND ID_Crawler__c!=null " +
     "AND Controllo_URL__c=false ";
+
   const returnIds = [];
 
   try {
@@ -270,11 +271,14 @@ const asseveration = async () => {
 
         returnIds.push(entityUpdated.id);
       } catch (e) {
-        console.log("UPDATE QUERY FOR-STATEMENT EXCEPTION: ", e.toString());
+        console.log(
+          "ASSEVERATION QUERY FOR-STATEMENT EXCEPTION: ",
+          e.toString()
+        );
       }
     }
   } catch (e) {
-    console.log("UPDATE QUERY EXCEPTION: ", e.toString());
+    console.log("ASSEVERATION QUERY EXCEPTION: ", e.toString());
   }
   return returnIds;
 };
@@ -325,23 +329,27 @@ const sendRetryJobInSendError = async () => {
     });
 
     for (const job of jobs) {
-      let s3FilePath = job.s3_html_url;
-      if (!s3FilePath) {
-        continue;
+      try {
+        let s3FilePath = job.s3_html_url;
+        if (!s3FilePath) {
+          continue;
+        }
+
+        if (s3FilePath.startsWith("http")) {
+          s3FilePath = new URL(s3FilePath).pathname;
+        }
+
+        s3FilePath = s3FilePath.substring(1);
+
+        const file: string = await getFile(s3FilePath);
+        if (!file) {
+          continue;
+        }
+
+        await pushResult(job, job.json_result, job.status === "PASSED", file);
+      } catch (e) {
+        console.log("SEND RETRY JOB FOR-STATEMENT EXCEPTION: ", e.toString());
       }
-
-      if (s3FilePath.startsWith("http")) {
-        s3FilePath = new URL(s3FilePath).pathname;
-      }
-
-      s3FilePath = s3FilePath.substring(1);
-
-      const file: string = await getFile(s3FilePath);
-      if (!file) {
-        continue;
-      }
-
-      await pushResult(job, job.json_result, job.status === "PASSED", file);
     }
   } catch (e) {
     console.log("SEND RETRY JOB EXCEPTION: ", e.toString());
