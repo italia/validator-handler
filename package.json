@@ -1,11 +1,11 @@
 {
   "name": "crawler-handler",
-  "version": "1.2.2",
+  "version": "2.0.0",
   "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "dist-webserver": "node --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/server.js",
