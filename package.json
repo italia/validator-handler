@@ -41,7 +41,7 @@
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.16",
     "npm-run-all": "^4.1.5",
-    "pa-website-validator": "github:italia/pa-website-validator#v2.0.2",
+    "pa-website-validator": "github:italia/pa-website-validator#v2.1.1",
     "pg": "^8.7.3",
     "redis": "^4.1.0",
     "sequelize": "^6.6.5",
