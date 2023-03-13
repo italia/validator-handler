@@ -24,6 +24,7 @@ COPY . /usr/src/app/
 RUN touch /usr/src/app/.env
 
 RUN npm install --verbose
+RUN cd node_modules/geoip-lite && npm run-script updatedb license_key=${GEOIP_LICENSE}
 
 RUN npm run build
 
