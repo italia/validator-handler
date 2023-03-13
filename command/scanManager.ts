@@ -3,6 +3,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import Redis from "ioredis";
 import { dbSM, dbWS } from "../database/connection";
 import { define as jobDefine } from "../database/models/job";
 import { run } from "pa-website-validator/dist/controller/launchLighthouse";
@@ -34,17 +35,13 @@ dbSM
 
     const worker: Worker = new Worker("crawler-queue", null, {
       lockDuration: 10000000,
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: parseInt(process.env.REDIS_PORT),
-      },
-      //connection: new Redis.Cluster([
-      //  {
-      //    host: process.env.REDIS_HOST,
-      //    port: parseInt(process.env.REDIS_PORT),
-      //  },
-      //]),
-      //prefix: "{1}",
+      connection: new Redis.Cluster([
+        {
+          host: process.env.REDIS_HOST,
+          port: parseInt(process.env.REDIS_PORT),
+        },
+      ]),
+      prefix: "{1}",
     });
     const token = v4();
     let job: bullJob;
