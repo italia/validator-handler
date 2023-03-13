@@ -117,11 +117,11 @@ const mapPA2026Body = async (
 
     const initialBody = [];
     initialBody[`Nome_file_${key}__c`] =
-      `report_scansione_` +
-      new Date().toISOString().split("T")[0] +
-      "_id_" +
+      `Report ` +
       job.id +
-      (isFirstScan ? "_prima_scansione" : "");
+      "_" +
+      new Date().toISOString().split("T")[0] +
+      (isFirstScan ? "_Prima Scansione" : "");
     initialBody[`Data_scansione_fallita__c`] = null;
     initialBody[`URL_scansione_fallita__c`] = null;
     initialBody[`Versione_Crawler_${key}__c`] =
