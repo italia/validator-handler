@@ -50,6 +50,11 @@ const structure: ModelAttributes<Entity, Attributes<Entity>> = {
       isIn: [[...allowedMunicipalitySubTypes]],
     },
   },
+  forcedScan: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 };

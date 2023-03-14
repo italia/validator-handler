@@ -54,4 +54,21 @@ const empty = async (directory: string) => {
   if (listedObjects.IsTruncated) await empty(directory);
 };
 
-export { upload, empty };
+const getFile = async (filePath: string): Promise<string> => {
+  const s3 = new AWS.S3();
+
+  const getParams = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: filePath,
+  };
+
+  const data = await s3.getObject(getParams).promise();
+
+  if (!data) {
+    return "";
+  }
+
+  return data.Body?.toString() ?? "";
+};
+
+export { upload, empty, getFile };

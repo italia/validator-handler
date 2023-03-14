@@ -18,6 +18,7 @@ export interface createEntityBodyType<>extends express.Request {
     enable: boolean;
     type: string;
     subtype: string;
+    forcedScan: boolean;
   };
 }
 

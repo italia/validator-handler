@@ -116,7 +116,14 @@ const mapPA2026Body = async (
     }
 
     const initialBody = [];
+    initialBody[`Nome_file_${key}__c`] =
+      `Report ` +
+      job.id +
+      "_" +
+      new Date().toISOString().split("T")[0] +
+      (isFirstScan ? "_Prima Scansione" : "");
     initialBody[`Data_scansione_fallita__c`] = null;
+    initialBody[`URL_scansione_fallita__c`] = null;
     initialBody[`Versione_Crawler_${key}__c`] =
       packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
     initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
@@ -170,9 +177,10 @@ const mapPA2026Body = async (
   }
 };
 
-const mapPA2026BodyUrlNotExists = async () => {
+const mapPA2026BodyUrlNotExists = async (urlToBeScanned: string) => {
   const body = [];
   body[`Data_scansione_fallita__c`] = new Date().toISOString().split("T")[0];
+  body[`URL_scansione_fallita__c`] = urlToBeScanned;
 
   return Object.assign({}, body);
 };

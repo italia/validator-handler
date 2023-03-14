@@ -34,6 +34,7 @@ export class Entity extends Model<
   declare type: string;
   declare subtype: string;
   declare asseverationJobId: string;
+  declare forcedScan: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

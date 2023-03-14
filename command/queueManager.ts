@@ -16,11 +16,17 @@ import {
   getRescanEntityToBeAnalyzed,
   getRescanEntityAsseveratedToBeAnalyzed,
   generateJobs,
+  getForcedRescanEntitiesToBeAnalyzed,
+  getFirstTimeForcedEntityToBeAnalyzed,
 } from "../controller/queueManagerController";
 
 const command = yargs(hideBin(process.argv))
   .usage(
-    "Usage: --maxItems <maxItems> --passedOlderThanDays <passedOlderThanDays> --failedOlderThanDays <failedOlderThanDays>"
+    "Usage: " +
+      "--maxItems <maxItems> " +
+      "--passedOlderThanDays <passedOlderThanDays> " +
+      "--failedOlderThanDays <failedOlderThanDays> " +
+      "--manualScanLogic"
   )
   .option("maxItems", {
     describe: "Numero massimo di entity da analizzare",
@@ -48,6 +54,13 @@ const command = yargs(hideBin(process.argv))
     type: "integer",
     demandOption: true,
     default: 28,
+  })
+  .option("manualScanLogic", {
+    describe:
+      "Flag per permettere solo alle entity flaggate come 'da scansionare' di entrare in coda di scansione",
+    type: "bool",
+    demandOption: true,
+    default: false,
   }).argv;
 
 dbQM
@@ -79,25 +92,51 @@ dbQM
     );
     console.log('MANAGE JOB IN "PENDING": ', inPendingJob.length);
 
-    const maxItems: number = parseInt(command.maxItems);
+    const manualScanLogic = command.manualScanLogic;
 
-    const firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
-      maxItems
-    );
+    let gapLimit: number = parseInt(command.maxItems);
+
+    let firstTimeEntityToBeAnalyzed = [];
+    if (command.passedOlderThanDays > 0 || command.failedOlderThanDays) {
+      firstTimeEntityToBeAnalyzed = await getFirstTimeEntityToBeAnalyzed(
+        gapLimit
+      );
+
+      gapLimit = gapLimit - firstTimeEntityToBeAnalyzed.length;
+    }
+
+    let firstTimeForcedEntityToBeAnalyzed = [];
+    if (gapLimit > 0 && manualScanLogic) {
+      firstTimeForcedEntityToBeAnalyzed =
+        await getFirstTimeForcedEntityToBeAnalyzed(gapLimit);
+
+      gapLimit = gapLimit - firstTimeForcedEntityToBeAnalyzed.length;
+    }
+
+    let forcedRescanEntitiesToBeAnalyzed = [];
+    if (gapLimit > 0 && manualScanLogic) {
+      forcedRescanEntitiesToBeAnalyzed =
+        await getForcedRescanEntitiesToBeAnalyzed(gapLimit);
+
+      gapLimit = gapLimit - forcedRescanEntitiesToBeAnalyzed.length;
+    }
 
     let rescanEntityToBeAnalyzed = [];
-    let gapLimit: number = maxItems - firstTimeEntityToBeAnalyzed.length;
-    if (gapLimit > 0) {
+    if (
+      gapLimit > 0 &&
+      (command.passedOlderThanDays > 0 || command.failedOlderThanDays)
+    ) {
       rescanEntityToBeAnalyzed = await getRescanEntityToBeAnalyzed(
         command.passedOlderThanDays,
         command.failedOlderThanDays,
         gapLimit
       );
+
+      gapLimit = gapLimit - rescanEntityToBeAnalyzed.length;
     }
 
     let rescanEntityAsseveratedToBeAnalyzed = [];
-    gapLimit = gapLimit - rescanEntityToBeAnalyzed.length;
-    if (gapLimit > 0) {
+    if (gapLimit > 0 && command.asservationOlderThanDays > 0) {
       rescanEntityAsseveratedToBeAnalyzed =
         await getRescanEntityAsseveratedToBeAnalyzed(
           command.asservationOlderThanDays,
@@ -105,9 +144,12 @@ dbQM
         );
     }
 
-    if (firstTimeEntityToBeAnalyzed.length > 0) {
+    if (
+      firstTimeEntityToBeAnalyzed.length > 0 ||
+      firstTimeForcedEntityToBeAnalyzed.length > 0
+    ) {
       await generateJobs(
-        firstTimeEntityToBeAnalyzed,
+        [...firstTimeEntityToBeAnalyzed, ...firstTimeForcedEntityToBeAnalyzed],
         crawlerQueue,
         true,
         preserveReasons[0]
@@ -125,16 +167,31 @@ dbQM
 
     if (
       rescanEntityToBeAnalyzed.length > 0 ||
-      rescanEntityAsseveratedToBeAnalyzed.length > 0
+      rescanEntityAsseveratedToBeAnalyzed.length > 0 ||
+      forcedRescanEntitiesToBeAnalyzed.length > 0
     ) {
       await generateJobs(
-        [...rescanEntityToBeAnalyzed, ...rescanEntityAsseveratedToBeAnalyzed],
+        [
+          ...rescanEntityToBeAnalyzed,
+          ...rescanEntityAsseveratedToBeAnalyzed,
+          ...forcedRescanEntitiesToBeAnalyzed,
+        ],
         crawlerQueue,
         false
       );
     }
 
     console.log("FIRST TIME ENTITIES", firstTimeEntityToBeAnalyzed.length);
+
+    console.log(
+      "FIRST TIME FORCED ENTITIES",
+      firstTimeForcedEntityToBeAnalyzed.length
+    );
+
+    console.log(
+      "FORCED RESCAN ENTITIES",
+      forcedRescanEntitiesToBeAnalyzed.length
+    );
     console.log(
       "RESCAN ENTITIES TO BE ANALYZED",
       rescanEntityToBeAnalyzed.length

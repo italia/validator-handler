@@ -9,8 +9,7 @@ const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
   let returnValues = [];
 
   try {
-    const firstTimeEntityToBeAnalyzed = await dbQM.query(
-      `SELECT E.id
+    const querySql = `SELECT E.id
             FROM "Entities" as E
             WHERE 0 = (
                 SELECT count(*)
@@ -18,15 +17,87 @@ const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
                 WHERE J.entity_id = E.id
                 AND J.status != 'ERROR'
             )
-            LIMIT :limit`,
-      {
-        replacements: { limit: limit },
-        type: QueryTypes.RAW,
-      }
-    );
+            LIMIT :limit`;
+
+    const firstTimeEntityToBeAnalyzed = await dbQM.query(querySql, {
+      replacements: { limit: limit },
+      type: QueryTypes.RAW,
+    });
 
     if (firstTimeEntityToBeAnalyzed[0].length > 0) {
       returnValues = firstTimeEntityToBeAnalyzed[0];
+    }
+
+    return returnValues;
+  } catch (e) {
+    return returnValues;
+  }
+};
+
+const getFirstTimeForcedEntityToBeAnalyzed = async (limit: number) => {
+  let returnValues = [];
+
+  try {
+    const querySql = `SELECT E.id
+            FROM "Entities" as E
+            WHERE 0 = (
+                SELECT count(*)
+                FROM "Jobs" as J
+                WHERE J.entity_id = E.id
+                AND J.status != 'ERROR'
+            )
+            AND E."forcedScan" = TRUE
+            LIMIT :limit
+            `;
+
+    const firstTimeEntityToBeAnalyzed = await dbQM.query(querySql, {
+      replacements: { limit: limit },
+      type: QueryTypes.RAW,
+    });
+
+    if (firstTimeEntityToBeAnalyzed[0].length > 0) {
+      returnValues = firstTimeEntityToBeAnalyzed[0];
+    }
+
+    return returnValues;
+  } catch (e) {
+    return returnValues;
+  }
+};
+
+const getForcedRescanEntitiesToBeAnalyzed = async (limit: number) => {
+  let returnValues = [];
+
+  try {
+    const querySql = `SELECT E.id
+            FROM "Entities" as E
+            WHERE 0 < (
+                SELECT count(*)
+                FROM "Jobs" as J
+                WHERE J.entity_id = E.id 
+                AND J.status != 'ERROR'
+            )
+            AND
+            0 = (
+                SELECT count(*)
+                FROM "Jobs" as J
+                WHERE J.entity_id = E.id 
+                AND 
+                (
+                  J.status = 'PENDING' OR
+                  J.status = 'IN_PROGRESS'
+                )
+            )
+            AND E."forcedScan" = TRUE
+            LIMIT :limit`;
+
+    const forcedEntityToBeRescanned = await dbQM.query(querySql, {
+      replacements: { limit: limit },
+      type: QueryTypes.RAW,
+    });
+
+    if (forcedEntityToBeRescanned[0].length > 0) {
+      returnValues = forcedEntityToBeRescanned[0];
     }
 
     return returnValues;
@@ -179,6 +250,8 @@ const generateJobs = async (
 
 export {
   getFirstTimeEntityToBeAnalyzed,
+  getFirstTimeForcedEntityToBeAnalyzed,
+  getForcedRescanEntitiesToBeAnalyzed,
   getRescanEntityToBeAnalyzed,
   getRescanEntityAsseveratedToBeAnalyzed,
   generateJobs,

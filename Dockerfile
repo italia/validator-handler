@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:16.17.0-buster-slim
+FROM node:18.15.0-buster-slim
 
 ARG GEOIP_LICENSE
 
@@ -16,7 +16,7 @@ RUN apt-get install -y git
 RUN apt-get install -y nano
 RUN apt-get install -y chromium
 
-RUN npm install -g npm@8.19.2
+RUN npm install -g npm@9.5.0
 
 # Bundle app source
 COPY . /usr/src/app/

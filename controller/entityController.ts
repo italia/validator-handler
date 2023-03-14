@@ -22,6 +22,14 @@ export class entityController {
     });
   }
 
+  async retrieveById(id: number): Promise<Entity> {
+    return await entityDefine(this.db).findOne({
+      where: {
+        id: id,
+      },
+    });
+  }
+
   async retrieveByPk(entityId: number) {
     return await entityDefine(this.db).findByPk(entityId);
   }
@@ -38,6 +46,7 @@ export class entityController {
       enable: entityCreateBody.enable,
       type: entityCreateBody.type,
       subtype: entityCreateBody.subtype,
+      forcedScan: entityCreateBody.forcedScan,
     });
   }
 

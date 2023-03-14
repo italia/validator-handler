@@ -12,6 +12,7 @@ import { Entity, Job } from "../types/models";
 import { jobController } from "../controller/jobController";
 import { preserveReasons, define as jobDefine } from "../database/models/job";
 import { Op } from "sequelize";
+import { getFile } from "../controller/s3Controller";
 
 dbRoot
   .authenticate()
@@ -24,6 +25,9 @@ dbRoot
 
       const updateResult = await update();
       console.log("[PA2026 MANAGER]: UPDATE RESULT - ", updateResult);
+
+      const forcedScanResult = await forcedScanEntities();
+      console.log("[PA2026 MANAGER]: FORCED SCAN RESULT - ", forcedScanResult);
 
       const asseverationResult = await asseveration();
       console.log(
@@ -45,7 +49,12 @@ dbRoot
 
 const create = async () => {
   const createQuery =
-    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c FROM outfunds__Funding_Request__c  WHERE outfunds__Status__c ='Finanziata' AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141'  AND Url_Sito_Internet__c !=null AND ID_Crawler__c=null";
+    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c " +
+    "FROM outfunds__Funding_Request__c " +
+    "WHERE outfunds__Status__c ='Finanziata' " +
+    "AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141' " +
+    "AND Url_Sito_Internet__c !=null " +
+    "AND ID_Crawler__c=null";
   const returnIds = [];
 
   try {
@@ -79,6 +88,7 @@ const create = async () => {
             enable: true,
             type: type,
             subtype: subtype,
+            forcedScan: false,
           });
 
           if (!entity) {
@@ -117,6 +127,7 @@ const update = async () => {
     "AND Url_Sito_Internet__c !=null " +
     "AND ID_Crawler__c!=null " +
     "AND Controllo_URL__c=false ";
+
   const returnIds = [];
 
   try {
@@ -260,11 +271,14 @@ const asseveration = async () => {
 
         returnIds.push(entityUpdated.id);
       } catch (e) {
-        console.log("UPDATE QUERY FOR-STATEMENT EXCEPTION: ", e.toString());
+        console.log(
+          "ASSEVERATION QUERY FOR-STATEMENT EXCEPTION: ",
+          e.toString()
+        );
       }
     }
   } catch (e) {
-    console.log("UPDATE QUERY EXCEPTION: ", e.toString());
+    console.log("ASSEVERATION QUERY EXCEPTION: ", e.toString());
   }
   return returnIds;
 };
@@ -315,9 +329,93 @@ const sendRetryJobInSendError = async () => {
     });
 
     for (const job of jobs) {
-      await pushResult(job, job.json_result, job.status === "PASSED");
+      try {
+        let s3FilePath = job.s3_html_url;
+        if (!s3FilePath) {
+          continue;
+        }
+
+        if (s3FilePath.startsWith("http")) {
+          s3FilePath = new URL(s3FilePath).pathname;
+        }
+
+        s3FilePath = s3FilePath.substring(1);
+
+        const file: string = await getFile(s3FilePath);
+        if (!file) {
+          continue;
+        }
+
+        await pushResult(job, job.json_result, job.status === "PASSED", file);
+      } catch (e) {
+        console.log("SEND RETRY JOB FOR-STATEMENT EXCEPTION: ", e.toString());
+      }
     }
   } catch (e) {
     console.log("SEND RETRY JOB EXCEPTION: ", e.toString());
   }
+};
+
+const forcedScanEntities = async () => {
+  const forcedScanEntitiesQuery =
+    "SELECT id,Url_Sito_Internet__c, Pacchetto_1_4_1__c, ID_Crawler__c " +
+    "FROM outfunds__Funding_Request__c  " +
+    "WHERE outfunds__Status__c ='Finanziata' " +
+    "AND outfunds__FundingProgram__r.RecordType.DeveloperName='Misura_141'  " +
+    "AND Url_Sito_Internet__c !=null " +
+    "AND Da_Scansionare__c=true";
+
+  const returnIds = [];
+
+  try {
+    const scanFromPA2026Result = await callQuery(forcedScanEntitiesQuery);
+
+    if (!scanFromPA2026Result) {
+      throw new Error("Empty values from create query");
+    }
+
+    const records = scanFromPA2026Result?.records;
+    if (records.length <= 0) {
+      return [];
+    }
+
+    for (const record of records) {
+      try {
+        const externalId = record.Id ?? "";
+        const entity: Entity = await new entityController(dbWS).retrieve(
+          externalId
+        );
+
+        if (!entity) {
+          throw new Error("Entity not found: " + externalId);
+        }
+
+        const updateEntity = await entity.update({
+          forcedScan: true,
+        });
+
+        returnIds.push(updateEntity.id);
+
+        await callPatch(
+          {
+            Da_Scansionare__c: false,
+            Da_Scansionare_Data_Scansione__c: new Date().getTime(),
+          },
+          process.env.PA2026_UPDATE_RECORDS_PATH.replace(
+            "{external_entity_id}",
+            entity.external_id
+          )
+        );
+      } catch (e) {
+        console.log(
+          "FORCED SCAN QUERY FOR-STATEMENT EXCEPTION: ",
+          e.toString()
+        );
+      }
+    }
+  } catch (e) {
+    console.log("FORCED SCAN QUERY EXCEPTION: ", e.toString());
+  }
+
+  return returnIds;
 };
