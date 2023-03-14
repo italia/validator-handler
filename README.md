@@ -52,7 +52,7 @@ npm run build
 Comando di **creazione coda**:
 
 ```bash
-npm run dist-queue-manager --maxItems <number> --passedOlderThanDays <number> --failedOlderThanDays <number> --asservationOlderThanDays <number>
+npm run dist-queue-manager --maxItems <number> --passedOlderThanDays <number> --failedOlderThanDays <number> --asservationOlderThanDays <number> --manualScanLogic <boolean>
 ```
 
 Mappa opzioni comando
