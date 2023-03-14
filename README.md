@@ -24,7 +24,7 @@ PA Website Validator handler utilizza le seguenti tecnologie
 
 ## Requirements
 
-PA Website Validator necessita [Node.js](https://nodejs.org/it/) v16+ (LTS), [npm], [PostgreSQL] e [Redis].
+PA Website Validator necessita [Node.js](https://nodejs.org/it/) v18+ (LTS), [npm], [PostgreSQL] e [Redis].
 
 ## Plugins
 
