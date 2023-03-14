@@ -62,6 +62,7 @@ Mappa opzioni comando
 | - -passedOlderThanDays | Giorni dopo i quali le entity con Job che ha fornito risultato PASSED vengono riaccodate per essere scansionate | ❌ |28
 | - -failedOlderThanDays | Giorni dopo i quali le entity con Job che ha fornito risultato FAILED vengono riaccodate per essere scansionate | ❌ | 14
 | - -asservationOlderThanDays | Giorni dopo i quali le entity asseverate vengono riaccodate per essere scansionate | ❌ | 28
+| - -manualScanLogic | Flag per permettere solo alle entity flaggate come 'da scansionare' su PA2026 di entrare in coda di scansione | ❌ | false
 
 Comando di prelievo Job da coda e **start scansione**:
 
