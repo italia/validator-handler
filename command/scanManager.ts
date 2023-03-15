@@ -204,7 +204,6 @@ const uploadFiles = async (
       };
     }
 
-    //TODO: Integrazione completata - In attesa di bucket S3 per testing
     const htmlLocationUrl = await s3Upload(
       htmlReport,
       entityId + "/" + jobId + "/" + "report.html"
