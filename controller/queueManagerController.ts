@@ -59,6 +59,10 @@ const manageEntitiesInErrorJobs = async () => {
         dbWS
       ).retrieveById(inErrorEntities[0][i]["entity_id"]);
 
+      if (!entity) {
+        continue;
+      }
+
       try {
         await callPatch(
           {
