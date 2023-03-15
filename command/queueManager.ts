@@ -18,6 +18,7 @@ import {
   generateJobs,
   getForcedRescanEntitiesToBeAnalyzed,
   getFirstTimeForcedEntityToBeAnalyzed,
+  manageEntitiesInErrorJobs,
 } from "../controller/queueManagerController";
 
 const command = yargs(hideBin(process.argv))
@@ -85,7 +86,10 @@ dbQM
     const inProgressJobInError = await new jobController(
       dbQM
     ).manageInProgressJobInError();
-    console.log('MANAGE JOB IN "ERROR": ', inProgressJobInError.length);
+    console.log(
+      'MANAGE IN PROGRESS JOB IN "ERROR": ',
+      inProgressJobInError.length
+    );
 
     const inPendingJob = await new jobController(dbQM).managePendingJobs(
       crawlerQueue
@@ -93,6 +97,14 @@ dbQM
     console.log('MANAGE JOB IN "PENDING": ', inPendingJob.length);
 
     const manualScanLogic = command.manualScanLogic;
+
+    if (manualScanLogic) {
+      const entityInErrorJob = await manageEntitiesInErrorJobs();
+      console.log(
+        'MANAGE ENTITY WITH LAST JOB IN "ERROR": ',
+        entityInErrorJob.length
+      );
+    }
 
     let gapLimit: number = parseInt(command.maxItems);
 

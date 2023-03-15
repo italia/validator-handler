@@ -1,9 +1,11 @@
-import { dbQM } from "../database/connection";
+import { dbQM, dbWS } from "../database/connection";
 import { QueryTypes } from "sequelize";
 import { Entity } from "../types/models";
 import { define as entityDefine } from "../database/models/entity";
 import { define as jobDefine } from "../database/models/job";
 import dateFormat from "dateformat";
+import { entityController } from "./entityController";
+import { callPatch } from "./PA2026/integrationController";
 
 const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
   let returnValues = [];
@@ -30,6 +32,54 @@ const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
 
     return returnValues;
   } catch (e) {
+    return returnValues;
+  }
+};
+
+const manageEntitiesInErrorJobs = async () => {
+  const returnValues = [];
+
+  try {
+    const querySql = `SELECT J."entity_id"
+            FROM "Jobs" as J
+            WHERE J.status = 'ERROR'
+            AND J.id IN (
+                SELECT MAX(J2.id)
+                FROM "Jobs" as J2
+                GROUP BY J2."entity_id"
+            )
+            `;
+
+    const inErrorEntities = await dbQM.query(querySql, {
+      type: QueryTypes.RAW,
+    });
+
+    for (let i = 0; i < inErrorEntities[0].length; i++) {
+      const entity: Entity | null = await new entityController(
+        dbWS
+      ).retrieveById(inErrorEntities[0][i]["entity_id"]);
+
+      try {
+        await callPatch(
+          {
+            Da_Scansionare_Data_Scansione__c: new Date().getTime(),
+          },
+          process.env.PA2026_UPDATE_RECORDS_PATH.replace(
+            "{external_entity_id}",
+            entity.external_id
+          )
+        );
+      } catch (e) {
+        console.log("FOR: ENTITY IN ERROR JOBS: ", e.toString());
+        continue;
+      }
+
+      returnValues.push(entity.id);
+    }
+
+    return returnValues;
+  } catch (e) {
+    console.log("ERROR: MANAGE IN ERROR JOB");
     return returnValues;
   }
 };
@@ -250,6 +300,7 @@ const generateJobs = async (
 
 export {
   getFirstTimeEntityToBeAnalyzed,
+  manageEntitiesInErrorJobs,
   getFirstTimeForcedEntityToBeAnalyzed,
   getForcedRescanEntitiesToBeAnalyzed,
   getRescanEntityToBeAnalyzed,

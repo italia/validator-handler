@@ -100,6 +100,8 @@ const callPatch = async (body: object, path: string, retry = 3) => {
       return result?.data ?? {};
     } else if (result?.statusCode === 401) {
       await new tokenController(dbWS).create();
+    } else {
+      throw new Error(JSON.stringify(result));
     }
   } catch (e) {
     console.log("CALL PATCH EXCEPTION: ", e.toString());
