@@ -1,6 +1,6 @@
 {
   "name": "crawler-handler",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
@@ -41,7 +41,7 @@
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.16",
     "npm-run-all": "^4.1.5",
-    "pa-website-validator": "github:italia/pa-website-validator#v2.2.1",
+    "pa-website-validator": "github:italia/pa-website-validator#v2.3.0",
     "pg": "^8.7.3",
     "redis": "^4.1.0",
     "sequelize": "^6.6.5",
