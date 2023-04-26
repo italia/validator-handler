@@ -112,6 +112,9 @@ const scan = async (jobId) => {
       "online",
       logLevels.display_none,
       false,
+      "",
+      "",
+      false,
       "all"
     );
 
