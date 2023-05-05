@@ -257,14 +257,27 @@ const uploadFiles = async (
 };
 
 const killProcessByName = async (name: string) => {
-  const list = await psList();
   const pidKilled = [];
-  for (const element of list) {
-    if (element.name === name) {
-      await treeKill(element.pid);
-      pidKilled.push(element.pid);
-    }
-  }
 
-  return pidKilled;
+  try {
+    const list = await psList();
+
+    for (const element of list) {
+      try {
+        if (element.name === name) {
+          await treeKill(element.pid);
+          pidKilled.push(element.pid);
+        }
+      } catch (e) {
+        console.log("ELEMENT IN ERROR: ", element);
+        console.log("KILL PROCESS BY NAME FOR-STATEMENT EXCEPTION: ", e);
+      }
+    }
+
+    return pidKilled;
+  } catch (e) {
+    console.log("KILL PROCESS BY NAME EXCEPTION: ", e);
+
+    return pidKilled;
+  }
 };
