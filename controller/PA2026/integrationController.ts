@@ -19,6 +19,7 @@ import {
   mapPA2026Body,
   mapPA2026BodyUrlNotExists,
 } from "../../utils/utils";
+import { Op } from "sequelize";
 
 const retrieveToken = async () => {
   try {
@@ -185,6 +186,8 @@ const pushResult = async (
       const countJobsFromEntityId = await jobDefine(dbSM).count({
         where: {
           entity_id: entity.id,
+          [Op.not]: [{ preserve_reason: preserveReasons[0] }],
+          data_sent_status: "COMPLETED",
         },
       });
 

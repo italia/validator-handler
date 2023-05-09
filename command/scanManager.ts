@@ -27,6 +27,8 @@ import {
 } from "../controller/PA2026/integrationController";
 import { urlExists } from "../utils/utils";
 import { entityController } from "../controller/entityController";
+import psList from "ps-list";
+import treeKill from "tree-kill";
 
 dbSM
   .authenticate()
@@ -171,6 +173,9 @@ const scan = async (jobId) => {
     );
     console.log("JOB DELETED: ", jobDeleted);
 
+    const pidKilled = await killProcessByName("Chromium");
+    console.log("PID KILLED: ", pidKilled);
+
     return true;
   } catch (e) {
     console.log("SCAN EXCEPTION: ", e.toString());
@@ -179,6 +184,9 @@ const scan = async (jobId) => {
       status: "ERROR",
       end_at: Date.now(),
     });
+
+    const pidKilled = await killProcessByName("Chromium");
+    console.log("PID KILLED: ", pidKilled);
 
     return false;
   }
@@ -245,5 +253,31 @@ const uploadFiles = async (
       jsonLocationUrl: null,
       cleanJsonLocationUrl: null,
     };
+  }
+};
+
+const killProcessByName = async (name: string) => {
+  const pidKilled = [];
+
+  try {
+    const list = await psList();
+
+    for (const element of list) {
+      try {
+        if (element.name === name) {
+          await treeKill(element.pid);
+          pidKilled.push(element.pid);
+        }
+      } catch (e) {
+        console.log("ELEMENT IN ERROR: ", element);
+        console.log("KILL PROCESS BY NAME FOR-STATEMENT EXCEPTION: ", e);
+      }
+    }
+
+    return pidKilled;
+  } catch (e) {
+    console.log("KILL PROCESS BY NAME EXCEPTION: ", e);
+
+    return pidKilled;
   }
 };
