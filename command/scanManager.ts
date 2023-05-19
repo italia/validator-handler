@@ -38,8 +38,10 @@ dbSM
       ]),
       prefix: "{1}",
     });
+
     const token = v4();
     let job: bullJob;
+
     while ((job = await worker.getNextJob(token)) !== undefined) {
       try {
         console.log("[SCAN MANAGER] SPAWN START..");
@@ -56,12 +58,13 @@ dbSM
         const child = spawnSync(command, {
           shell: true,
         });
+
         console.log(
-          "[SCAN MANAGER] LOG FROM SCAN-MANAGER-ITEM:",
+          "[SCAN MANAGER] LOG FROM SCAN-MANAGER-ITEM: ",
           child.stdout.toString()
         );
         console.log(
-          "[SCAN MANAGER] STATUS FROM SCAN-MANAGER-ITEM",
+          "[SCAN MANAGER] STATUS FROM SCAN-MANAGER-ITEM: ",
           child.status
         );
 
@@ -88,7 +91,10 @@ dbSM
           await job.moveToFailed(new Error("error"), token);
         }
       } catch (e) {
-        console.log("[ERROR]: SCAN MANAGER WHILE EXCEPTION: ", e);
+        console.log(
+          "[SCAN MANAGER] - Error in SCAN MANAGER WHILE-LOOP EXCEPTION: ",
+          e
+        );
       }
     }
 

@@ -40,7 +40,7 @@ dbSM
   .authenticate()
   .then(async () => {
     const idJob = parseInt(command.jobId);
-    console.log("[SCAN ITEM MANAGER]: start for jobID: " + idJob);
+    console.log("[SCAN MANAGER ITEM]: start for jobID: " + idJob);
 
     const result = await scan(idJob);
 
@@ -51,7 +51,7 @@ dbSM
     process.exit(1);
   })
   .catch((err) => {
-    console.error("Error: ", err);
+    console.error("[SCAN MANAGER ITEM] - Error: ", err);
     process.exit(1);
   });
 
@@ -81,7 +81,7 @@ const scan = async (jobId) => {
       urlToBeScanned,
       jobObjParsed.type,
       "online",
-      logLevels.display_info,
+      logLevels.display_none,
       false,
       "",
       "",
@@ -140,14 +140,14 @@ const scan = async (jobId) => {
     const jobDeleted = await new jobController(dbSM).cleanJobs(
       jobObjParsed.entity_id
     );
-    console.log("[SCAN ITEM MANAGER] - JOB DELETED: ", jobDeleted);
+    console.log("[SCAN MANAGER ITEM] - JOB DELETED: ", jobDeleted);
 
     const pidKilled = await killProcessByName("Chromium");
-    console.log("[SCAN ITEM MANAGER] - PID KILLED: ", pidKilled);
+    console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return true;
   } catch (e) {
-    console.log("[SCAN ITEM MANAGER] - SCAN EXCEPTION: ", e.toString());
+    console.log("[SCAN MANAGER ITEM] - SCAN EXCEPTION: ", e.toString());
 
     await jobObj.update({
       status: "ERROR",
@@ -155,7 +155,7 @@ const scan = async (jobId) => {
     });
 
     const pidKilled = await killProcessByName("Chromium");
-    console.log("[SCAN ITEM MANAGER] - PID KILLED: ", pidKilled);
+    console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return false;
   }
@@ -238,9 +238,12 @@ const killProcessByName = async (name: string) => {
           pidKilled.push(element.pid);
         }
       } catch (e) {
-        console.log("[SCAN ITEM MANAGER] - ELEMENT IN ERROR: ", element);
         console.log(
-          "[SCAN ITEM MANAGER] - KILL PROCESS BY NAME FOR-STATEMENT EXCEPTION: ",
+          "[SCAN MANAGER ITEM] - KILL PROCESS ELEMENT IN ERROR: ",
+          element
+        );
+        console.log(
+          "[SCAN MANAGER ITEM] - KILL PROCESS FOR-STATEMENT EXCEPTION: ",
           e
         );
       }
@@ -248,7 +251,7 @@ const killProcessByName = async (name: string) => {
 
     return pidKilled;
   } catch (e) {
-    console.log("[SCAN ITEM MANAGER] - KILL PROCESS BY NAME EXCEPTION: ", e);
+    console.log("[SCAN MANAGER ITEM] - KILL PROCESS EXCEPTION: ", e);
 
     return pidKilled;
   }
