@@ -1,0 +1,143 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dtd-crawler-web-server-job-coll
+  namespace: dtd-crawler-coll
+  labels:
+    app: dtd-crawler-web-server-coll
+spec:
+  template:
+    metadata:
+      labels:
+        app: dtd-crawler-web-server-coll
+    spec:
+      containers:
+      - name: dtd-crawler-web-server-coll
+        image: ImagePlaceholder
+        imagePullPolicy: Always
+        command: ["npm", "run", "dist-webserver"]
+        envFrom:
+          - configMapRef:
+              name: dtd-crawler-env-configmap-coll
+          - secretRef:
+              name: dtd-crawler-database-secret-coll
+          - secretRef:
+              name: dtd-crawler-basicauth-secret-coll
+          - secretRef:
+              name: dtd-crawler-aws-s3-secret-coll
+          - secretRef:
+              name: dtd-crawler-jwt-secret-coll
+          - secretRef:
+              name: dtd-crawler-pa2026-secret-coll
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dtd-crawler-pa2026-manager-job-coll
+  namespace: dtd-crawler-coll
+  labels:
+    app: dtd-crawler-pa2026-manager-coll
+spec:
+  schedule: "0 22 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dtd-crawler-pa2026-manager-coll
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: dtd-crawler-pa2026-manager-coll
+            image: ImagePlaceholder
+            imagePullPolicy: Always
+            command: ["npm", "run", "dist-PA2026-manager"]
+            envFrom:
+              - configMapRef:
+                  name: dtd-crawler-env-configmap-coll
+              - secretRef:
+                  name: dtd-crawler-database-secret-coll
+              - secretRef:
+                  name: dtd-crawler-basicauth-secret-coll
+              - secretRef:
+                  name: dtd-crawler-aws-s3-secret-coll
+              - secretRef:
+                  name: dtd-crawler-jwt-secret-coll
+              - secretRef:
+                  name: dtd-crawler-pa2026-secret-coll
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dtd-crawler-queue-manager-job-coll
+  namespace: dtd-crawler-coll
+  labels:
+    app: dtd-crawler-queue-manager-coll
+spec:
+  schedule: "0 0,12 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dtd-crawler-queue-manager-coll
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: dtd-crawler-queue-manager-coll
+            image: ImagePlaceholder
+            imagePullPolicy: Always
+            command:
+            - /bin/sh
+            - -c
+            - node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js --maxItems 1000 --passedOlderThanDays 0 --failedOlderThanDays 0 --asservationOlderThanDays 0 --manualScanLogic true 
+            envFrom:
+              - configMapRef:
+                  name: dtd-crawler-env-configmap-coll
+              - secretRef:
+                  name: dtd-crawler-database-secret-coll
+              - secretRef:
+                  name: dtd-crawler-basicauth-secret-coll
+              - secretRef:
+                  name: dtd-crawler-aws-s3-secret-coll
+              - secretRef:
+                  name: dtd-crawler-jwt-secret-coll
+              - secretRef:
+                  name: dtd-crawler-pa2026-secret-coll
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dtd-crawler-scan-manager-job-coll
+  namespace: dtd-crawler-coll
+  labels:
+    app: dtd-crawler-scan-manager-coll
+spec:
+  schedule: "0 2,14 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dtd-crawler-scan-manager-coll
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: dtd-crawler-scan-manager-coll
+            image: ImagePlaceholder
+            imagePullPolicy: Always
+            command: ["npm", "run", "dist-scan-manager"]
+            envFrom:
+              - configMapRef:
+                  name: dtd-crawler-env-configmap-coll
+              - secretRef:
+                  name: dtd-crawler-database-secret-coll
+              - secretRef:
+                  name: dtd-crawler-basicauth-secret-coll
+              - secretRef:
+                  name: dtd-crawler-aws-s3-secret-coll
+              - secretRef:
+                  name: dtd-crawler-jwt-secret-coll
+              - secretRef:
+                  name: dtd-crawler-pa2026-secret-coll

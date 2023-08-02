@@ -1,0 +1,87 @@
+on:
+  release:
+    types: [created]
+    tags:
+      - 'coll-v*\.*\.*'
+
+name: AWS PCM Build and Deploy Collaudo
+
+jobs:
+  deploy:
+    if: ${{ startsWith(github.ref, 'refs/tags/coll') }}
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Print GITHUB_REF
+      run: echo "GITHUB_REF=${GITHUB_REF}"
+    - name: Set output
+      id: vars
+      run: echo "tag=${GITHUB_REF#refs/*/}" | sed 's/coll-v//' >> "${GITHUB_OUTPUT}"
+    - name: Check output
+      env:
+        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ steps.vars.outputs.tag }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-south-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push the image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+        IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+      run: |
+        # Build a docker container and push it to ECR 
+        docker build --build-arg GEOIP_LICENSE=${{ secrets.GEOIP_LICENSE }} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        echo "Pushing image to COLL ECR..."
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        echo "Pushed image to COLL ECR "
+
+    - name: Update kube config for coll EKS
+      id: update-kube-config-coll
+      run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+    - name: Apply the deployment to EKS
+      id: deploy
+      env:
+        IMAGE_TAG: ${{ steps.build-image.outputs.image }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+      run: |
+        echo "Image tag: $IMAGE_TAG"
+        tag=$(echo ${IMAGE_TAG##*:})
+        echo "coll ecr: $ECR_REGISTRY/$ECR_REPOSITORY:$tag"
+        echo "Deploying to test EKS..." 
+        cat git-deployment-coll.yml | sed "s|ImagePlaceholder|$ECR_REGISTRY/$ECR_REPOSITORY:$tag|g" | kubectl apply -f -
+
+    - name: Check the deploy to EKS COLL
+      id: deploy-eks-coll
+      run: |
+        kubectl get cronjobs -n dtd-crawler-coll
+
+    - name: Send SNS notification when the deploy completes in collaudo
+      id: sns-success
+      if: success()
+      run: |
+        aws sns publish --topic-arn ${{ secrets.SNS_TOPIC_ARN }} --subject "[PCM DTD CRAWLER COLL] Deployment della versione ${{ steps.vars.outputs.tag }} avvenuto con successo" --message "Il deployment della versione ${{ steps.vars.outputs.tag }} è avvenuto con successo su EKS COLL"
+
+    - name: Send SNS notification when the deploy fails in collaudo
+      id: sns-failure
+      if: failure()
+      run: |
+        aws sns publish --topic-arn ${{ secrets.SNS_TOPIC_ARN }} --subject "[PCM DTD CRAWLER COLL] Deployment della versione ${{ steps.vars.outputs.tag }} fallito" --message "Il deployment della versione ${{ steps.vars.outputs.tag }} è fallito su EKS COLL"

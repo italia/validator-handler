@@ -1,0 +1,143 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dtd-crawler-web-server-job-prod
+  namespace: dtd-crawler-prod
+  labels:
+    app: dtd-crawler-web-server-prod
+spec:
+  template:
+    metadata:
+      labels:
+        app: dtd-crawler-web-server-prod
+    spec:
+      containers:
+      - name: dtd-crawler-web-server-prod
+        image: ImagePlaceholder
+        imagePullPolicy: Always
+        command: ["npm", "run", "dist-webserver"]
+        envFrom:
+          - configMapRef:
+              name: dtd-crawler-env-configmap-prod
+          - secretRef:
+              name: dtd-crawler-database-secret-prod
+          - secretRef:
+              name: dtd-crawler-basicauth-secret-prod
+          - secretRef:
+              name: dtd-crawler-aws-s3-secret-prod
+          - secretRef:
+              name: dtd-crawler-jwt-secret-prod
+          - secretRef:
+              name: dtd-crawler-pa2026-secret-prod
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dtd-crawler-pa2026-manager-job-prod
+  namespace: dtd-crawler-prod
+  labels:
+    app: dtd-crawler-pa2026-manager-prod
+spec:
+  schedule: "0 22 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dtd-crawler-pa2026-manager-prod
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: dtd-crawler-pa2026-manager-prod
+            image: ImagePlaceholder
+            imagePullPolicy: Always
+            command: ["npm", "run", "dist-PA2026-manager"]
+            envFrom:
+              - configMapRef:
+                  name: dtd-crawler-env-configmap-prod
+              - secretRef:
+                  name: dtd-crawler-database-secret-prod
+              - secretRef:
+                  name: dtd-crawler-basicauth-secret-prod
+              - secretRef:
+                  name: dtd-crawler-aws-s3-secret-prod
+              - secretRef:
+                  name: dtd-crawler-jwt-secret-prod
+              - secretRef:
+                  name: dtd-crawler-pa2026-secret-prod
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dtd-crawler-queue-manager-job-prod
+  namespace: dtd-crawler-prod
+  labels:
+    app: dtd-crawler-queue-manager-prod
+spec:
+  schedule: "0 0,12 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dtd-crawler-queue-manager-prod
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: dtd-crawler-queue-manager-prod
+            image: ImagePlaceholder
+            imagePullPolicy: Always
+            command:
+            - /bin/sh
+            - -c
+            - node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js --maxItems 1000 --passedOlderThanDays 0 --failedOlderThanDays 0 --asservationOlderThanDays 0 --manualScanLogic true 
+            envFrom:
+              - configMapRef:
+                  name: dtd-crawler-env-configmap-prod
+              - secretRef:
+                  name: dtd-crawler-database-secret-prod
+              - secretRef:
+                  name: dtd-crawler-basicauth-secret-prod
+              - secretRef:
+                  name: dtd-crawler-aws-s3-secret-prod
+              - secretRef:
+                  name: dtd-crawler-jwt-secret-prod
+              - secretRef:
+                  name: dtd-crawler-pa2026-secret-prod
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dtd-crawler-scan-manager-job-prod
+  namespace: dtd-crawler-prod
+  labels:
+    app: dtd-crawler-scan-manager-prod
+spec:
+  schedule: "0 2,14 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dtd-crawler-scan-manager-prod
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: dtd-crawler-scan-manager-prod
+            image: ImagePlaceholder
+            imagePullPolicy: Always
+            command: ["npm", "run", "dist-scan-manager"]
+            envFrom:
+              - configMapRef:
+                  name: dtd-crawler-env-configmap-prod
+              - secretRef:
+                  name: dtd-crawler-database-secret-prod
+              - secretRef:
+                  name: dtd-crawler-basicauth-secret-prod
+              - secretRef:
+                  name: dtd-crawler-aws-s3-secret-prod
+              - secretRef:
+                  name: dtd-crawler-jwt-secret-prod
+              - secretRef:
+                  name: dtd-crawler-pa2026-secret-prod
