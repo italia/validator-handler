@@ -71,6 +71,8 @@ jobs:
 
     - name: Check the deploy to EKS COLL
       id: deploy-eks-coll
+      env:
+        IMAGE_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         kubectl get cronjobs -n dtd-crawler-coll
         tag=$(echo ${IMAGE_TAG##*:})
