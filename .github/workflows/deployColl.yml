@@ -73,6 +73,8 @@ jobs:
       id: deploy-eks-coll
       run: |
         kubectl get cronjobs -n dtd-crawler-coll
+        tag=$(echo ${IMAGE_TAG##*:})
+        for cronjob in $(kubectl get cronjobs | awk '{print $1}' | grep -iv name); do kubectl get cronjob ${cronjob} -o json | jq -r '.spec.jobTemplate.spec.template.spec.containers[].image' | cut -d ':' -f2 | while read result; do { [[ ${result} == ${tag} ]] && echo "Deployment ${cronjob} ok"; } || { echo "Deployment ${cronjob} ko" && exit 1; }; done ; done
 
     - name: Send SNS notification when the deploy completes in collaudo
       id: sns-success
