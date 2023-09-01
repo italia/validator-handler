@@ -12,23 +12,23 @@ spec:
         app: dtd-crawler-web-server-coll
     spec:
       containers:
-      - name: dtd-crawler-web-server-coll
-        image: ImagePlaceholder
-        imagePullPolicy: Always
-        command: ["npm", "run", "dist-webserver"]
-        envFrom:
-          - configMapRef:
-              name: dtd-crawler-env-configmap-coll
-          - secretRef:
-              name: dtd-crawler-database-secret-coll
-          - secretRef:
-              name: dtd-crawler-basicauth-secret-coll
-          - secretRef:
-              name: dtd-crawler-aws-s3-secret-coll
-          - secretRef:
-              name: dtd-crawler-jwt-secret-coll
-          - secretRef:
-              name: dtd-crawler-pa2026-secret-coll
+        - name: dtd-crawler-web-server-coll
+          image: ImagePlaceholder
+          imagePullPolicy: Always
+          command: ["npm", "run", "dist-webserver"]
+          envFrom:
+            - configMapRef:
+                name: dtd-crawler-env-configmap-coll
+            - secretRef:
+                name: dtd-crawler-database-secret-coll
+            - secretRef:
+                name: dtd-crawler-basicauth-secret-coll
+            - secretRef:
+                name: dtd-crawler-aws-s3-secret-coll
+            - secretRef:
+                name: dtd-crawler-jwt-secret-coll
+            - secretRef:
+                name: dtd-crawler-pa2026-secret-coll
       restartPolicy: Never
 ---
 apiVersion: batch/v1
@@ -49,23 +49,23 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - name: dtd-crawler-pa2026-manager-coll
-            image: ImagePlaceholder
-            imagePullPolicy: Always
-            command: ["npm", "run", "dist-PA2026-manager"]
-            envFrom:
-              - configMapRef:
-                  name: dtd-crawler-env-configmap-coll
-              - secretRef:
-                  name: dtd-crawler-database-secret-coll
-              - secretRef:
-                  name: dtd-crawler-basicauth-secret-coll
-              - secretRef:
-                  name: dtd-crawler-aws-s3-secret-coll
-              - secretRef:
-                  name: dtd-crawler-jwt-secret-coll
-              - secretRef:
-                  name: dtd-crawler-pa2026-secret-coll
+            - name: dtd-crawler-pa2026-manager-coll
+              image: ImagePlaceholder
+              imagePullPolicy: Always
+              command: ["npm", "run", "dist-PA2026-manager"]
+              envFrom:
+                - configMapRef:
+                    name: dtd-crawler-env-configmap-coll
+                - secretRef:
+                    name: dtd-crawler-database-secret-coll
+                - secretRef:
+                    name: dtd-crawler-basicauth-secret-coll
+                - secretRef:
+                    name: dtd-crawler-aws-s3-secret-coll
+                - secretRef:
+                    name: dtd-crawler-jwt-secret-coll
+                - secretRef:
+                    name: dtd-crawler-pa2026-secret-coll
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -85,26 +85,26 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - name: dtd-crawler-queue-manager-coll
-            image: ImagePlaceholder
-            imagePullPolicy: Always
-            command:
-            - /bin/sh
-            - -c
-            - node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js --maxItems 1000 --passedOlderThanDays 0 --failedOlderThanDays 0 --asservationOlderThanDays 0 --manualScanLogic true 
-            envFrom:
-              - configMapRef:
-                  name: dtd-crawler-env-configmap-coll
-              - secretRef:
-                  name: dtd-crawler-database-secret-coll
-              - secretRef:
-                  name: dtd-crawler-basicauth-secret-coll
-              - secretRef:
-                  name: dtd-crawler-aws-s3-secret-coll
-              - secretRef:
-                  name: dtd-crawler-jwt-secret-coll
-              - secretRef:
-                  name: dtd-crawler-pa2026-secret-coll
+            - name: dtd-crawler-queue-manager-coll
+              image: ImagePlaceholder
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -c
+                - node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js --maxItems 1000 --passedOlderThanDays 0 --failedOlderThanDays 0 --asservationOlderThanDays 0 --manualScanLogic true
+              envFrom:
+                - configMapRef:
+                    name: dtd-crawler-env-configmap-coll
+                - secretRef:
+                    name: dtd-crawler-database-secret-coll
+                - secretRef:
+                    name: dtd-crawler-basicauth-secret-coll
+                - secretRef:
+                    name: dtd-crawler-aws-s3-secret-coll
+                - secretRef:
+                    name: dtd-crawler-jwt-secret-coll
+                - secretRef:
+                    name: dtd-crawler-pa2026-secret-coll
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -124,20 +124,20 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-          - name: dtd-crawler-scan-manager-coll
-            image: ImagePlaceholder
-            imagePullPolicy: Always
-            command: ["npm", "run", "dist-scan-manager"]
-            envFrom:
-              - configMapRef:
-                  name: dtd-crawler-env-configmap-coll
-              - secretRef:
-                  name: dtd-crawler-database-secret-coll
-              - secretRef:
-                  name: dtd-crawler-basicauth-secret-coll
-              - secretRef:
-                  name: dtd-crawler-aws-s3-secret-coll
-              - secretRef:
-                  name: dtd-crawler-jwt-secret-coll
-              - secretRef:
-                  name: dtd-crawler-pa2026-secret-coll
+            - name: dtd-crawler-scan-manager-coll
+              image: ImagePlaceholder
+              imagePullPolicy: Always
+              command: ["npm", "run", "dist-scan-manager"]
+              envFrom:
+                - configMapRef:
+                    name: dtd-crawler-env-configmap-coll
+                - secretRef:
+                    name: dtd-crawler-database-secret-coll
+                - secretRef:
+                    name: dtd-crawler-basicauth-secret-coll
+                - secretRef:
+                    name: dtd-crawler-aws-s3-secret-coll
+                - secretRef:
+                    name: dtd-crawler-jwt-secret-coll
+                - secretRef:
+                    name: dtd-crawler-pa2026-secret-coll

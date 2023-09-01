@@ -13,77 +13,77 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set output
-      id: vars
-      run: echo "tag=${GITHUB_REF#refs/*/}" | sed 's/prod-v//' >> "${GITHUB_OUTPUT}"
-    - name: Check output
-      env:
-        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
-      run: |
-        echo $RELEASE_VERSION
-        echo ${{ steps.vars.outputs.tag }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set output
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" | sed 's/prod-v//' >> "${GITHUB_OUTPUT}"
+      - name: Check output
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ steps.vars.outputs.tag }}
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-south-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-south-1
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push the image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-        IMAGE_TAG: ${{ steps.vars.outputs.tag }}
-        ECR_REPOSITORY_PROD: ${{ secrets.REPO_NAME_PROD }}
+      - name: Build, tag, and push the image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+          ECR_REPOSITORY_PROD: ${{ secrets.REPO_NAME_PROD }}
 
-      run: |
-        docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$IMAGE_TAG
+        run: |
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$IMAGE_TAG
 
-    - name: Update kube config for prod EKS
-      id: update-kube-config-prod
-      run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME_PROD }}
+      - name: Update kube config for prod EKS
+        id: update-kube-config-prod
+        run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME_PROD }}
 
-    - name: Apply the deployment to EKS
-      id: deploy
-      env:
-        IMAGE_TAG: ${{ steps.build-image.outputs.image }}
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
-        ECR_REPOSITORY_PROD: ${{ secrets.REPO_NAME_PROD }}
-      run: |
-        echo "Image tag: $IMAGE_TAG"
-        tag=$(echo ${IMAGE_TAG##*:})
-        echo "prod ecr: $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$tag"
-        echo "Deploying to prod EKS..."
-        cat git-deployment-prod.yml | sed "s|ImagePlaceholder|$ECR_REGISTRY/$ECR_REPOSITORY_PROD:$tag|g" | kubectl apply -f -
+      - name: Apply the deployment to EKS
+        id: deploy
+        env:
+          IMAGE_TAG: ${{ steps.build-image.outputs.image }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+          ECR_REPOSITORY_PROD: ${{ secrets.REPO_NAME_PROD }}
+        run: |
+          echo "Image tag: $IMAGE_TAG"
+          tag=$(echo ${IMAGE_TAG##*:})
+          echo "prod ecr: $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$tag"
+          echo "Deploying to prod EKS..."
+          cat git-deployment-prod.yml | sed "s|ImagePlaceholder|$ECR_REGISTRY/$ECR_REPOSITORY_PROD:$tag|g" | kubectl apply -f -
 
-    - name: Check the deploy to EKS PROD
-      id: deploy-eks-prod
-      env:
-        IMAGE_TAG: ${{ steps.vars.outputs.tag }}
-      run: |
-        kubectl get cronjobs -n dtd-crawler-prod
-        tag=$(echo ${IMAGE_TAG##*:})
-        for cronjob in $(kubectl get cronjobs | awk '{print $1}' | grep -iv name); do kubectl get cronjob ${cronjob} -o json | jq -r '.spec.jobTemplate.spec.template.spec.containers[].image' | cut -d ':' -f2 | while read result; do { [[ ${result} == ${tag} ]] && echo "Deployment ${cronjob} ok"; } || { echo "Deployment ${cronjob} ko" && exit 1; }; done ; done
+      - name: Check the deploy to EKS PROD
+        id: deploy-eks-prod
+        env:
+          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          kubectl get cronjobs -n dtd-crawler-prod
+          tag=$(echo ${IMAGE_TAG##*:})
+          for cronjob in $(kubectl get cronjobs | awk '{print $1}' | grep -iv name); do kubectl get cronjob ${cronjob} -o json | jq -r '.spec.jobTemplate.spec.template.spec.containers[].image' | cut -d ':' -f2 | while read result; do { [[ ${result} == ${tag} ]] && echo "Deployment ${cronjob} ok"; } || { echo "Deployment ${cronjob} ko" && exit 1; }; done ; done
 
-    - name: Send SNS notification when the deploy completes in production
-      id: sns-success
-      if: success()
-      run: |
-        aws sns publish --topic-arn ${{ secrets.SNS_TOPIC_ARN }} --subject "[PCM DTD CRAWLER PROD] Deployment della versione ${{ steps.vars.outputs.tag }} avvenuto con successo" --message "Il deployment della versione ${{ steps.vars.outputs.tag }} è avvenuto con successo su EKS PROD"
+      - name: Send SNS notification when the deploy completes in production
+        id: sns-success
+        if: success()
+        run: |
+          aws sns publish --topic-arn ${{ secrets.SNS_TOPIC_ARN }} --subject "[PCM DTD CRAWLER PROD] Deployment della versione ${{ steps.vars.outputs.tag }} avvenuto con successo" --message "Il deployment della versione ${{ steps.vars.outputs.tag }} è avvenuto con successo su EKS PROD"
 
-    - name: Send SNS notification when the deploy fails in production
-      id: sns-failure
-      if: failure()
-      run: |
-        aws sns publish --topic-arn ${{ secrets.SNS_TOPIC_ARN }} --subject "[PCM DTD CRAWLER PROD] Deployment della versione ${{ steps.vars.outputs.tag }} fallito" --message "Il deployment della versione ${{ steps.vars.outputs.tag }} è fallito su EKS PROD"
+      - name: Send SNS notification when the deploy fails in production
+        id: sns-failure
+        if: failure()
+        run: |
+          aws sns publish --topic-arn ${{ secrets.SNS_TOPIC_ARN }} --subject "[PCM DTD CRAWLER PROD] Deployment della versione ${{ steps.vars.outputs.tag }} fallito" --message "Il deployment della versione ${{ steps.vars.outputs.tag }} è fallito su EKS PROD"
