@@ -66,7 +66,10 @@ jobs:
           echo "Image tag: $IMAGE_TAG"
           tag=$(echo ${IMAGE_TAG##*:})
           echo "coll ecr: $ECR_REGISTRY/$ECR_REPOSITORY:$tag"
-          echo "Deploying to test EKS..." 
+          echo "Deploying to test EKS..."
+          #job fields appear to be immutable so we need to delete the job and recreate it
+          kubectl delete job dtd-crawler-web-server-job-coll -n dtd-crawler-coll
+          sleep 2 
           cat git-deployment-coll.yml | sed "s|ImagePlaceholder|$ECR_REGISTRY/$ECR_REPOSITORY:$tag|g" | kubectl apply -f -
 
       - name: Check the deploy to EKS COLL

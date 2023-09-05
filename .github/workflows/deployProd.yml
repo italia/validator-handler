@@ -65,6 +65,9 @@ jobs:
           tag=$(echo ${IMAGE_TAG##*:})
           echo "prod ecr: $ECR_REGISTRY/$ECR_REPOSITORY_PROD:$tag"
           echo "Deploying to prod EKS..."
+          #job fields are immutable, so we need to delete and recreate the job
+          kubectl delete job dtd-crawler-web-server-job-prod -n dtd-crawler-prod
+          sleep 2
           cat git-deployment-prod.yml | sed "s|ImagePlaceholder|$ECR_REGISTRY/$ECR_REPOSITORY_PROD:$tag|g" | kubectl apply -f -
 
       - name: Check the deploy to EKS PROD
