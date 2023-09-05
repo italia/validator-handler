@@ -56,7 +56,7 @@ jobs:
       - name: Apply the deployment to EKS
         id: deploy
         env:
-          IMAGE_TAG: ${{ steps.build-image.outputs.image }}
+          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
           ECR_REPOSITORY_PROD: ${{ secrets.REPO_NAME_PROD }}
