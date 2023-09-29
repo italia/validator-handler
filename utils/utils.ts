@@ -235,10 +235,12 @@ const calculatePassedAuditPercentage = async (
   return passed + " su " + total;
 };
 
-const urlExists = async (url) => {
+const urlExists = async (url: string) => {
   try {
     let statusCode = undefined;
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: { Accept: "text/html,application/xhtml+xml" },
+    });
     statusCode = response.status;
 
     if (statusCode === undefined || statusCode < 200 || statusCode >= 400) {
