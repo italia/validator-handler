@@ -241,6 +241,9 @@ const urlExists = async (url: string) => {
     const response = await axios.get(url, {
       headers: { Accept: "text/html,application/xhtml+xml" },
     });
+    console.log(
+      `[SCAN MANAGER ITEM] - Calling URL ${url} returned: ${response.status} ${response.statusText}.`
+    );
     statusCode = response.status;
 
     if (statusCode === undefined || statusCode < 200 || statusCode >= 400) {
