@@ -4,13 +4,11 @@ FROM node:18.15.0-buster-slim
 
 ARG GEOIP_LICENSE
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# Install dumb-init
+RUN apt-get update && apt-get install -y dumb-init
 
 # Create app directory
 WORKDIR /usr/src/app/
-
-RUN apt-get update
 
 RUN apt-get install -y git
 RUN apt-get install -y nano
@@ -29,4 +27,8 @@ RUN cd node_modules/geoip-lite && npm run-script updatedb license_key=${GEOIP_LI
 RUN npm run build
 
 EXPOSE 3000
-CMD [ "/bin/bash" ]
+
+# Use dumb-init as the entry point
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+CMD ["/bin/bash"]
