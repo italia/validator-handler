@@ -127,7 +127,7 @@ spec:
             - name: dtd-crawler-scan-manager-prod
               image: ImagePlaceholder
               imagePullPolicy: Always
-              command: ["npm", "run", "dist-scan-manager"]
+              command: ["/usr/bin/dumb-init", "npm", "run", "dist-scan-manager"]
               envFrom:
                 - configMapRef:
                     name: dtd-crawler-env-configmap-prod
