@@ -98,8 +98,9 @@ dbQM
 
     const manualScanLogic = command.manualScanLogic;
 
+    let entityInErrorJob = [];
     if (manualScanLogic) {
-      const entityInErrorJob = await manageEntitiesInErrorJobs();
+      entityInErrorJob = await manageEntitiesInErrorJobs();
       console.log(
         'MANAGE ENTITY WITH LAST JOB IN "ERROR": ',
         entityInErrorJob.length
@@ -180,13 +181,15 @@ dbQM
     if (
       rescanEntityToBeAnalyzed.length > 0 ||
       rescanEntityAsseveratedToBeAnalyzed.length > 0 ||
-      forcedRescanEntitiesToBeAnalyzed.length > 0
+      forcedRescanEntitiesToBeAnalyzed.length > 0 ||
+      entityInErrorJob.length > 0
     ) {
       await generateJobs(
         [
           ...rescanEntityToBeAnalyzed,
           ...rescanEntityAsseveratedToBeAnalyzed,
           ...forcedRescanEntitiesToBeAnalyzed,
+          ...entityInErrorJob,
         ],
         crawlerQueue,
         false
