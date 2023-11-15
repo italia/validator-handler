@@ -78,7 +78,7 @@ const manageEntitiesInErrorJobs = async () => {
         continue;
       }
 
-      returnValues.push(entity.id);
+      returnValues.push(entity);
     }
 
     return returnValues;
