@@ -9,7 +9,7 @@ import { Entity, Job } from "../types/models";
 import { Worker, Job as bullJob } from "bullmq";
 import { v4 } from "uuid";
 import { entityController } from "../controller/entityController";
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -49,6 +49,25 @@ dbSM
           throw new Error("Filename extension not found");
         }
 
+        const command =
+          `node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node --loader ts-node/esm ${__dirname}/scanManagerItem${__filenameExtension} --jobId ` +
+          job.data.id;
+
+        console.log("[SCAN MANAGER] EXECUTING: ", command);
+
+        const child = spawnSync(command, {
+          shell: true,
+        });
+
+        console.log(
+          "[SCAN MANAGER] LOG FROM SCAN-MANAGER-ITEM: ",
+          child.stdout.toString()
+        );
+        console.log(
+          "[SCAN MANAGER] STATUS FROM SCAN-MANAGER-ITEM: ",
+          child.status
+        );
+
         const jobObj: Job | null = await jobDefine(dbSM).findByPk(job.data.id);
         if (!jobObj) {
           throw new Error("Empty job");
@@ -66,26 +85,10 @@ dbSM
           forcedScan: false,
         });
 
-        try {
-          const command =
-            `node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node --loader ts-node/esm ${__dirname}/scanManagerItem${__filenameExtension} --jobId ` +
-            job.data.id;
-
-          console.log("[SCAN MANAGER] EXECUTING: ", command);
-
-          const output = execSync(command);
-          console.log(
-            "[SCAN MANAGER] LOG FROM SCAN-MANAGER-ITEM: ",
-            output.toString()
-          );
-
+        if (child.status === 0) {
           await job.moveToCompleted("completed", token, false);
-        } catch (error) {
+        } else {
           await job.moveToFailed(new Error("error"), token);
-          console.error(
-            "[SCAN MANAGER] - Error in SCAN MANAGER EXEC SYNC: ",
-            error
-          );
         }
       } catch (e) {
         console.log(
