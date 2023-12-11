@@ -1,6 +1,6 @@
 {
   "name": "crawler-handler",
-  "version": "2.2.17",
+  "version": "2.2.18",
   "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
@@ -10,7 +10,7 @@
   "scripts": {
     "dist-webserver": "node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/server.js",
     "dist-queue-manager": "node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js",
-    "dist-scan-manager": "node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/scanManager.js",
+    "dist-scan-manager": "node --max-old-space-size=4096 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/scanManager.js",
     "dist-PA2026-manager": "node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/PA2026Manager.js",
     "ts-webserver": "node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./server.ts",
     "ts-queue-manager": "node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node  --loader ts-node/esm ./command/queueManager.ts",

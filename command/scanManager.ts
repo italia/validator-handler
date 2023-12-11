@@ -50,7 +50,7 @@ dbSM
         }
 
         const command =
-          `node --max-old-space-size=12288 --no-warnings --experimental-modules --es-module-specifier-resolution=node --loader ts-node/esm ${__dirname}/scanManagerItem${__filenameExtension} --jobId ` +
+          `node --max-old-space-size=24567 --no-warnings --experimental-modules --es-module-specifier-resolution=node --loader ts-node/esm ${__dirname}/scanManagerItem${__filenameExtension} --jobId ` +
           job.data.id;
 
         console.log("[SCAN MANAGER] EXECUTING: ", command);
