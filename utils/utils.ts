@@ -115,17 +115,32 @@ const mapPA2026Body = async (
       console.log("MAP PA2026 BODY EXCEPTION 01: ", e);
     }
 
+    const siteUrl = new URL(job.scan_url);
+
+    const crawlerVersion =
+      packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
+
     const initialBody = [];
     initialBody[`Nome_file_${key}__c`] =
       `Report scansione ` +
-      job.id +
+      siteUrl.host +
       "_" +
-      new Date().toISOString().split("T")[0] +
+      new Date()
+        .toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\//g, "") +
+      "_" +
+      crawlerVersion +
+      "_" +
+      job.id +
       (isFirstScan ? "_Prima Scansione" : "");
+
     initialBody[`Data_scansione_fallita__c`] = null;
     initialBody[`URL_scansione_fallita__c`] = null;
-    initialBody[`Versione_Crawler_${key}__c`] =
-      packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
+    initialBody[`Versione_Crawler_${key}__c`] = crawlerVersion;
     initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
