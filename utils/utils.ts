@@ -8,6 +8,7 @@ import { auditDictionary } from "pa-website-validator/dist/storage/auditDictiona
 import axios from "axios";
 import path from "path";
 import { fileURLToPath } from "url";
+import { format } from "date-fns";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -125,13 +126,7 @@ const mapPA2026Body = async (
       `Report scansione ` +
       siteUrl.host +
       "_" +
-      new Date()
-        .toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        })
-        .replace(/\//g, "") +
+      format(new Date(), "yyyyMMdd") +
       "_" +
       crawlerVersion +
       "_" +
