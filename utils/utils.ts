@@ -123,7 +123,7 @@ const mapPA2026Body = async (
 
     const initialBody = [];
     initialBody[`Nome_file_${key}__c`] =
-      `Report scansione ` +
+      `Report ` +
       siteUrl.host +
       "_" +
       format(new Date(), "yyyyMMdd") +
