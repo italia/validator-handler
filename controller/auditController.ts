@@ -68,7 +68,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
   const performanceScore = await getPerformanceScore(parsedResult);
   const improvementPlanScore = await getImprovementPlanScore(parsedResult);
   let performanceStatus = true;
-  if (performanceScore < 0.5 && improvementPlanScore == 0) {
+  if (performanceScore < 0.5 && improvementPlanScore != 1) {
     performanceStatus = false;
   }
 
@@ -180,7 +180,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
   const performanceScore = await getPerformanceScore(parsedResult);
   const improvementPlanScore = await getImprovementPlanScore(parsedResult);
   let performanceStatus = true;
-  if (performanceScore < 0.5 && improvementPlanScore == 0) {
+  if (performanceScore < 0.5 && improvementPlanScore != 1) {
     performanceStatus = false;
   }
 
