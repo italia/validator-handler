@@ -79,6 +79,14 @@ jobs:
           tag=$(echo ${IMAGE_TAG##*:})
           for cronjob in $(kubectl get cronjobs | awk '{print $1}' | grep -iv name); do kubectl get cronjob ${cronjob} -o json | jq -r '.spec.jobTemplate.spec.template.spec.containers[].image' | cut -d ':' -f2 | while read result; do { [[ ${result} == ${tag} ]] && echo "Deployment ${cronjob} ok"; } || { echo "Deployment ${cronjob} ko" && exit 1; }; done ; done
 
+      - name: Delete old jobs
+        id: delete-jobs
+        env:
+          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          tag=$(echo ${IMAGE_TAG##*:})
+          kubectl get jobs -n dtd-crawler-prod | grep -i dtd-crawler-scan-manager | awk '{print $1}' | while read job; do kubectl -n dtd-crawler-prod get job -o json ${job} | jq '.spec.template.spec.containers[].image' -r | cut -d ':' -f2 | while read version; do { [[ ${version} != ${tag} ]] && kubectl -n dtd-crawler-prod delete job ${job}; } || { echo "${job} to not be deleted"; }; done ; done
+
       - name: Send SNS notification when the deploy completes in production
         id: sns-success
         if: success()
