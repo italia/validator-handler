@@ -7,8 +7,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { dbSM } from "../database/connection";
 import { define as jobDefine } from "../database/models/job";
-import { run } from "pa-website-validator/dist/controller/launchLighthouse";
-import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
+import { run } from "pa-website-validator-ng/dist/launchScript.js";
 import { Job } from "../types/models";
 import {
   upload as s3Upload,
@@ -81,12 +80,15 @@ const scan = async (jobId) => {
       urlToBeScanned,
       jobObjParsed.type,
       "online",
-      logLevels.display_none,
+      '',
       false,
       "",
       "",
       false,
-      "all"
+      "all",
+      300000,
+      10,
+      20
     );
 
     if (!lighthouseResult.status) {

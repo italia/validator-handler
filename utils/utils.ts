@@ -4,7 +4,7 @@ import { dirname } from "path";
 import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
 import { Job } from "../types/models";
-import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
+import { auditDictionary } from "pa-website-validator-ng/dist/storage/auditDictionary";
 import axios from "axios";
 import path from "path";
 import { fileURLToPath } from "url";
