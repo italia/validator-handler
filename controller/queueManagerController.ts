@@ -1,11 +1,11 @@
-import { dbQM, dbWS } from "../database/connection";
+import { dbQM, dbWS } from "../database/connection.js";
 import { QueryTypes } from "sequelize";
-import { Entity } from "../types/models";
-import { define as entityDefine } from "../database/models/entity";
-import { define as jobDefine } from "../database/models/job";
+import { Entity } from "../types/models.js";
+import { define as entityDefine } from "../database/models/entity.js";
+import { define as jobDefine } from "../database/models/job.js";
 import dateFormat from "dateformat";
-import { entityController } from "./entityController";
-import { callPatch } from "./PA2026/integrationController";
+import { entityController } from "./entityController.js";
+import { callPatch } from "./PA2026/integrationController.js";
 
 const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
   let returnValues = [];

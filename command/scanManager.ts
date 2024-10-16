@@ -3,12 +3,12 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { dbSM, dbWS } from "../database/connection";
-import { define as jobDefine } from "../database/models/job";
-import { Entity, Job } from "../types/models";
+import { dbSM, dbWS } from "../database/connection.js";
+import { define as jobDefine } from "../database/models/job.js";
+import { Entity, Job } from "../types/models.js";
 import { Worker, Job as bullJob } from "bullmq";
 import { v4 } from "uuid";
-import { entityController } from "../controller/entityController";
+import { entityController } from "../controller/entityController.js";
 import { spawnSync } from "child_process";
 
 import path, { dirname } from "path";

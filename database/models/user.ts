@@ -1,7 +1,7 @@
 "use strict";
 
 import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
-import { User } from "../../types/models";
+import { User } from "../../types/models.js";
 
 const modelName = "User";
 const roles: string[] = ["api-user"];

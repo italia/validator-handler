@@ -3,14 +3,14 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { dbQM } from "../database/connection";
+import { dbQM } from "../database/connection.js";
 
 import Redis from "ioredis";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Queue } from "bullmq";
-import { preserveReasons } from "../database/models/job";
-import { jobController } from "../controller/jobController";
+import { preserveReasons } from "../database/models/job.js";
+import { jobController } from "../controller/jobController.js";
 import {
   getFirstTimeEntityToBeAnalyzed,
   getRescanEntityToBeAnalyzed,
@@ -19,7 +19,7 @@ import {
   getForcedRescanEntitiesToBeAnalyzed,
   getFirstTimeForcedEntityToBeAnalyzed,
   manageEntitiesInErrorJobs,
-} from "../controller/queueManagerController";
+} from "../controller/queueManagerController.js";
 
 const command = yargs(hideBin(process.argv))
   .usage(

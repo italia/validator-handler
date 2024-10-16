@@ -1,10 +1,10 @@
 "use strict";
 
-import { audits as municipalityAudits } from "../storage/municipalityAudits";
-import { audits as schoolAudits } from "../storage/schoolAudits";
-import { entityController } from "./entityController";
-import { dbSM } from "../database/connection";
-import { allowedMunicipalitySubTypes } from "../database/models/entity";
+import { audits as municipalityAudits } from "../storage/municipalityAudits.js";
+import { audits as schoolAudits } from "../storage/schoolAudits.js";
+import { entityController } from "./entityController.js";
+import { dbSM } from "../database/connection.js";
+import { allowedMunicipalitySubTypes } from "../database/models/entity.js";
 
 const cleanMunicipalityJSONReport = async (jsonResult: string) => {
   const parsedResult = JSON.parse(jsonResult);

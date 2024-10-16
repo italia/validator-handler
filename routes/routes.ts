@@ -5,35 +5,35 @@ dotenv.config();
 
 import express from "express";
 const router = express.Router();
-import { userController } from "../controller/userController";
-import { succesResponse, errorResponse } from "../utils/response";
+import { userController } from "../controller/userController.js";
+import { succesResponse, errorResponse } from "../utils/response.js";
 import {
   emptyBodyType,
   loginBodyType,
   createEntityBodyType,
   updateEntityBodyType,
   updatePreserveBodyType,
-} from "../types/api-request-body";
+} from "../types/api-request-body.js";
 import {
   successResponseType,
   errorResponseType,
-} from "../types/api-response-body";
+} from "../types/api-response-body.js";
 import {
   generate as jwtGenerate,
   verify as jwtVerify,
   refreshToken as jwtRefreshToken,
   getToken,
-} from "../auth/jwt";
+} from "../auth/jwt.js";
 import {
   create as entityCreateValidation,
   update as entityUpdateValidation,
-} from "../validators/entity";
-import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job";
-import { entityController } from "../controller/entityController";
-import { jobController } from "../controller/jobController";
-import { dbWS } from "../database/connection";
-import { allowedMunicipalitySubTypes } from "../database/models/entity";
-import { Entity } from "../types/models";
+} from "../validators/entity.js";
+import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job.js";
+import { entityController } from "../controller/entityController.js";
+import { jobController } from "../controller/jobController.js";
+import { dbWS } from "../database/connection.js";
+import { allowedMunicipalitySubTypes } from "../database/models/entity.js";
+import { Entity } from "../types/models.js";
 import { readFileSync } from "fs";
 import path from "path";
 import { dirname } from "path";

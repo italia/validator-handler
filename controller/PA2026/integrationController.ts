@@ -3,22 +3,22 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { call } from "../../utils/https-request";
-import { response } from "../../types/https-request";
+import { call } from "../../utils/https-request.js";
+import { response } from "../../types/https-request.js";
 import qs from "qs";
-import { tokenController } from "./tokenController";
-import { dbSM, dbWS } from "../../database/connection";
-import { Job, Token } from "../../types/models";
-import { entityController } from "../entityController";
+import { tokenController } from "./tokenController.js";
+import { dbSM, dbWS } from "../../database/connection.js";
+import { Job, Token } from "../../types/models.js";
+import { entityController } from "../entityController.js";
 import {
   define as jobDefine,
   preserveReasons,
-} from "../../database/models/job";
+} from "../../database/models/job.js";
 import {
   calculatePassedAuditPercentage,
   mapPA2026Body,
   mapPA2026BodyUrlNotExists,
-} from "../../utils/utils";
+} from "../../utils/utils.js";
 import { Op } from "sequelize";
 
 const retrieveToken = async () => {

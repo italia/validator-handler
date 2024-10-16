@@ -3,9 +3,9 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { Sequelize } from "sequelize";
-import { define as tokenDefine } from "../../database/models/token";
-import { retrieveToken } from "./integrationController";
-import { Token } from "../../types/models";
+import { define as tokenDefine } from "../../database/models/token.js";
+import { retrieveToken } from "./integrationController.js";
+import { Token } from "../../types/models.js";
 
 export class tokenController {
   db;

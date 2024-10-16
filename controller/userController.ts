@@ -1,9 +1,9 @@
 "use strict";
 
-import { authUser } from "../types/user";
+import { authUser } from "../types/user.js";
 import { InferAttributes, Sequelize } from "sequelize";
-import { User } from "../types/models";
-import { define as userDefine } from "../database/models/user";
+import { User } from "../types/models.js";
+import { define as userDefine } from "../database/models/user.js";
 
 export class userController {
   db;

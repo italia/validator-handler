@@ -1,8 +1,8 @@
 "use strict";
 
-import { validate } from "./validate";
-import { updatePreserveBody } from "../types/job";
-import { preserveReasons } from "../database/models/job";
+import { validate } from "./validate.js";
+import { updatePreserveBody } from "../types/job.js";
+import { preserveReasons } from "../database/models/job.js";
 
 const preserveUpdate = async (body: updatePreserveBody): Promise<boolean> => {
   const createBody = {

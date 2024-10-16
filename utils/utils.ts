@@ -3,8 +3,8 @@
 import { dirname } from "path";
 import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
-import { Job } from "../types/models";
-import { auditDictionary } from "pa-website-validator-ng/dist/storage/auditDictionary";
+import { Job } from "../types/models.js";
+import { auditDictionary } from "pa-website-validator-ng/dist/storage/auditDictionary.js";
 import axios from "axios";
 import path from "path";
 import { fileURLToPath } from "url";

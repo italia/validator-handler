@@ -5,25 +5,25 @@ dotenv.config();
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { dbSM } from "../database/connection";
-import { define as jobDefine } from "../database/models/job";
+import { dbSM } from "../database/connection.js";
+import { define as jobDefine } from "../database/models/job.js";
 import { run } from "pa-website-validator-ng/dist/launchScript.js";
-import { Job } from "../types/models";
+import { Job } from "../types/models.js";
 import {
   upload as s3Upload,
   empty as s3Delete,
-} from "../controller/s3Controller";
+} from "../controller/s3Controller.js";
 import {
   cleanMunicipalityJSONReport,
   cleanSchoolJSONReport,
   isPassedReport,
-} from "../controller/auditController";
-import { jobController } from "../controller/jobController";
+} from "../controller/auditController.js";
+import { jobController } from "../controller/jobController.js";
 import {
   pushResult,
   pushResultUrlNotExists,
-} from "../controller/PA2026/integrationController";
-import { urlExists } from "../utils/utils";
+} from "../controller/PA2026/integrationController.js";
+import { urlExists } from "../utils/utils.js";
 import psList from "ps-list";
 import treeKill from "tree-kill";
 

@@ -1,7 +1,7 @@
 "use strict";
 
 import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
-import { Token } from "../../types/models";
+import { Token } from "../../types/models.js";
 
 const modelName = "Token";
 

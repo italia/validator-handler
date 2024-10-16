@@ -1,8 +1,8 @@
 "use strict";
 
 import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
-import { define as entityDefine } from "./entity";
-import { Job } from "../../types/models";
+import { define as entityDefine } from "./entity.js";
+import { Job } from "../../types/models.js";
 
 const modelName = "Job";
 const statusAllowedValues: string[] = [

@@ -1,10 +1,10 @@
 "use strict";
 
 import { dbRoot } from "./connection";
-import { syncTable as entitySyncTable } from "./models/entity";
-import { syncTable as jobSyncTable } from "./models/job";
-import { syncTable as userSyncTable } from "./models/user";
-import { syncTable as tokenSyncTable } from "./models/token";
+import { syncTable as entitySyncTable } from "./models/entity.js";
+import { syncTable as jobSyncTable } from "./models/job.js";
+import { syncTable as userSyncTable } from "./models/user.js";
+import { syncTable as tokenSyncTable } from "./models/token.js";
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
