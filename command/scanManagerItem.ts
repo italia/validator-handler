@@ -80,7 +80,7 @@ const scan = async (jobId) => {
       urlToBeScanned,
       jobObjParsed.type,
       "online",
-      '',
+      'silent',
       false,
       "",
       "",

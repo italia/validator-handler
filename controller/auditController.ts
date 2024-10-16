@@ -281,19 +281,19 @@ const getPerformanceScore = async (jsonResult) => {
     return 0;
   }
 
-  if (!("categories" in jsonResult)) {
+  if (!("audits" in jsonResult)) {
     return 0;
   }
 
-  if (!("performance" in jsonResult.categories)) {
+  if (!("lighthouse" in jsonResult.audits)) {
     return 0;
   }
 
-  if (!("score" in jsonResult.categories.performance)) {
+  if (!("score" in jsonResult.audits.lighthouse)) {
     return 0;
   }
 
-  return jsonResult.categories.performance.score;
+  return jsonResult.audits.lighthouse.score;
 };
 
 const getImprovementPlanScore = async (jsonResult) => {
