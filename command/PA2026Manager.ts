@@ -10,7 +10,10 @@ import { allowedMunicipalitySubTypes } from "../database/models/entity.js";
 import { entityController } from "../controller/entityController.js";
 import { Entity, Job } from "../types/models.js";
 import { jobController } from "../controller/jobController.js";
-import { preserveReasons, define as jobDefine } from "../database/models/job.js";
+import {
+  preserveReasons,
+  define as jobDefine,
+} from "../database/models/job.js";
 import { Op } from "sequelize";
 import { getFile } from "../controller/s3Controller.js";
 
