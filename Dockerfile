@@ -24,6 +24,7 @@ RUN touch /usr/src/app/.env
 
 RUN npm install
 RUN npx puppeteer browsers install chrome@116.0.5845.96
+RUN npx puppeteer browsers install chrome
 RUN cd node_modules/geoip-lite && npm run-script updatedb license_key=${GEOIP_LICENSE}
 
 RUN npm run build
