@@ -88,7 +88,7 @@ const scan = async (jobId) => {
       "all",
       300000,
       10,
-      20
+      5
     );
 
     if (!lighthouseResult.status) {
