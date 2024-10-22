@@ -88,7 +88,7 @@ const scan = async (jobId) => {
       "all",
       300000,
       10,
-      5
+      parseInt(process.env.CRAWLER_PARALLEL_PAGES ?? "5")
     );
 
     if (!lighthouseResult.status) {
