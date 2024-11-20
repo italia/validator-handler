@@ -84,7 +84,7 @@ const scan = async (jobId) => {
       false,
       "",
       "",
-      false,
+      "false",
       "all",
       300000,
       10,
@@ -98,19 +98,19 @@ const scan = async (jobId) => {
     let jsonResult = {};
     if (jobObjParsed.type === "municipality") {
       jsonResult = await cleanMunicipalityJSONReport(
-        lighthouseResult.data.jsonReport
+        lighthouseResult['data']['jsonReport']
       );
     } else if (jobObjParsed.type === "school") {
       jsonResult = await cleanSchoolJSONReport(
-        lighthouseResult.data.jsonReport
+        lighthouseResult['data']['jsonReport']
       );
     }
 
     const uploadResult = await uploadFiles(
       jobObjParsed.id,
       jobObjParsed.entity_id,
-      lighthouseResult.data.htmlReport,
-      lighthouseResult.data.jsonReport,
+      lighthouseResult['data']['htmlReport'],
+      lighthouseResult['data']['jsonReport'],
       JSON.stringify(jsonResult)
     );
 
@@ -137,7 +137,7 @@ const scan = async (jobId) => {
       throw new Error("Update job failed");
     }
 
-    await pushResult(job, jsonResult, status, lighthouseResult.data.htmlReport);
+    await pushResult(job, jsonResult, status, lighthouseResult['data']['htmlReport']);
 
     const jobDeleted = await new jobController(dbSM).cleanJobs(
       jobObjParsed.entity_id
