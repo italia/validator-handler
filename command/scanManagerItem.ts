@@ -24,8 +24,6 @@ import {
   pushResultUrlNotExists,
 } from "../controller/PA2026/integrationController.js";
 import { urlExists } from "../utils/utils.js";
-import psList from "ps-list";
-import treeKill from "tree-kill";
 
 const command = yargs(hideBin(process.argv))
   .usage("Usage: " + "--jobId <jobId> ")
@@ -232,7 +230,7 @@ const uploadFiles = async (
   }
 };
 
-const killProcessByName = async (name: string) => {
+/*const killProcessByName = async (name: string) => {
   const pidKilled = [];
 
   try {
@@ -262,4 +260,4 @@ const killProcessByName = async (name: string) => {
 
     return pidKilled;
   }
-};
+};*/
