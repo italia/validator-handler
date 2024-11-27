@@ -144,8 +144,8 @@ const scan = async (jobId) => {
     );
     console.log("[SCAN MANAGER ITEM] - JOB DELETED: ", jobDeleted);
 
-    const pidKilled = await killProcessByName("Chromium");
-    console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
+    // const pidKilled = await killProcessByName("Chromium");
+    // console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return true;
   } catch (e) {
@@ -156,8 +156,8 @@ const scan = async (jobId) => {
       end_at: Date.now(),
     });
 
-    const pidKilled = await killProcessByName("Chromium");
-    console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
+    // const pidKilled = await killProcessByName("Chromium");
+    // console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return false;
   }
