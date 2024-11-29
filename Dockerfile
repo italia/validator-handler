@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:18.15.0-buster-slim
+FROM node:20.15.0-buster-slim
 
 ARG GEOIP_LICENSE
 
@@ -14,14 +14,15 @@ RUN apt-get install -y git
 RUN apt-get install -y nano
 RUN apt-get install -y chromium
 
-RUN npm install -g npm@9.5.0
+RUN npm install -g npm@10.9.0
+RUN npm install -g puppeteer
 
 # Bundle app source
 COPY . /usr/src/app/
 
 RUN touch /usr/src/app/.env
 
-RUN npm install --verbose
+RUN npm install
 RUN cd node_modules/geoip-lite && npm run-script updatedb license_key=${GEOIP_LICENSE}
 
 RUN npm run build

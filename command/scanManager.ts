@@ -3,12 +3,12 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { dbSM, dbWS } from "../database/connection";
-import { define as jobDefine } from "../database/models/job";
-import { Entity, Job } from "../types/models";
+import { dbSM, dbWS } from "../database/connection.js";
+import { define as jobDefine } from "../database/models/job.js";
+import { Entity, Job } from "../types/models.js";
 import { Worker, Job as bullJob } from "bullmq";
 import { v4 } from "uuid";
-import { entityController } from "../controller/entityController";
+import { entityController } from "../controller/entityController.js";
 import { spawnSync } from "child_process";
 
 import path, { dirname } from "path";
@@ -50,7 +50,7 @@ dbSM
         }
 
         const command =
-          `node --max-old-space-size=92160 --no-warnings --experimental-modules --es-module-specifier-resolution=node --loader ts-node/esm ${__dirname}/scanManagerItem${__filenameExtension} --jobId ` +
+          `ulimit -c 0; node --max-old-space-size=92160 --no-warnings --experimental-modules --es-module-specifier-resolution=node --loader ts-node/esm ${__dirname}/scanManagerItem${__filenameExtension} --jobId ` +
           job.data.id;
 
         console.log("[SCAN MANAGER] EXECUTING: ", command);

@@ -2,12 +2,12 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Job } from "../types/models";
-import { mappedJob, updatePreserveBody } from "../types/job";
+import { Job } from "../types/models.js";
+import { mappedJob, updatePreserveBody } from "../types/job.js";
 import { Op, Sequelize } from "sequelize";
-import { entityController } from "./entityController";
-import { preserveReasons } from "../database/models/job";
-import { define as jobDefine } from "../database/models/job";
+import { entityController } from "./entityController.js";
+import { preserveReasons } from "../database/models/job.js";
+import { define as jobDefine } from "../database/models/job.js";
 import { Queue } from "bullmq";
 
 export class jobController {

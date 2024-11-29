@@ -5,28 +5,25 @@ dotenv.config();
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { dbSM } from "../database/connection";
-import { define as jobDefine } from "../database/models/job";
-import { run } from "pa-website-validator/dist/controller/launchLighthouse";
-import { logLevels } from "pa-website-validator/dist/controller/launchLighthouse";
-import { Job } from "../types/models";
+import { dbSM } from "../database/connection.js";
+import { define as jobDefine } from "../database/models/job.js";
+import { run } from "pa-website-validator-ng/dist/launchScript.js";
+import { Job } from "../types/models.js";
 import {
   upload as s3Upload,
   empty as s3Delete,
-} from "../controller/s3Controller";
+} from "../controller/s3Controller.js";
 import {
   cleanMunicipalityJSONReport,
   cleanSchoolJSONReport,
   isPassedReport,
-} from "../controller/auditController";
-import { jobController } from "../controller/jobController";
+} from "../controller/auditController.js";
+import { jobController } from "../controller/jobController.js";
 import {
   pushResult,
   pushResultUrlNotExists,
-} from "../controller/PA2026/integrationController";
-import { urlExists } from "../utils/utils";
-import psList from "ps-list";
-import treeKill from "tree-kill";
+} from "../controller/PA2026/integrationController.js";
+import { urlExists } from "../utils/utils.js";
 
 const command = yargs(hideBin(process.argv))
   .usage("Usage: " + "--jobId <jobId> ")
@@ -81,12 +78,15 @@ const scan = async (jobId) => {
       urlToBeScanned,
       jobObjParsed.type,
       "online",
-      logLevels.display_none,
+      "silent",
       false,
       "",
       "",
-      false,
-      "all"
+      "false",
+      "all",
+      300000,
+      10,
+      parseInt(process.env.CRAWLER_PARALLEL_PAGES ?? "5")
     );
 
     if (!lighthouseResult.status) {
@@ -96,19 +96,19 @@ const scan = async (jobId) => {
     let jsonResult = {};
     if (jobObjParsed.type === "municipality") {
       jsonResult = await cleanMunicipalityJSONReport(
-        lighthouseResult.data.jsonReport
+        lighthouseResult["data"]["jsonReport"]
       );
     } else if (jobObjParsed.type === "school") {
       jsonResult = await cleanSchoolJSONReport(
-        lighthouseResult.data.jsonReport
+        lighthouseResult["data"]["jsonReport"]
       );
     }
 
     const uploadResult = await uploadFiles(
       jobObjParsed.id,
       jobObjParsed.entity_id,
-      lighthouseResult.data.htmlReport,
-      lighthouseResult.data.jsonReport,
+      lighthouseResult["data"]["htmlReport"],
+      lighthouseResult["data"]["jsonReport"],
       JSON.stringify(jsonResult)
     );
 
@@ -135,15 +135,20 @@ const scan = async (jobId) => {
       throw new Error("Update job failed");
     }
 
-    await pushResult(job, jsonResult, status, lighthouseResult.data.htmlReport);
+    await pushResult(
+      job,
+      jsonResult,
+      status,
+      lighthouseResult["data"]["htmlReport"]
+    );
 
     const jobDeleted = await new jobController(dbSM).cleanJobs(
       jobObjParsed.entity_id
     );
     console.log("[SCAN MANAGER ITEM] - JOB DELETED: ", jobDeleted);
 
-    const pidKilled = await killProcessByName("Chromium");
-    console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
+    // const pidKilled = await killProcessByName("Chromium");
+    // console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return true;
   } catch (e) {
@@ -154,8 +159,8 @@ const scan = async (jobId) => {
       end_at: Date.now(),
     });
 
-    const pidKilled = await killProcessByName("Chromium");
-    console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
+    // const pidKilled = await killProcessByName("Chromium");
+    // console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return false;
   }
@@ -225,7 +230,7 @@ const uploadFiles = async (
   }
 };
 
-const killProcessByName = async (name: string) => {
+/*const killProcessByName = async (name: string) => {
   const pidKilled = [];
 
   try {
@@ -255,4 +260,4 @@ const killProcessByName = async (name: string) => {
 
     return pidKilled;
   }
-};
+};*/

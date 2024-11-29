@@ -2,7 +2,7 @@
 
 import { ValidatorResult } from "jsonschema";
 import * as jsonschema from "jsonschema";
-import { mapValidationErrors } from "../utils/utils";
+import { mapValidationErrors } from "../utils/utils.js";
 
 const validate = async (
   body: object,

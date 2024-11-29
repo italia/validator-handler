@@ -1,11 +1,11 @@
 "use strict";
 
-import { createBody, updateBody } from "../types/entity";
-import { define as entityDefine } from "../database/models/entity";
+import { createBody, updateBody } from "../types/entity.js";
+import { define as entityDefine } from "../database/models/entity.js";
 import { Sequelize } from "sequelize";
-import { jobController } from "./jobController";
-import { dbWS } from "../database/connection";
-import { Entity } from "../types/models";
+import { jobController } from "./jobController.js";
+import { dbWS } from "../database/connection.js";
+import { Entity } from "../types/models.js";
 
 export class entityController {
   db;

@@ -1,8 +1,8 @@
 "use strict";
 
 import { Attributes, DataTypes, ModelAttributes, Sequelize } from "sequelize";
-import { Entity } from "../../types/models";
-import { define as jobDefine } from "./job";
+import { Entity } from "../../types/models.js";
+import { define as jobDefine } from "./job.js";
 
 const primaryKey = "id";
 const modelName = "Entity";

@@ -1,7 +1,7 @@
 "use strict";
 
 import jwt from "jsonwebtoken";
-import { authUser } from "../types/user";
+import { authUser } from "../types/user.js";
 import express from "express";
 
 const generate = async (

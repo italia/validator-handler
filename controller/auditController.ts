@@ -1,10 +1,10 @@
 "use strict";
 
-import { audits as municipalityAudits } from "../storage/municipalityAudits";
-import { audits as schoolAudits } from "../storage/schoolAudits";
-import { entityController } from "./entityController";
-import { dbSM } from "../database/connection";
-import { allowedMunicipalitySubTypes } from "../database/models/entity";
+import { audits as municipalityAudits } from "../storage/municipalityAudits.js";
+import { audits as schoolAudits } from "../storage/schoolAudits.js";
+import { entityController } from "./entityController.js";
+import { dbSM } from "../database/connection.js";
+import { allowedMunicipalitySubTypes } from "../database/models/entity.js";
 
 const cleanMunicipalityJSONReport = async (jsonResult: string) => {
   const parsedResult = JSON.parse(jsonResult);
@@ -281,19 +281,19 @@ const getPerformanceScore = async (jsonResult) => {
     return 0;
   }
 
-  if (!("categories" in jsonResult)) {
+  if (!("audits" in jsonResult)) {
     return 0;
   }
 
-  if (!("performance" in jsonResult.categories)) {
+  if (!("lighthouse" in jsonResult.audits)) {
     return 0;
   }
 
-  if (!("score" in jsonResult.categories.performance)) {
+  if (!("score" in jsonResult.audits.lighthouse)) {
     return 0;
   }
 
-  return jsonResult.categories.performance.score;
+  return jsonResult.audits.lighthouse.score;
 };
 
 const getImprovementPlanScore = async (jsonResult) => {

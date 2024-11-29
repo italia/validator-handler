@@ -1,7 +1,7 @@
 import {
   successResponseType,
   errorResponseType,
-} from "../types/api-response-body";
+} from "../types/api-response-body.js";
 
 const errorResponse = (
   error_code: number,

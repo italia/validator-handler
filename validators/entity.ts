@@ -1,7 +1,7 @@
 "use strict";
 
-import { validate } from "./validate";
-import { createBody, updateBody } from "../types/entity";
+import { validate } from "./validate.js";
+import { createBody, updateBody } from "../types/entity.js";
 
 const create = async (body: createBody): Promise<boolean> => {
   const createBody = {

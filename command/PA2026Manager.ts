@@ -1,18 +1,21 @@
 "use strict";
 
-import { dbRoot, dbWS } from "../database/connection";
+import { dbRoot, dbWS } from "../database/connection.js";
 import {
   callPatch,
   callQuery,
   pushResult,
-} from "../controller/PA2026/integrationController";
-import { allowedMunicipalitySubTypes } from "../database/models/entity";
-import { entityController } from "../controller/entityController";
-import { Entity, Job } from "../types/models";
-import { jobController } from "../controller/jobController";
-import { preserveReasons, define as jobDefine } from "../database/models/job";
+} from "../controller/PA2026/integrationController.js";
+import { allowedMunicipalitySubTypes } from "../database/models/entity.js";
+import { entityController } from "../controller/entityController.js";
+import { Entity, Job } from "../types/models.js";
+import { jobController } from "../controller/jobController.js";
+import {
+  preserveReasons,
+  define as jobDefine,
+} from "../database/models/job.js";
 import { Op } from "sequelize";
-import { getFile } from "../controller/s3Controller";
+import { getFile } from "../controller/s3Controller.js";
 
 dbRoot
   .authenticate()

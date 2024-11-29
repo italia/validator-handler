@@ -3,8 +3,8 @@
 import { dirname } from "path";
 import { readFileSync } from "fs";
 import { ValidationError } from "jsonschema";
-import { Job } from "../types/models";
-import { auditDictionary } from "pa-website-validator/dist/storage/auditDictionary";
+import { Job } from "../types/models.js";
+import { pa2026Mapping } from "../storage/pa2026Mapping.js";
 import axios from "axios";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -64,7 +64,7 @@ const mapValidationErrors = async (
 };
 
 function mapAuditTitle(id) {
-  if (id in auditDictionary) return auditDictionary[id].title;
+  if (id in pa2026Mapping) return pa2026Mapping[id].title;
   return id;
 }
 
