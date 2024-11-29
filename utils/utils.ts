@@ -119,7 +119,7 @@ const mapPA2026Body = async (
     const siteUrl = new URL(job.scan_url);
 
     const crawlerVersion =
-      packageJSON?.dependencies["pa-website-validator"]?.split("#")[1] ?? "";
+      packageJSON?.dependencies["pa-website-validator-ng"]?.split("#")[1] ?? "";
 
     const initialBody = [];
     initialBody[`Nome_file_${key}__c`] =
