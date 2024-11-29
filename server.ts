@@ -4,8 +4,8 @@ dotenv.config();
 import express from "express";
 import bodyParser from "body-parser";
 const port = process.env.PORT || 3000;
-import router from "./routes/routes";
-import { dbWS } from "./database/connection";
+import router from "./routes/routes.js";
+import { dbWS } from "./database/connection.js";
 
 /*
 ** Managed by APIGateway **
@@ -18,7 +18,7 @@ users: { [process.env.BASIC_AUTH_USERNAME]: process.env.BASIC_AUTH_PASSWORD },
 });
 */
 
-import { options } from "./swagger/config";
+import { options } from "./swagger/config.js";
 import swaggerJSDoc from "swagger-jsdoc";
 const swaggerSpec = swaggerJSDoc(options);
 import swaggerUi from "swagger-ui-express";
