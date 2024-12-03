@@ -9,6 +9,7 @@ import { Entity, Job } from "../types/models.js";
 import { Worker, Job as bullJob } from "bullmq";
 import { v4 } from "uuid";
 import { entityController } from "../controller/entityController.js";
+import { upload } from "../controller/s3Controller.js";
 import { spawnSync } from "child_process";
 
 import path, { dirname } from "path";
@@ -85,6 +86,17 @@ dbSM
           forcedScan: false,
         });
 
+        try {
+          const logsLocationUrl = await uploadLogs(
+            jobObj.entity_id,
+            job.data.id,
+            child.stdout.toString()
+          );
+          console.log("[SCAN MANAGER] LOGS UPLOADED TO: ", logsLocationUrl);
+        } catch (err) {
+          console.log("[SCAN MANAGER] Error in logs uploading: ", err);
+        }
+
         if (child.status === 0) {
           await job.moveToCompleted("completed", token, false);
         } else {
@@ -107,3 +119,19 @@ dbSM
     console.error("[SCAN MANAGER] - Error: ", err);
     process.exit(1);
   });
+
+const cleanConsoleOutput = (consoleOutput: string) => {
+  return consoleOutput.replace("[32m", "").replace("[0m", "").replace("", "");
+};
+
+const uploadLogs = async (
+  entityId: number,
+  jobId: string,
+  logString: string
+): Promise<string> => {
+  const cleanedLogString = cleanConsoleOutput(logString);
+  return await upload(
+    cleanedLogString,
+    entityId + "/" + jobId + "/" + "logs.txt"
+  );
+};
