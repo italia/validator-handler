@@ -9,6 +9,7 @@ import { entityController } from "./entityController.js";
 import { preserveReasons } from "../database/models/job.js";
 import { define as jobDefine } from "../database/models/job.js";
 import { Queue } from "bullmq";
+import { preFilterPayload, jsonToSequelizeWhere } from "../utils/utils.js";
 
 export class jobController {
   db: Sequelize;
@@ -282,5 +283,59 @@ export class jobController {
     });
 
     return entityJobs.length > 0;
+  }
+
+  async query(
+    filters: object,
+    page: string,
+    limit: string,
+    countOnly: boolean
+  ): Promise<
+    | {
+        totalElements: number;
+        currentPage: number;
+        pages: number;
+        jobs: mappedJob[];
+      }
+    | { count: number }
+  > {
+    const returnValues = {
+      totalElements: 0,
+      currentPage: parseInt(page),
+      pages: 0,
+      jobs: [],
+    };
+
+    preFilterPayload(filters);
+    const sequelizeWhere = jsonToSequelizeWhere(filters);
+
+    const totalCount = await jobDefine(this.db).count({
+      where: sequelizeWhere,
+    });
+
+    if (countOnly) return { count: totalCount };
+
+    let queryObj = {};
+    if (parseInt(limit) >= 0) {
+      queryObj = {
+        where: sequelizeWhere,
+        offset: parseInt(page) * parseInt(limit),
+        limit: parseInt(limit),
+      };
+    } else {
+      queryObj = {
+        where: sequelizeWhere,
+      };
+    }
+
+    const jobs: Job[] = await jobDefine(this.db).findAll(queryObj);
+
+    returnValues.totalElements = totalCount;
+    returnValues.pages =
+      parseInt(limit) >= 0 ? Math.ceil(totalCount / parseInt(limit)) : 1;
+    returnValues.currentPage = parseInt(page);
+    returnValues.jobs = jobs;
+
+    return returnValues;
   }
 }

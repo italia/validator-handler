@@ -121,7 +121,10 @@ dbSM
   });
 
 const cleanConsoleOutput = (consoleOutput: string) => {
-  return consoleOutput.replace("[32m", "").replace("[0m", "").replace("", "");
+  return consoleOutput
+    .replace("/[32m/g", "")
+    .replace("/[0m/g", "")
+    .replace("//g", "");
 };
 
 const uploadLogs = async (

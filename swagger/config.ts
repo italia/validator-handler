@@ -5,7 +5,7 @@ export const swaggerDefinition = {
   openapi: "3.0.1",
   info: {
     title: "Validator Handler API",
-    version: "1.0.0",
+    version: "1.0.1",
     description: "Documentation of the API exposed by the validator handler.",
   },
   host: process.env.HOST,
