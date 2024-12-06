@@ -9,6 +9,7 @@ import axios from "axios";
 import path from "path";
 import { fileURLToPath } from "url";
 import { format } from "date-fns";
+import { Op } from "sequelize";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -268,6 +269,101 @@ const urlExists = async (url: string) => {
   }
 };
 
+const jsonToSequelizeWhere = (jsonFilter) => {
+  if (!jsonFilter) {
+    throw new Error("Invalid input: JSON filter is required");
+  }
+
+  if (jsonFilter.and) {
+    return {
+      [Op.and]: jsonFilter.and.map(jsonToSequelizeWhere),
+    };
+  }
+
+  if (jsonFilter.or) {
+    return {
+      [Op.or]: jsonFilter.or.map(jsonToSequelizeWhere),
+    };
+  }
+
+  const keys = Object.keys(jsonFilter);
+  if (keys.length === 1) {
+    const key = keys[0];
+    const value = jsonFilter[key];
+
+    if (typeof value === "object" && value !== null) {
+      if (value.in) {
+        return { [key]: { [Op.in]: value.in } };
+      }
+      if (value.notIn) {
+        return { [key]: { [Op.notIn]: value.notIn } };
+      }
+      if (value.between) {
+        return { [key]: { [Op.between]: value.between } };
+      }
+      if (value.notBetween) {
+        return { [key]: { [Op.notBetween]: value.notBetween } };
+      }
+
+      if (value.gt || value.gt == 0) {
+        return { [key]: { [Op.gt]: value.gt } }; // Greater than
+      }
+      if (value.gte || value.gte == 0) {
+        return { [key]: { [Op.gte]: value.gte } }; // Greater than or equal
+      }
+      if (value.lt || value.lt == 0) {
+        return { [key]: { [Op.lt]: value.lt } }; // Less than
+      }
+      if (value.lte || value.lte == 0) {
+        return { [key]: { [Op.lte]: value.lte } }; // Less than or equal
+      }
+
+      if (value.like) {
+        return { [key]: { [Op.like]: value.like } }; // Like
+      }
+      if (value.notLike) {
+        return { [key]: { [Op.notLike]: value.notLike } }; // Not Like
+      }
+
+      if (value.ne || value.ne == 0) {
+        return { [key]: { [Op.ne]: value.ne } }; // Not equal
+      }
+    }
+
+    switch (key) {
+      case "not":
+        return { [Op.not]: jsonToSequelizeWhere(value) };
+
+      default:
+        return { [key]: value }; // Direct equality
+    }
+  }
+
+  throw new Error("Invalid JSON structure");
+};
+
+const sanitizeInput = (input) => {
+  const allowedPattern = /^[A-Za-z0-9_]+$/;
+
+  if (typeof input === "string" && allowedPattern.test(input)) {
+    return input;
+  } else if (typeof input === "string") {
+    throw new Error(
+      "Invalid input: Only alphanumeric characters and underscores are allowed."
+    );
+  }
+};
+
+const preFilterPayload = (payload) => {
+  const sanitizedPayload = {};
+
+  for (const key in payload) {
+    if (Object.prototype.hasOwnProperty.call(payload, "key")) {
+      sanitizedPayload[key] = sanitizeInput(payload[key]);
+    }
+  }
+};
+
 export {
   arrayChunkify,
   mapValidationErrors,
@@ -275,4 +371,6 @@ export {
   calculatePassedAuditPercentage,
   urlExists,
   mapPA2026BodyUrlNotExists,
+  jsonToSequelizeWhere,
+  preFilterPayload,
 };

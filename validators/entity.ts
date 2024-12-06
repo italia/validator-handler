@@ -14,10 +14,7 @@ const create = async (body: createBody): Promise<boolean> => {
       type: { type: "string", minLength: 1, enum: ["school", "municipality"] },
       subtype: {
         type: "string",
-        enum: [
-          "municipality-informed-citizen",
-          "municipality-informed-active-citizen",
-        ],
+        enum: ["informed-citizen", "informed-active-citizen"],
       },
     },
 
