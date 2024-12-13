@@ -343,25 +343,44 @@ const jsonToSequelizeWhere = (jsonFilter) => {
 };
 
 const sanitizeInput = (input) => {
-  const allowedPattern = /^[A-Za-z0-9_]+$/;
+  const allowedPattern = /^[a-zA-Z0-9 _!@#$%^&*()+=.,;:'"<>?\/\\|`~-]*$/;
 
   if (typeof input === "string" && allowedPattern.test(input)) {
     return input;
   } else if (typeof input === "string") {
+    console.log(input);
     throw new Error(
-      "Invalid input: Only alphanumeric characters and underscores are allowed."
+      "Invalid input: Only alphanumeric characters, underscores, and hyphens are allowed."
     );
   }
+  return input;
 };
 
 const preFilterPayload = (payload) => {
-  const sanitizedPayload = {};
+  let sanitizedPayload = {};
 
-  for (const key in payload) {
-    if (Object.prototype.hasOwnProperty.call(payload, "key")) {
-      sanitizedPayload[key] = sanitizeInput(payload[key]);
+  const processObject = (obj) => {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => processObject(item));
     }
-  }
+    if (typeof obj === "object" && obj !== null) {
+      const result = {};
+
+      for (const key in obj) {
+        if (key === "external_id") {
+          throw new Error(
+            "'external_id' can appear only in top level 'and' object"
+          );
+        }
+        result[key] = processObject(obj[key]);
+      }
+      return result;
+    }
+    return sanitizeInput(obj);
+  };
+
+  sanitizedPayload = processObject(payload);
+  return sanitizedPayload;
 };
 
 export {

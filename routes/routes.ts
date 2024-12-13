@@ -23,22 +23,29 @@ import {
   verify as jwtVerify,
   refreshToken as jwtRefreshToken,
   getToken,
+  getPayload,
 } from "../auth/jwt.js";
 import {
   create as entityCreateValidation,
   update as entityUpdateValidation,
 } from "../validators/entity.js";
+import {
+  create as userCreateValidation,
+  update as userUpdateValidation,
+  changePassword as userChangePasswordValidation,
+} from "../validators/user.js";
 import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job.js";
 import { entityController } from "../controller/entityController.js";
 import { jobController } from "../controller/jobController.js";
 import { dbWS } from "../database/connection.js";
 import { allowedMunicipalitySubTypes } from "../database/models/entity.js";
-import { Entity } from "../types/models.js";
+import { Entity, User } from "../types/models.js";
 import { readFileSync } from "fs";
 import path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { getFile } from "../controller/s3Controller.js";
+import { statusAllowedValues } from "../database/models/job.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -682,13 +689,16 @@ router.get(
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
 
-      const externalEntityId = parseInt(req.params.external_id);
+      const externalEntityId = req.params.external_id;
       const jobId = parseInt(req.params.id);
 
-      const jobObj = await new jobController(dbWS).getJobFromIdAndEntityId(
-        jobId,
-        externalEntityId
-      );
+      const jobObj = await new jobController(
+        dbWS
+      ).getJobFromIdAndExternalEntityId(jobId, externalEntityId);
+
+      if (!jobObj) {
+        throw new Error("Job does not exist");
+      }
 
       let s3JSONUrl = jobObj.s3_json_url;
 
@@ -884,6 +894,215 @@ router.post(
 
 /**
  * @openapi
+ * /api/job/{type}/stats:
+ *   get:
+ *     tags:
+ *       - Job
+ *     summary: Restituisce il numero di scansioni in PASSED, FAILED e ERROR per un dato periodo
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: type
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *       - name: score
+ *         in: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *       - name: dateFrom
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: NB - La data deve essere in formato ISO, es. 2022-05-19T14:45:00.602Z
+ *         example: "2022-05-19T14:45:00.602Z"
+ *         required: true
+ *       - name: dateTo
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: NB - La data deve essere in formato ISO, es. 2022-05-23T14:26:08.602Z
+ *         example: "2022-05-23T14:26:08.602Z"
+ *         required: true
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     IN_PROGRESS:
+ *                       type: integer
+ *                       example: 0
+ *                     PENDING:
+ *                       type: integer
+ *                       example: 0
+ *                     ERROR:
+ *                       type: integer
+ *                       example: 0
+ *                     PASSED:
+ *                       type: integer
+ *                       example: 10
+ *                     FAILED:
+ *                       type: integer
+ *                       example: 5
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.get(
+  "/api/job/:type/stats",
+  async (
+    req: emptyBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      await jwtVerify(process.env.JWT_SECRET, await getToken(req));
+
+      const type = req.params.type as string;
+
+      if (!["municipality", "school"].includes(type)) {
+        throw new Error("Invalid type passed");
+      }
+
+      const dateFrom = req.query.dateFrom;
+      if (!dateFrom) {
+        throw new Error("Missing Required parameter dateFrom");
+      }
+
+      const dateTo = req.query.dateTo;
+      if (!dateTo) {
+        throw new Error("Missing Required parameter dateTo");
+      }
+
+      const returnValues = {};
+      for (const status of statusAllowedValues) {
+        returnValues[status] = await new jobController(dbWS).countByStatus(
+          type,
+          status,
+          dateFrom,
+          dateTo
+        );
+      }
+
+      return succesResponse(returnValues, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
+ * /api/audit/{type}/stats:
+ *   get:
+ *     tags:
+ *       - Job
+ *     summary: Restituisce una classifica degli auidit basata su tipologia sito analizzato e score
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: type
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *       - name: score
+ *         in: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       audit_key:
+ *                         type: string
+ *                         example: "municipality-legislation-privacy-is-present"
+ *                       score:
+ *                         type: integer
+ *                         example: 1
+ *                       count:
+ *                         type: integer
+ *                         example: 10
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.get(
+  "/api/audit/:type/stats",
+  async (
+    req: emptyBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      await jwtVerify(process.env.JWT_SECRET, await getToken(req));
+
+      const type = req.params.type as string;
+
+      if (!["municipality", "school"].includes(type)) {
+        throw new Error("Invalid type passed");
+      }
+
+      const dateFrom = req.query.dateFrom;
+      if (!dateFrom) {
+        throw new Error("Missing Required parameter dateFrom");
+      }
+
+      const dateTo = req.query.dateTo;
+      if (!dateTo) {
+        throw new Error("Missing Required parameter dateTo");
+      }
+
+      const scoreParam = req.query.score ?? "1";
+      const score = parseFloat(scoreParam as string);
+      if (score < 0 || score > 1) {
+        throw new Error("Invalid score passed");
+      }
+
+      const result = await new jobController(dbWS).moreFrequentAuditByScore(
+        type,
+        score,
+        dateFrom,
+        dateTo
+      );
+
+      return succesResponse(result, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
  * /api/entity/{external_id}/job/{id}/preserve/update:
  *   post:
  *     tags:
@@ -984,6 +1203,210 @@ router.get(
       res,
       200
     );
+  }
+);
+
+/**
+ * @openapi
+ * /api/user/create:
+ *   put:
+ *     tags:
+ *       - User
+ *     summary: Crea una nuova Utenza con ruolo api-user
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               username: api.user1
+ *               password: thisIsAPassword!
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
+ *                       example: api.user1
+ *                     role:
+ *                       type: string
+ *                       example: api-user
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date
+ *                     createdAt:
+ *                       type: string
+ *                       format: date
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.put(
+  "/api/user/create",
+  async (
+    req: createEntityBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      const token = await getToken(req);
+      await jwtVerify(process.env.JWT_SECRET, token);
+
+      const controller = new userController(dbWS);
+      await controller.veryfyAdmin(await getPayload(token));
+
+      await userCreateValidation(req.body);
+
+      const result: User = await controller.create(req.body);
+
+      return succesResponse(result, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
+ * /api/user/update:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Aggiorna un' Utenza
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               username: api.user1
+ *               password: thisIsANewPassword!
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     updated:
+ *                       type: boolean
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.post(
+  "/api/user/update",
+  async (
+    req: createEntityBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      const token = await getToken(req);
+      await jwtVerify(process.env.JWT_SECRET, token);
+
+      const controller = new userController(dbWS);
+      await controller.veryfyAdmin(await getPayload(token));
+
+      await userUpdateValidation(req.body);
+
+      const updated: boolean = await controller.update(req.body);
+
+      return succesResponse({ updated }, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
+ * /api/user/password/change:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Cambia password
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               oldPassword: thisIsTheOldPassword
+ *               newPassword: thisIsANewPassword!
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     updated:
+ *                       type: boolean
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.post(
+  "/api/user/password/change",
+  async (
+    req: createEntityBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      const token = await getToken(req);
+      await jwtVerify(process.env.JWT_SECRET, token);
+
+      await userChangePasswordValidation(req.body);
+
+      const updated: boolean = await new userController(dbWS).changePassword(
+        req.body,
+        await getPayload(token)
+      );
+
+      return succesResponse({ updated }, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
   }
 );
 

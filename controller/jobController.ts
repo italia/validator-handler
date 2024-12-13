@@ -4,10 +4,11 @@ dotenv.config();
 
 import { Job } from "../types/models.js";
 import { mappedJob, updatePreserveBody } from "../types/job.js";
-import { Op, Sequelize } from "sequelize";
+import { Op, QueryTypes, Sequelize } from "sequelize";
 import { entityController } from "./entityController.js";
 import { preserveReasons } from "../database/models/job.js";
 import { define as jobDefine } from "../database/models/job.js";
+import { define as entityDefine } from "../database/models/entity.js";
 import { Queue } from "bullmq";
 import { preFilterPayload, jsonToSequelizeWhere } from "../utils/utils.js";
 
@@ -27,6 +28,26 @@ export class jobController {
     });
   }
 
+  async getJobFromIdAndExternalEntityId(
+    id: number,
+    externalId: string
+  ): Promise<Job> {
+    return await jobDefine(this.db).findOne({
+      where: {
+        id: id,
+      },
+      include: [
+        {
+          model: entityDefine(this.db),
+          attributes: ["external_id"],
+          required: true,
+          where: {
+            external_id: externalId,
+          },
+        },
+      ],
+    });
+  }
   async list(
     entityExternalId: string,
     dateFrom,
@@ -281,12 +302,11 @@ export class jobController {
         entity_id: entityId,
       },
     });
-
     return entityJobs.length > 0;
   }
 
   async query(
-    filters: object,
+    filters,
     page: string,
     limit: string,
     countOnly: boolean
@@ -306,14 +326,47 @@ export class jobController {
       jobs: [],
     };
 
+    const includeEntity = {
+      model: entityDefine(this.db),
+      required: true,
+    };
+
+    if (filters.and && filters.and.length && filters.and.length > 0) {
+      filters.and.forEach((el, index) => {
+        if (el.external_id) {
+          // eslint-disable-next-line
+          // @ts-ignore
+          includeEntity.where = {
+            external_id: el.external_id,
+          };
+          filters.and.splice(index, 1);
+        }
+      });
+    }
+
+    if (filters.external_id) {
+      // eslint-disable-next-line
+      // @ts-ignore
+      includeEntity.where = {
+        external_id: filters.external_id,
+      };
+
+      delete filters.external_id;
+    }
+
     preFilterPayload(filters);
     const sequelizeWhere = jsonToSequelizeWhere(filters);
 
     const totalCount = await jobDefine(this.db).count({
       where: sequelizeWhere,
+      include: [includeEntity],
     });
 
     if (countOnly) return { count: totalCount };
+
+    // eslint-disable-next-line
+    // @ts-ignore
+    includeEntity.attributes = ["external_id"];
 
     let queryObj = {};
     if (parseInt(limit) >= 0) {
@@ -321,21 +374,163 @@ export class jobController {
         where: sequelizeWhere,
         offset: parseInt(page) * parseInt(limit),
         limit: parseInt(limit),
+        include: [includeEntity],
       };
     } else {
       queryObj = {
         where: sequelizeWhere,
+        include: [includeEntity],
       };
     }
 
     const jobs: Job[] = await jobDefine(this.db).findAll(queryObj);
 
+    const returnJobs = [];
+    jobs.forEach((item) => {
+      // eslint-disable-next-line
+      // @ts-ignore
+      const { Entity, ...job } = item.dataValues;
+      returnJobs.push({
+        ...job,
+        external_id: Entity.external_id ?? "",
+      });
+    });
+
     returnValues.totalElements = totalCount;
     returnValues.pages =
       parseInt(limit) >= 0 ? Math.ceil(totalCount / parseInt(limit)) : 1;
     returnValues.currentPage = parseInt(page);
-    returnValues.jobs = jobs;
+    returnValues.jobs = returnJobs;
 
     return returnValues;
+  }
+
+  async countByStatus(type, status, dateFrom, dateTo) {
+    return await jobDefine(this.db).count({
+      where: {
+        status,
+        type,
+        start_at: { [Op.gte]: dateFrom },
+        end_at: { [Op.lte]: dateTo },
+      },
+    });
+  }
+
+  async moreFrequentAuditByScore(type: string, score = 1, dateFrom, dateTo) {
+    let queryResults = null;
+
+    if (!type) return [];
+
+    let querySql = "";
+    if (type == "municipality")
+      querySql = `WITH municipality_extracted_scores AS (
+        SELECT 
+            audit_key,
+            (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'cittadino-informato'->'groups'->'normativa'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+
+        UNION ALL
+
+        SELECT 
+            audit_key,
+            (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'cittadino-informato'->'groups'->'sicurezza'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+
+        UNION ALL
+
+        SELECT 
+          audit_key,
+          (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'cittadino-informato'->'groups'->'funzionalita'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+        
+        UNION ALL
+
+        SELECT 
+          audit_key,
+          (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'cittadino-informato'->'groups'->'esperienza-utente'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+
+        UNION ALL
+
+        SELECT 
+          audit_key,
+          (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'raccomandazioni'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo 
+      )
+      SELECT 
+          audit_key,
+          score,
+          COUNT(*)::int AS count
+      FROM municipality_extracted_scores
+      WHERE score = :score
+      GROUP BY audit_key,score
+      ORDER BY count DESC`;
+
+    if (type == "school")
+      querySql = `WITH school_extracted_scores AS (
+        SELECT 
+            audit_key,
+            (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'criteri-conformita'->'groups'->'esperienza-utente'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+
+        UNION ALL
+
+        SELECT 
+            audit_key,
+            (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'criteri-conformita'->'groups'->'normativa'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+
+        UNION ALL
+
+        SELECT 
+            audit_key,
+            (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'criteri-conformita'->'groups'->'sicurezza'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo
+
+        UNION ALL
+
+        SELECT 
+          audit_key,
+          (audit_value)::float AS score
+        FROM "Jobs",
+        jsonb_each(json_result->'raccomandazioni'->'audits') AS groups(audit_key, audit_value)
+        WHERE type = :type AND start_at >= :dateFrom AND end_at <= :dateTo 
+    )
+    SELECT 
+        audit_key,
+        score,
+        COUNT(*)::int AS count
+    FROM school_extracted_scores
+    WHERE score = :score
+    GROUP BY audit_key,score
+    ORDER BY count DESC`;
+
+    try {
+      queryResults = await this.db.query(querySql, {
+        type: QueryTypes.SELECT,
+        replacements: { score, type, dateFrom, dateTo },
+      });
+    } catch (e) {
+      console.log(e);
+      queryResults = e.message;
+    }
+
+    return queryResults;
   }
 }

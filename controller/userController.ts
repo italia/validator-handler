@@ -7,6 +7,8 @@ import { define as userDefine } from "../database/models/user.js";
 
 export class userController {
   db;
+  ADMIN_ROLE = "admin";
+  API_USER_ROLE = "api-user";
 
   constructor(db: Sequelize) {
     this.db = db;
@@ -30,5 +32,80 @@ export class userController {
       username: userObjValues.username,
       role: userObjValues.role,
     };
+  }
+
+  async veryfyAdmin(tokenPayload: authUser) {
+    if (!(tokenPayload.role == this.ADMIN_ROLE)) {
+      throw new Error("Unauthorized");
+    }
+  }
+
+  async create(createBody): Promise<User> {
+    const existingUser = await userDefine(this.db).findOne({
+      where: { username: createBody.username },
+    });
+
+    if (existingUser) {
+      throw new Error("Username already in use");
+    }
+
+    const newUser = await userDefine(this.db).create({
+      username: createBody.username,
+      password: createBody.password,
+      role: this.API_USER_ROLE,
+    });
+
+    // eslint-disable-next-line
+    const { password, ...user } = newUser.dataValues;
+
+    return user as User;
+  }
+
+  async update(updateBody) {
+    const existingUser = await userDefine(this.db).findOne({
+      where: { username: updateBody.username },
+    });
+
+    if (!existingUser) {
+      throw new Error("User does not exist");
+    }
+
+    const [affectedCount] = await userDefine(this.db).update(
+      {
+        password: updateBody.password,
+      },
+      {
+        where: {
+          username: updateBody.username,
+        },
+      }
+    );
+
+    return affectedCount > 0;
+  }
+
+  async changePassword(changePasswordBody, tokenPayload) {
+    const username = tokenPayload.username;
+
+    const existingUser = await userDefine(this.db).findOne({
+      where: { username: username, password: changePasswordBody.oldPassword },
+    });
+
+    if (!existingUser) {
+      throw new Error("Wrong Password");
+    }
+
+    const [affectedCount] = await userDefine(this.db).update(
+      {
+        password: changePasswordBody.newPassword,
+      },
+      {
+        where: {
+          username: username,
+        },
+      }
+    );
+
+    return affectedCount > 0;
   }
 }
