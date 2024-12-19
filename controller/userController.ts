@@ -84,6 +84,25 @@ export class userController {
     return affectedCount > 0;
   }
 
+  async delete(deleteBody) {
+    const existingUser = await userDefine(this.db).findOne({
+      where: { username: deleteBody.username, role: this.API_USER_ROLE },
+    });
+
+    if (!existingUser) {
+      throw new Error("User does not exist");
+    }
+
+    const affectedCount = await userDefine(this.db).destroy({
+      where: {
+        username: deleteBody.username,
+        role: this.API_USER_ROLE,
+      },
+    });
+
+    return affectedCount > 0;
+  }
+
   async changePassword(changePasswordBody, tokenPayload) {
     const username = tokenPayload.username;
 

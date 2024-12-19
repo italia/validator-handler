@@ -42,6 +42,20 @@ const update = async (body: object): Promise<boolean> => {
   return await validate(body, updateBody);
 };
 
+const remove = async (body: object): Promise<boolean> => {
+  const removeBody = {
+    type: "object",
+
+    properties: {
+      username: { type: "string", minLength: 1 },
+    },
+
+    required: ["username"],
+  };
+
+  return await validate(body, removeBody);
+};
+
 const changePassword = async (body: object): Promise<boolean> => {
   const changePasswordBody = {
     type: "object",
@@ -69,4 +83,4 @@ const changePassword = async (body: object): Promise<boolean> => {
   return isValid;
 };
 
-export { create, update, changePassword };
+export { create, update, changePassword, remove };

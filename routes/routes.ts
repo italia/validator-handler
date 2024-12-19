@@ -32,6 +32,7 @@ import {
 import {
   create as userCreateValidation,
   update as userUpdateValidation,
+  remove as userDeleteValidation,
   changePassword as userChangePasswordValidation,
 } from "../validators/user.js";
 import { preserveUpdate as jobPreserveUpdateValidation } from "../validators/job.js";
@@ -126,7 +127,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * @openapi
- * /api/login/token:
+ * /api/v1/login/token:
  *   post:
  *     tags:
  *       - Auth
@@ -163,7 +164,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  *               $ref: '#/definitions/Error'
  */
 router.post(
-  "/api/login/token",
+  "/login/token",
   async (
     req: loginBodyType,
     res: successResponseType | errorResponseType
@@ -198,7 +199,7 @@ router.post(
 
 /**
  * @openapi
- * /api/login/refresh:
+ * /api/v1/login/refresh:
  *   post:
  *     tags:
  *       - Auth
@@ -227,7 +228,7 @@ router.post(
  *               "$ref": "#/definitions/Error"
  */
 router.post(
-  "/api/login/refresh",
+  "/login/refresh",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -256,7 +257,7 @@ router.post(
 
 /**
  * @openapi
- * /api/entity/create:
+ * /api/v1/entity/create:
  *   put:
  *     tags:
  *       - Entity
@@ -296,7 +297,7 @@ router.post(
  *               "$ref": "#/definitions/Error"
  */
 router.put(
-  "/api/entity/create",
+  "/entity/create",
   async (
     req: createEntityBodyType,
     res: successResponseType | errorResponseType
@@ -330,7 +331,7 @@ router.put(
 
 /**
  * @openapi
- * /api/entity/{external_id}/update:
+ * /api/v1/entity/{external_id}/update:
  *   post:
  *     tags:
  *       - Entity
@@ -376,7 +377,7 @@ router.put(
  *               "$ref": "#/definitions/Error"
  */
 router.post(
-  "/api/entity/:external_id/update",
+  "/entity/:external_id/update",
   async (
     req: updateEntityBodyType,
     res: successResponseType | errorResponseType
@@ -399,7 +400,80 @@ router.post(
 
 /**
  * @openapi
- * /api/entity/{external_id}/retrieve:
+ * /api/v1/entity/list:
+ *   get:
+ *     tags:
+ *       - Entity
+ *     summary: Restituisce la lista dele Entity
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: type
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: La tipologia di Entity
+ *         example: "municipality"
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       totalElements:
+ *                         type: integer
+ *                       currentPage:
+ *                         type: integer
+ *                       pages:
+ *                         type: integer
+ *                       jobs:
+ *                         "$ref": "#/definitions/Entity"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.get(
+  "/entity/list",
+  async (
+    req: emptyBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      await jwtVerify(process.env.JWT_SECRET, await getToken(req));
+
+      const page = req.query.page ?? "0";
+      const limit = req.query.limit ?? "-1";
+      const type = req.query.type ?? "";
+
+      const result = await new entityController(dbWS).list(
+        type as string,
+        page,
+        limit
+      );
+
+      return succesResponse(result, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
+ * /api/v1/entity/{external_id}/retrieve:
  *   get:
  *     tags:
  *       - Entity
@@ -434,7 +508,7 @@ router.post(
  *               "$ref": "#/definitions/Error"
  */
 router.get(
-  "/api/entity/:external_id/retrieve",
+  "/entity/:external_id/retrieve",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -457,7 +531,7 @@ router.get(
 
 /**
  * @openapi
- * /api/entity/{external_id}/job/list:
+ * /api/v1/entity/{external_id}/job/list:
  *   get:
  *     tags:
  *       - Job
@@ -527,7 +601,7 @@ router.get(
  *               "$ref": "#/definitions/Error"
  */
 router.get(
-  "/api/entity/:external_id/job/list",
+  "/entity/:external_id/job/list",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -562,7 +636,7 @@ router.get(
 
 /**
  * @openapi
- * /api/entity/{external_id}/job/{id}/results:
+ * /api/v1/entity/{external_id}/job/{id}/results:
  *   get:
  *     tags:
  *       - Job
@@ -681,7 +755,7 @@ router.get(
  *               "$ref": "#/definitions/Error"
  */
 router.get(
-  "/api/entity/:external_id/job/:id/results",
+  "/entity/:external_id/job/:id/results",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -717,7 +791,7 @@ router.get(
 
 /**
  * @openapi
- * /api/job/query:
+ * /api/v1/job/query:
  *   post:
  *     tags:
  *       - Job
@@ -862,7 +936,7 @@ router.get(
  *               "$ref": "#/definitions/Error"
  */
 router.post(
-  "/api/job/query",
+  "/job/query",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -870,10 +944,8 @@ router.post(
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
 
-      const page =
-        req.query.page === "0" || req.query.page === undefined
-          ? "0"
-          : req.query.page;
+      const page = req.query.page;
+
       const limit = req.query.limit ?? "-1";
       const countOnly = req.query.countOnly
         ? req.query.countOnly == "true"
@@ -894,7 +966,7 @@ router.post(
 
 /**
  * @openapi
- * /api/job/{type}/stats:
+ * /api/v1/job/{type}/stats:
  *   get:
  *     tags:
  *       - Job
@@ -963,7 +1035,7 @@ router.post(
  *               "$ref": "#/definitions/Error"
  */
 router.get(
-  "/api/job/:type/stats",
+  "/job/:type/stats",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -1006,7 +1078,7 @@ router.get(
 
 /**
  * @openapi
- * /api/audit/{type}/stats:
+ * /api/v1/audit/{type}/stats:
  *   get:
  *     tags:
  *       - Job
@@ -1057,7 +1129,7 @@ router.get(
  *               "$ref": "#/definitions/Error"
  */
 router.get(
-  "/api/audit/:type/stats",
+  "/audit/:type/stats",
   async (
     req: emptyBodyType,
     res: successResponseType | errorResponseType
@@ -1103,7 +1175,7 @@ router.get(
 
 /**
  * @openapi
- * /api/entity/{external_id}/job/{id}/preserve/update:
+ * /api/v1/entity/{external_id}/job/{id}/preserve/update:
  *   post:
  *     tags:
  *       - Job
@@ -1153,7 +1225,7 @@ router.get(
  *               "$ref": "#/definitions/Error"
  */
 router.post(
-  "/api/entity/:external_id/job/:id/preserve/update",
+  "/entity/:external_id/job/:id/preserve/update",
   async (
     req: updatePreserveBodyType,
     res: successResponseType | errorResponseType
@@ -1179,7 +1251,7 @@ router.post(
 );
 
 router.get(
-  "/api/info",
+  "/info",
   async (req: emptyBodyType, res: successResponseType | errorResponseType) => {
     let packageJSON;
     try {
@@ -1208,7 +1280,7 @@ router.get(
 
 /**
  * @openapi
- * /api/user/create:
+ * /api/v1/user/create:
  *   put:
  *     tags:
  *       - User
@@ -1259,7 +1331,7 @@ router.get(
  *               "$ref": "#/definitions/Error"
  */
 router.put(
-  "/api/user/create",
+  "/user/create",
   async (
     req: createEntityBodyType,
     res: successResponseType | errorResponseType
@@ -1284,7 +1356,7 @@ router.put(
 
 /**
  * @openapi
- * /api/user/update:
+ * /api/v1/user/update:
  *   post:
  *     tags:
  *       - User
@@ -1323,7 +1395,7 @@ router.put(
  *               "$ref": "#/definitions/Error"
  */
 router.post(
-  "/api/user/update",
+  "/user/update",
   async (
     req: createEntityBodyType,
     res: successResponseType | errorResponseType
@@ -1348,7 +1420,70 @@ router.post(
 
 /**
  * @openapi
- * /api/user/password/change:
+ * /api/v1/user/delete:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Elimina un' Utenza api-user
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             example:
+ *               username: api.user1
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     updated:
+ *                       type: boolean
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.post(
+  "/user/delete",
+  async (
+    req: createEntityBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      const token = await getToken(req);
+      await jwtVerify(process.env.JWT_SECRET, token);
+
+      const controller = new userController(dbWS);
+      await controller.veryfyAdmin(await getPayload(token));
+
+      await userDeleteValidation(req.body);
+
+      const deleted: boolean = await controller.delete(req.body);
+
+      return succesResponse({ deleted }, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
+ * /api/v1/user/password/change:
  *   post:
  *     tags:
  *       - User
@@ -1387,7 +1522,7 @@ router.post(
  *               "$ref": "#/definitions/Error"
  */
 router.post(
-  "/api/user/password/change",
+  "/user/password/change",
   async (
     req: createEntityBodyType,
     res: successResponseType | errorResponseType
@@ -1412,28 +1547,28 @@ router.post(
 
 // ** 404 ROUTE HANDLING **
 router.get(
-  "/api/*",
+  "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   }
 );
 
 router.post(
-  "/api/*",
+  "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   }
 );
 
 router.delete(
-  "/api/*",
+  "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   }
 );
 
 router.put(
-  "/api/*",
+  "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   }

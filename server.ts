@@ -32,7 +32,7 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec)
 );
-app.use("/", router);
+app.use("/api/v1/", router);
 
 dbWS
   .authenticate()
