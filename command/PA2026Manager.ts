@@ -54,7 +54,7 @@ const create = async () => {
     "WHERE outfunds__Status__c = 'Finanziata' " +
     "AND outfunds__FundingProgram__r.RecordType.DeveloperName = 'Misura_141' " +
     "AND Url_Sito_Internet__c !=null " +
-    "AND Da_Scansionare__c = true" +
+    "AND Da_Scansionare__c = true " +
     "AND ID_Crawler__c = null";
   const returnIds = [];
 
