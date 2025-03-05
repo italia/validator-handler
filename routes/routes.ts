@@ -771,16 +771,16 @@ router.get(
       ).getJobFromIdAndExternalEntityId(jobId, externalEntityId);
 
       if (!jobObj) {
-        throw new Error("Job does not exist");
+        return errorResponse(0, "Job does not exist", 500, res);
       }
 
-      let s3JSONUrl = jobObj.s3_json_url;
-
-      if (s3JSONUrl.startsWith("/")) {
-        s3JSONUrl = s3JSONUrl.replace("/", "");
+      if (!jobObj.s3_json_url) {
+        return errorResponse(0, "Result file does not exist", 500, res);
       }
 
-      const result = await getFile(s3JSONUrl);
+      const result = await getFile(
+        jobObj.entity_id + "/" + jobObj.id + "/" + "report.json"
+      );
 
       return succesResponse(JSON.parse(result), res);
     } catch (error) {

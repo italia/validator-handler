@@ -3,38 +3,8 @@ import { QueryTypes } from "sequelize";
 import { Entity } from "../types/models.js";
 import { define as entityDefine } from "../database/models/entity.js";
 import { define as jobDefine } from "../database/models/job.js";
-import dateFormat from "dateformat";
 import { entityController } from "./entityController.js";
 import { callPatch } from "./PA2026/integrationController.js";
-
-const getFirstTimeEntityToBeAnalyzed = async (limit: number) => {
-  let returnValues = [];
-
-  try {
-    const querySql = `SELECT E.id
-            FROM "Entities" as E
-            WHERE 0 = (
-                SELECT count(*)
-                FROM "Jobs" as J
-                WHERE J.entity_id = E.id
-                AND J.status != 'ERROR'
-            )
-            LIMIT :limit`;
-
-    const firstTimeEntityToBeAnalyzed = await dbQM.query(querySql, {
-      replacements: { limit: limit },
-      type: QueryTypes.RAW,
-    });
-
-    if (firstTimeEntityToBeAnalyzed[0].length > 0) {
-      returnValues = firstTimeEntityToBeAnalyzed[0];
-    }
-
-    return returnValues;
-  } catch (e) {
-    return returnValues;
-  }
-};
 
 const manageEntitiesInErrorJobs = async () => {
   const returnValues = [];
@@ -101,6 +71,7 @@ const getFirstTimeForcedEntityToBeAnalyzed = async (limit: number) => {
                 AND J.status != 'ERROR'
             )
             AND E."forcedScan" = TRUE
+            AND E.enable = TRUE
             LIMIT :limit
             `;
 
@@ -143,6 +114,7 @@ const getForcedRescanEntitiesToBeAnalyzed = async (limit: number) => {
                 )
             )
             AND E."forcedScan" = TRUE
+            AND E.enable = TRUE
             LIMIT :limit`;
 
     const forcedEntityToBeRescanned = await dbQM.query(querySql, {
@@ -152,103 +124,6 @@ const getForcedRescanEntitiesToBeAnalyzed = async (limit: number) => {
 
     if (forcedEntityToBeRescanned[0].length > 0) {
       returnValues = forcedEntityToBeRescanned[0];
-    }
-
-    return returnValues;
-  } catch (e) {
-    return returnValues;
-  }
-};
-
-const getRescanEntityToBeAnalyzed = async (
-  passedOlderThanDaysParam: string,
-  failedOlderThanDaysParam: string,
-  limit: number
-) => {
-  let returnValues = [];
-
-  try {
-    const passedOlderThanDays: number = parseInt(passedOlderThanDaysParam);
-    const failedOlderThanDays: number = parseInt(failedOlderThanDaysParam);
-
-    const passedDate = new Date();
-    passedDate.setDate(passedDate.getDate() - passedOlderThanDays);
-
-    const failedDate = new Date();
-    failedDate.setDate(failedDate.getDate() - failedOlderThanDays);
-
-    const rescanEntityToBeAnalyzed = await dbQM.query(
-      `SELECT E.id
-           FROM "Entities" as E JOIN "Jobs" AS J on E.id = J.entity_id
-           WHERE E.enable = TRUE AND E."asseverationJobId" IS NULL AND
-              (
-                  (J.status = 'ERROR') OR
-                  (J.status = 'PASSED' AND DATE(J."end_at") < DATE(:passedDate)) OR
-                  (J.status = 'FAILED' AND DATE(J."end_at") < DATE(:failedDate))
-              )
-           AND J.id = (
-             SELECT max(J2.id)
-             FROM "Entities" as E2 JOIN "Jobs" J2 ON E2.id = J2.entity_id
-             WHERE E.id = J2.entity_id
-            )
-           LIMIT :limit`,
-      {
-        replacements: {
-          limit: limit,
-          passedDate: dateFormat(passedDate, "yyyy-mm-dd"),
-          failedDate: dateFormat(failedDate, "yyyy-mm-dd"),
-        },
-        type: QueryTypes.RAW,
-      }
-    );
-
-    if (rescanEntityToBeAnalyzed[0].length > 0) {
-      returnValues = rescanEntityToBeAnalyzed[0];
-    }
-
-    return returnValues;
-  } catch (e) {
-    return returnValues;
-  }
-};
-
-const getRescanEntityAsseveratedToBeAnalyzed = async (
-  jobOlderThanDaysParam: string,
-  limit: number
-) => {
-  let returnValues = [];
-
-  try {
-    const asservationOlderThanDays: number = parseInt(jobOlderThanDaysParam);
-
-    const filterDate = new Date();
-    filterDate.setDate(filterDate.getDate() - asservationOlderThanDays);
-
-    const rescanEntityToBeAnalyzed = await dbQM.query(
-      `SELECT E.id
-           FROM "Entities" as E JOIN "Jobs" AS J on E.id = J.entity_id
-           WHERE E.enable = TRUE AND E."asseverationJobId" IS NOT NULL AND
-              (
-                  ((J.status != 'PASSED' OR J.status != 'FAILED') AND DATE(J."updatedAt") < DATE(:filterDate)) OR
-                  ((J.status = 'PASSED' OR J.status = 'FAILED') AND DATE(J."end_at") < DATE(:filterDate))
-              )
-           AND J.id = (
-             SELECT max(J2.id)
-             FROM "Entities" as E2 JOIN "Jobs" J2 ON E2.id = J2.entity_id
-             WHERE E.id = J2.entity_id
-            )
-           LIMIT :limit`,
-      {
-        replacements: {
-          limit: limit,
-          filterDate: dateFormat(filterDate, "yyyy-mm-dd"),
-        },
-        type: QueryTypes.RAW,
-      }
-    );
-
-    if (rescanEntityToBeAnalyzed[0].length > 0) {
-      returnValues = rescanEntityToBeAnalyzed[0];
     }
 
     return returnValues;
@@ -303,11 +178,8 @@ const generateJobs = async (
 };
 
 export {
-  getFirstTimeEntityToBeAnalyzed,
   manageEntitiesInErrorJobs,
   getFirstTimeForcedEntityToBeAnalyzed,
   getForcedRescanEntitiesToBeAnalyzed,
-  getRescanEntityToBeAnalyzed,
-  getRescanEntityAsseveratedToBeAnalyzed,
   generateJobs,
 };

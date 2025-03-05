@@ -147,9 +147,6 @@ const scan = async (jobId) => {
     );
     console.log("[SCAN MANAGER ITEM] - JOB DELETED: ", jobDeleted);
 
-    // const pidKilled = await killProcessByName("Chromium");
-    // console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
-
     return true;
   } catch (e) {
     console.log("[SCAN MANAGER ITEM] - SCAN EXCEPTION: ", e.toString());
@@ -158,9 +155,6 @@ const scan = async (jobId) => {
       status: "ERROR",
       end_at: Date.now(),
     });
-
-    // const pidKilled = await killProcessByName("Chromium");
-    // console.log("[SCAN MANAGER ITEM] - PID KILLED: ", pidKilled);
 
     return false;
   }
@@ -229,35 +223,3 @@ const uploadFiles = async (
     };
   }
 };
-
-/*const killProcessByName = async (name: string) => {
-  const pidKilled = [];
-
-  try {
-    const list = await psList();
-
-    for (const element of list) {
-      try {
-        if (element.name === name) {
-          await treeKill(element.pid);
-          pidKilled.push(element.pid);
-        }
-      } catch (e) {
-        console.log(
-          "[SCAN MANAGER ITEM] - KILL PROCESS ELEMENT IN ERROR: ",
-          element
-        );
-        console.log(
-          "[SCAN MANAGER ITEM] - KILL PROCESS FOR-STATEMENT EXCEPTION: ",
-          e
-        );
-      }
-    }
-
-    return pidKilled;
-  } catch (e) {
-    console.log("[SCAN MANAGER ITEM] - KILL PROCESS EXCEPTION: ", e);
-
-    return pidKilled;
-  }
-};*/

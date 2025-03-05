@@ -91,7 +91,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js --maxItems 1000 --passedOlderThanDays 0 --failedOlderThanDays 0 --asservationOlderThanDays 0 --manualScanLogic true
+                - node --max-old-space-size=8192 --no-warnings --experimental-modules --es-module-specifier-resolution=node ./dist/command/queueManager.js --maxItems 1000
               envFrom:
                 - configMapRef:
                     name: dtd-crawler-env-configmap-prod
