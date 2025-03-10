@@ -414,6 +414,18 @@ router.post(
  *           type: string
  *         description: La tipologia di Entity
  *         example: "municipality"
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: Paginazione - quantità di risultati restituiti per pagina
+ *         example: 10
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: Paginazione - pagina da visualizzare
+ *         example: 5
  *     responses:
  *       "200":
  *         description: OK
@@ -613,11 +625,8 @@ router.get(
       const dateFrom = req.query.dateFrom;
       const dateTo = req.query.dateTo;
 
-      const page =
-        req.query.page === "0" || req.query.page === undefined
-          ? "1"
-          : req.query.page;
-      const limit = req.query.limit ?? "0";
+      const page = req.query.page ?? "0";
+      const limit = req.query.limit ?? "-1";
 
       const result = await new jobController(dbWS).list(
         externalEntityId,
@@ -944,9 +953,9 @@ router.post(
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
 
-      const page = req.query.page;
-
+      const page = req.query.page ?? "0";
       const limit = req.query.limit ?? "-1";
+
       const countOnly = req.query.countOnly
         ? req.query.countOnly == "true"
         : false;
