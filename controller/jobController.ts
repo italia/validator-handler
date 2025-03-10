@@ -75,10 +75,6 @@ export class jobController {
       entityExternalId
     );
 
-    if (entityObj === null || parseInt(limit) <= 0) {
-      return returnValues;
-    }
-
     let condition = {};
     if (Boolean(dateFrom) && Boolean(dateTo)) {
       condition = {
@@ -92,23 +88,22 @@ export class jobController {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    const countData = await entityObj.getJobs(condition);
-    let cont = 0;
-    countData.forEach((job) => {
-      if (job) {
-        cont++;
-      }
-    });
+    const countData: Job[] = await entityObj.getJobs(condition);
+    const cont = countData.length;
 
-    const pages = Math.ceil(cont / limit);
-    const offset = limit * (page - 1);
-    condition = {
-      ...condition,
-      ...{
-        offset: offset,
-        limit: limit,
-      },
-    };
+    let pages = 1;
+
+    if (limit > 0 && page >= 0) {
+      pages = Math.ceil(cont / limit);
+      const offset = limit * page;
+      condition = {
+        ...condition,
+        ...{
+          offset: offset,
+          limit: limit,
+        },
+      };
+    }
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore - getJobs(): metodo autogenerato dall'ORM Sequelize dopo l'associazione
