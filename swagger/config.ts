@@ -113,6 +113,25 @@ export const swaggerDefinition = {
         },
       },
     },
+    User: {
+      properties: {
+        id: {
+          type: "integer",
+        },
+        role: {
+          type: "string",
+        },
+        username: {
+          type: "string",
+        },
+        updateAt: {
+          type: "string",
+        },
+        createdAt: {
+          type: "string",
+        },
+      },
+    },
   },
 };
 

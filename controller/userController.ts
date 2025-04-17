@@ -127,4 +127,30 @@ export class userController {
 
     return affectedCount > 0;
   }
+
+  async list(page: number, limit: number, role: string | null) {
+    let userQueryArgs = {};
+
+    if (limit > 0 && page >= 0) {
+      userQueryArgs = {
+        limit: limit,
+        offset: page * limit,
+      };
+    }
+
+    if (role) {
+      Object.assign(userQueryArgs, { where: { role: role } });
+    }
+
+    const { rows: users, count: totalCount } = await userDefine(
+      this.db
+    ).findAndCountAll(userQueryArgs);
+
+    return {
+      totalElements: totalCount,
+      currentPage: limit > 0 ? page : 0,
+      pages: limit > 0 ? Math.ceil(totalCount / limit) : 1,
+      users: users,
+    };
+  }
 }

@@ -1554,6 +1554,95 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/user/list:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Restituisce la lista degli User
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: role
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Ruolo dell'utenza ("admin"/"api-user")
+ *         example: "api-user"
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: Paginazione - quantità di risultati restituiti per pagina
+ *         example: 10
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: number
+ *         description: Paginazione - pagina da visualizzare
+ *         example: 0
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: integer
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalElements:
+ *                       type: integer
+ *                     currentPage:
+ *                       type: integer
+ *                     pages:
+ *                       type: integer
+ *                     users:
+ *                        type: array
+ *                        items:
+ *                         "$ref": "#/definitions/User"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               "$ref": "#/definitions/Error"
+ */
+router.get(
+  "/user/list",
+  async (
+    req: emptyBodyType,
+    res: successResponseType | errorResponseType
+  ): Promise<void> => {
+    try {
+      const token = await getToken(req);
+      await jwtVerify(process.env.JWT_SECRET, token);
+
+      const controller = new userController(dbWS);
+      await controller.veryfyAdmin(await getPayload(token));
+
+      const page = req.query.page ? parseInt(req.query.page as string) : 0;
+      const limit = req.query.page ? parseInt(req.query.limit as string) : -1;
+      const role = req.query.role ?? null;
+
+      const result = await new userController(dbWS).list(
+        page,
+        limit,
+        role as string
+      );
+
+      return succesResponse(result, res);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
 // ** 404 ROUTE HANDLING **
 router.get(
   "/*",
