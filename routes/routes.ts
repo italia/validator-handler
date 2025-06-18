@@ -800,6 +800,76 @@ router.get(
 
 /**
  * @openapi
+ * /api/v1/entity/{external_id}/job/{id}/report:
+ *   get:
+ *     tags:
+ *       - Job
+ *     summary: Restituisce il report in formato HTML della singola scansione (job) di una data entity
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: external_id
+ *         description: Entity id
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *       - name: id
+ *         description: Job id
+ *         in: path
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       "200":
+ *         description: HTML Report restituito correttamente
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<!DOCTYPE html><html><head><title>Report</title></head><body>...</body></html>"
+ *       "500":
+ *         description: KO
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/definitions/Error"
+ */
+router.get(
+  "/entity/:external_id/job/:id/report",
+  async (req: emptyBodyType, res: successResponseType | errorResponseType) => {
+    try {
+      await jwtVerify(process.env.JWT_SECRET, await getToken(req));
+
+      const externalEntityId = req.params.external_id;
+      const jobId = parseInt(req.params.id);
+
+      const jobObj = await new jobController(
+        dbWS
+      ).getJobFromIdAndExternalEntityId(jobId, externalEntityId);
+
+      if (!jobObj) {
+        return errorResponse(0, "Job does not exist", 500, res);
+      }
+
+      if (!jobObj.s3_html_url) {
+        return errorResponse(0, "HTML report file does not exist", 500, res);
+      }
+
+      const htmlReport = await getFile(
+        jobObj.entity_id + "/" + jobObj.id + "/" + "report.html"
+      );
+
+      res.setHeader("Content-Type", "text/html");
+      return res.status(200).send(htmlReport);
+    } catch (error) {
+      return errorResponse(0, error, 500, res);
+    }
+  }
+);
+
+/**
+ * @openapi
  * /api/v1/job/query:
  *   post:
  *     tags:
