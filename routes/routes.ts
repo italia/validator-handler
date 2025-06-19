@@ -861,7 +861,10 @@ router.get(
       );
 
       res.setHeader("Content-Type", "text/html");
-      res.setHeader("Content-Disposition", `attachment; filename="report-entity-${externalEntityId}-job-${jobObj.id}.html"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="report-entity-${externalEntityId}-job-${jobObj.id}.html"`
+      );
       return res.status(200).send(htmlReport);
     } catch (error) {
       return errorResponse(0, error, 500, res);
