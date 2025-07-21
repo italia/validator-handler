@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:20.15.0-buster-slim
+FROM node:20.15-bookworm-slim
 
 ARG GEOIP_LICENSE
 
