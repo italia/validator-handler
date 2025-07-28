@@ -136,6 +136,13 @@ export class entityController {
       updateObj = { ...updateObj, ...{ subtype: entityUpdateBody.subtype } };
     }
 
+    if ("forcedScan" in entityUpdateBody) {
+      updateObj = {
+        ...updateObj,
+        ...{ forcedScan: entityUpdateBody.forcedScan },
+      };
+    }
+
     const result = await entity.update(updateObj);
 
     return result.toJSON();
