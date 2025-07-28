@@ -28,6 +28,7 @@ export interface updateEntityBodyType<>extends express.Request {
     enable: boolean;
     asseverationJobId: string;
     subtype: string;
+    forcedScan: boolean;
   };
 }
 

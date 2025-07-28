@@ -12,4 +12,5 @@ export interface updateBody {
   enable: boolean;
   asseverationJobId: string;
   subtype: string;
+  forcedScan: boolean;
 }

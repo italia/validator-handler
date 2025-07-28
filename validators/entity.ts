@@ -33,6 +33,7 @@ const update = async (body: updateBody): Promise<boolean> => {
       enable: { type: "boolean", minLength: 1 },
       asseverationJobId: { type: "string", minLength: 1 },
       subtype: { type: "string", minLength: 1 },
+      forcedScan: { type: "boolean", minLength: 1 },
     },
 
     anyOf: [
@@ -47,6 +48,9 @@ const update = async (body: updateBody): Promise<boolean> => {
       },
       {
         required: ["subtype"],
+      },
+      {
+        required: ["forcedScan"],
       },
     ],
   };
