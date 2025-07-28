@@ -1,6 +1,6 @@
 {
   "name": "crawler-handler",
-  "version": "3.1.12",
+  "version": "3.1.13",
   "description": "Handler per il validatore di comuni e scuole",
   "main": "index.js",
   "type": "module",
