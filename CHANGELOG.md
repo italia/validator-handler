@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.19](https://github.com/italia/validator-handler/compare/v3.1.18...v3.1.19) (2025-10-01)
+
+
+### Bug Fixes
+
+* **deps:** replace dependency npm-run-all with npm-run-all2 ^5.0.0 ([db8153e](https://github.com/italia/validator-handler/commit/db8153efaae9c87dae200a5391e373968c32352b))
+* **deps:** update dependency pa-website-validator-ng to v1.1.32 ([a6d0c85](https://github.com/italia/validator-handler/commit/a6d0c85118245518411df1c7f2ae683734733d5c))
+
 ## [3.1.18](https://github.com/italia/validator-handler/compare/v2.2.2...v3.1.18) (2025-09-19)
 
 
