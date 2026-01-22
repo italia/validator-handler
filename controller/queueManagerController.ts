@@ -52,7 +52,7 @@ const manageEntitiesInErrorJobs = async () => {
     }
 
     return returnValues;
-  } catch (e) {
+  } catch (_e) {
     console.log("ERROR: MANAGE IN ERROR JOB");
     return returnValues;
   }
@@ -85,7 +85,7 @@ const getFirstTimeForcedEntityToBeAnalyzed = async (limit: number) => {
     }
 
     return returnValues;
-  } catch (e) {
+  } catch (_e) {
     return returnValues;
   }
 };
@@ -99,15 +99,15 @@ const getForcedRescanEntitiesToBeAnalyzed = async (limit: number) => {
             WHERE 0 < (
                 SELECT count(*)
                 FROM "Jobs" as J
-                WHERE J.entity_id = E.id 
+                WHERE J.entity_id = E.id
                 AND J.status != 'ERROR'
             )
             AND
             0 = (
                 SELECT count(*)
                 FROM "Jobs" as J
-                WHERE J.entity_id = E.id 
-                AND 
+                WHERE J.entity_id = E.id
+                AND
                 (
                   J.status = 'PENDING' OR
                   J.status = 'IN_PROGRESS'
@@ -127,7 +127,7 @@ const getForcedRescanEntitiesToBeAnalyzed = async (limit: number) => {
     }
 
     return returnValues;
-  } catch (e) {
+  } catch (_e) {
     return returnValues;
   }
 };

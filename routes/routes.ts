@@ -1335,7 +1335,7 @@ router.post(
 
 router.get(
   "/info",
-  async (req: emptyBodyType, res: successResponseType | errorResponseType) => {
+  async (_req: emptyBodyType, res: successResponseType | errorResponseType) => {
     let packageJSON;
     try {
       packageJSON =
@@ -1720,28 +1720,28 @@ router.get(
 // ** 404 ROUTE HANDLING **
 router.get(
   "/*",
-  (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
+  (_req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   },
 );
 
 router.post(
   "/*",
-  (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
+  (_req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   },
 );
 
 router.delete(
   "/*",
-  (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
+  (_req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   },
 );
 
 router.put(
   "/*",
-  (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
+  (_req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
   },
 );

@@ -210,7 +210,7 @@ const uploadFiles = async (
       jsonLocationUrl: jsonLocationUrl,
       cleanJsonLocationUrl: cleanJsonLocationUrl,
     };
-  } catch (ex) {
+  } catch (_ex) {
     if (Boolean(entityId) && Boolean(jobId)) {
       await s3Delete(entityId + "/" + jobId);
     }

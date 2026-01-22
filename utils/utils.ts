@@ -140,6 +140,7 @@ const mapPA2026Body = async (
     initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
+    // eslint-disable-next-line
     ((initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
       (initialBody[`ID_Crawler_Job_${key}__c`] = job.id),
       (initialBody[`Esperienza_Utente_${key}__c`] = userExperienceObj.status),
@@ -168,6 +169,7 @@ const mapPA2026Body = async (
       case "municipality":
         // eslint-disable-next-line
         const functionObj = cleanJsonResult[mainObjKey].groups["funzionalita"];
+        // eslint-disable-next-line
         ((initialBody[`Cittadino_Informato_${key}__c`] =
           cleanJsonResult[mainObjKey].status),
           (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
