@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.23](https://github.com/italia/validator-handler/compare/v3.1.22...v3.1.23) (2026-01-22)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @types/sequelize to v6 ([140b870](https://github.com/italia/validator-handler/commit/140b870f6013ac32c92d392d014cc4431d8c53cc))
+* **deps:** update dependency pa-website-validator-ng to v1.1.37 ([732c00f](https://github.com/italia/validator-handler/commit/732c00f01b8446b07d3375e4a84015efd0137547))
+
 ## [3.1.22](https://github.com/italia/validator-handler/compare/v3.1.21...v3.1.22) (2025-12-30)
 
 
