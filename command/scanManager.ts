@@ -62,11 +62,11 @@ dbSM
 
         console.log(
           "[SCAN MANAGER] LOG FROM SCAN-MANAGER-ITEM: ",
-          child.stdout.toString()
+          child.stdout.toString(),
         );
         console.log(
           "[SCAN MANAGER] STATUS FROM SCAN-MANAGER-ITEM: ",
-          child.status
+          child.status,
         );
 
         const jobObj: Job | null = await jobDefine(dbSM).findByPk(job.data.id);
@@ -75,7 +75,7 @@ dbSM
         }
 
         const entity: Entity | null = await new entityController(
-          dbWS
+          dbWS,
         ).retrieveById(jobObj.entity_id);
 
         if (!entity) {
@@ -90,7 +90,7 @@ dbSM
           const logsLocationUrl = await uploadLogs(
             jobObj.entity_id,
             job.data.id,
-            child.stdout.toString()
+            child.stdout.toString(),
           );
           console.log("[SCAN MANAGER] LOGS UPLOADED TO: ", logsLocationUrl);
         } catch (err) {
@@ -105,7 +105,7 @@ dbSM
       } catch (e) {
         console.log(
           "[SCAN MANAGER] - Error in SCAN MANAGER WHILE-LOOP EXCEPTION: ",
-          e
+          e,
         );
       }
     }
@@ -130,11 +130,11 @@ const cleanConsoleOutput = (consoleOutput: string) => {
 const uploadLogs = async (
   entityId: number,
   jobId: string,
-  logString: string
+  logString: string,
 ): Promise<string> => {
   const cleanedLogString = cleanConsoleOutput(logString);
   return await upload(
     cleanedLogString,
-    entityId + "/" + jobId + "/" + "logs.txt"
+    entityId + "/" + jobId + "/" + "logs.txt",
   );
 };

@@ -6,7 +6,7 @@ const call = async (
   path,
   headers,
   payload = null,
-  isDataBinary = false
+  isDataBinary = false,
 ) => {
   if (!host || !path) {
     throw new Error("Empty host or path in Axios post form data");

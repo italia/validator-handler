@@ -30,7 +30,7 @@ export class jobController {
 
   async getJobFromIdAndExternalEntityId(
     id: number,
-    externalId: string
+    externalId: string,
   ): Promise<Job> {
     return await jobDefine(this.db).findOne({
       where: {
@@ -53,7 +53,7 @@ export class jobController {
     dateFrom,
     dateTo,
     page,
-    limit
+    limit,
   ): Promise<{
     totalElements: number;
     currentPage: number;
@@ -72,7 +72,7 @@ export class jobController {
     }
 
     const entityObj = await new entityController(this.db).retrieve(
-      entityExternalId
+      entityExternalId,
     );
 
     let condition = {};
@@ -138,10 +138,10 @@ export class jobController {
   async updatePreserve(
     entityExternalId: string,
     jobId: number,
-    updatePreserve: updatePreserveBody
+    updatePreserve: updatePreserveBody,
   ): Promise<Job> {
     const entityObj = await new entityController(this.db).retrieve(
-      entityExternalId
+      entityExternalId,
     );
 
     if (entityObj === null) {
@@ -221,7 +221,7 @@ export class jobController {
     try {
       const date = new Date();
       date.setHours(
-        date.getHours() - parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS)
+        date.getHours() - parseInt(process.env.IN_PROGRESS_JOBS_IN_ERROR_HOURS),
       );
 
       const inProgressJobsInError: Job[] = await jobDefine(this.db).findAll({
@@ -258,7 +258,7 @@ export class jobController {
     try {
       const date = new Date();
       date.setHours(
-        date.getHours() - parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS)
+        date.getHours() - parseInt(process.env.CHECK_IN_PENDING_JOBS_HOURS),
       );
 
       const jobInQueue = await queue.getJobs();
@@ -304,7 +304,7 @@ export class jobController {
     filters,
     page: string,
     limit: string,
-    countOnly: boolean
+    countOnly: boolean,
   ): Promise<
     | {
         totalElements: number;

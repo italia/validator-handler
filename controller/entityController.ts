@@ -18,7 +18,7 @@ export class entityController {
   async list(
     type: string,
     page,
-    limit
+    limit,
   ): Promise<{
     totalElements: number;
     currentPage: number;
@@ -121,7 +121,7 @@ export class entityController {
         {
           value: true,
           reason: "scansione asseverata",
-        }
+        },
       );
 
       if (result) {

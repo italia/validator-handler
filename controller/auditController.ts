@@ -13,7 +13,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     parsedResult,
     municipalityAudits,
     "informed-citizen",
-    "user-experience"
+    "user-experience",
   );
   let userExperienceStatus = false;
   if (
@@ -27,7 +27,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     parsedResult,
     municipalityAudits,
     "informed-citizen",
-    "function"
+    "function",
   );
   let functionStatus = false;
   if (
@@ -41,7 +41,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     parsedResult,
     municipalityAudits,
     "informed-citizen",
-    "legislation"
+    "legislation",
   );
   let legislationStatus = false;
   if (
@@ -55,7 +55,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
     parsedResult,
     municipalityAudits,
     "informed-citizen",
-    "security"
+    "security",
   );
   let securityStatus = false;
   if (
@@ -82,7 +82,7 @@ const cleanMunicipalityJSONReport = async (jsonResult: string) => {
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
     municipalityAudits,
-    "recommendations"
+    "recommendations",
   );
   let recommendationsStatus = false;
   if (
@@ -139,7 +139,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     parsedResult,
     schoolAudits,
     "compliance-criteria",
-    "user-experience"
+    "user-experience",
   );
   let userExperienceStatus = false;
   if (
@@ -153,7 +153,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     parsedResult,
     schoolAudits,
     "compliance-criteria",
-    "legislation"
+    "legislation",
   );
   let legislationStatus = false;
   if (
@@ -167,7 +167,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
     parsedResult,
     schoolAudits,
     "compliance-criteria",
-    "security"
+    "security",
   );
   let securityStatus = false;
   if (
@@ -189,7 +189,7 @@ const cleanSchoolJSONReport = async (jsonResult: string) => {
   const recommendationsAudits = await getAuditByClusterGroup(
     parsedResult,
     schoolAudits,
-    "recommendations"
+    "recommendations",
   );
   let recommendationsStatus = false;
   if (
@@ -239,7 +239,7 @@ const getAuditByClusterGroup = async (
   jsonResult,
   audits,
   cluster,
-  group = ""
+  group = "",
 ) => {
   const auditList = {
     passed: {},
@@ -321,7 +321,7 @@ const getImprovementPlanScore = async (jsonResult) => {
 const isPassedReport = async (
   jsonReport,
   type: string,
-  entity_id: number
+  entity_id: number,
 ): Promise<boolean> => {
   let passed = false;
 

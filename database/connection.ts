@@ -13,7 +13,7 @@ const dbRoot = new Sequelize(
     host: process.env.DATABASE_HOST,
     dialect: "postgres",
     logging: process.env.DB_DEBUG === "true",
-  }
+  },
 );
 
 const dbWS = new Sequelize(
@@ -25,7 +25,7 @@ const dbWS = new Sequelize(
     host: process.env.DATABASE_HOST,
     dialect: "postgres",
     logging: process.env.DB_DEBUG === "true",
-  }
+  },
 );
 
 const dbQM = new Sequelize(
@@ -37,7 +37,7 @@ const dbQM = new Sequelize(
     host: process.env.DATABASE_HOST,
     dialect: "postgres",
     logging: process.env.DB_DEBUG === "true",
-  }
+  },
 );
 
 const dbSM = new Sequelize(
@@ -49,7 +49,7 @@ const dbSM = new Sequelize(
     host: process.env.DATABASE_HOST,
     dialect: "postgres",
     logging: process.env.DB_DEBUG === "true",
-  }
+  },
 );
 
 export { dbWS, dbQM, dbSM, dbRoot };

@@ -78,7 +78,7 @@ export class userController {
         where: {
           username: updateBody.username,
         },
-      }
+      },
     );
 
     return affectedCount > 0;
@@ -122,7 +122,7 @@ export class userController {
         where: {
           username: username,
         },
-      }
+      },
     );
 
     return affectedCount > 0;
@@ -143,7 +143,7 @@ export class userController {
     }
 
     const { rows: users, count: totalCount } = await userDefine(
-      this.db
+      this.db,
     ).findAndCountAll(userQueryArgs);
 
     return {

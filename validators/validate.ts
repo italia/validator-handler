@@ -6,12 +6,12 @@ import { mapValidationErrors } from "../utils/utils.js";
 
 const validate = async (
   body: object,
-  expectedBody: object
+  expectedBody: object,
 ): Promise<boolean> => {
   const result: ValidatorResult = jsonschema.validate(body, expectedBody);
   if (result.errors.length > 0) {
     throw new Error(
-      "Error in body validation: " + (await mapValidationErrors(result.errors))
+      "Error in body validation: " + (await mapValidationErrors(result.errors)),
     );
   }
 

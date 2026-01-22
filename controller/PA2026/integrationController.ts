@@ -36,7 +36,7 @@ const retrieveToken = async () => {
         client_secret: process.env.PA2026_AUTH_CLIENT_SECRET,
         username: process.env.PA2026_AUTH_USERNAME,
         password: process.env.PA2026_AUTH_PASSWORD,
-      })
+      }),
     );
 
     if (result?.statusCode === 200) {
@@ -94,7 +94,7 @@ const callPatch = async (body: object, path: string, retry = 3) => {
         Authorization: "Bearer " + tokenValues.value,
         "Content-Type": "application/json",
       },
-      body
+      body,
     );
 
     if (result?.statusCode >= 200 && result?.statusCode <= 204) {
@@ -129,7 +129,7 @@ const callPostFileUpload = async (file: string, path: string, retry = 3) => {
         "Content-Type": "text/html",
       },
       file,
-      true
+      true,
     );
 
     if (result?.statusCode >= 200 && result?.statusCode <= 204) {
@@ -148,7 +148,7 @@ const pushResult = async (
   job: Job,
   cleanJsonReport,
   generalStatus: boolean,
-  htmlReportFile: string
+  htmlReportFile: string,
 ) => {
   try {
     const entity = await new entityController(dbSM).retrieveByPk(job.entity_id);
@@ -158,7 +158,7 @@ const pushResult = async (
 
     const passedAuditsPercentage = await calculatePassedAuditPercentage(
       job,
-      cleanJsonReport
+      cleanJsonReport,
     );
 
     let scanBody = await mapPA2026Body(
@@ -166,7 +166,7 @@ const pushResult = async (
       cleanJsonReport,
       generalStatus,
       false,
-      passedAuditsPercentage
+      passedAuditsPercentage,
     );
 
     if (isFirstScan) {
@@ -175,7 +175,7 @@ const pushResult = async (
         cleanJsonReport,
         generalStatus,
         true,
-        passedAuditsPercentage
+        passedAuditsPercentage,
       );
 
       scanBody = {
@@ -200,8 +200,8 @@ const pushResult = async (
       scanBody,
       process.env.PA2026_UPDATE_RECORDS_PATH.replace(
         "{external_entity_id}",
-        entity.external_id
-      )
+        entity.external_id,
+      ),
     );
 
     //Warn: API returns empty string when it success
@@ -214,8 +214,8 @@ const pushResult = async (
         htmlReportFile,
         process.env.PA2026_UPLOAD_FILE_PATH.replace(
           "{external_entity_id}",
-          entity.external_id
-        ).replace("{scan_number}", "1")
+          entity.external_id,
+        ).replace("{scan_number}", "1"),
       );
 
       if (!upload1Result) {
@@ -227,8 +227,8 @@ const pushResult = async (
       htmlReportFile,
       process.env.PA2026_UPLOAD_FILE_PATH.replace(
         "{external_entity_id}",
-        entity.external_id
-      ).replace("{scan_number}", "N")
+        entity.external_id,
+      ).replace("{scan_number}", "N"),
     );
 
     if (!uploadNResult) {
@@ -259,8 +259,8 @@ const pushResultUrlNotExists = async (job: Job, urlToBeScanned: string) => {
       scanBody,
       process.env.PA2026_UPDATE_RECORDS_PATH.replace(
         "{external_entity_id}",
-        entity.external_id
-      )
+        entity.external_id,
+      ),
     );
 
     //Warn: API returns empty string when it success

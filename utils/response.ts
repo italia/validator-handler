@@ -7,7 +7,7 @@ const errorResponse = (
   error_code: number,
   errorObj: string | { message: string },
   http_code: number,
-  res: errorResponseType
+  res: errorResponseType,
 ): void => {
   let message = "Generic error";
 
@@ -31,7 +31,7 @@ const succesResponse = (
   response: unknown,
   res: successResponseType,
   http_code = 200,
-  isHtml = false
+  isHtml = false,
 ): void => {
   if (isHtml) {
     res.writeHead(http_code, { "Content-Type": "text/html" });

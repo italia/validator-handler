@@ -18,7 +18,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const arrayChunkify = async (
   inputArray: [],
   numberOfDesiredChuck: number,
-  balanced = true
+  balanced = true,
 ) => {
   if (numberOfDesiredChuck < 2) {
     return [inputArray];
@@ -53,7 +53,7 @@ const arrayChunkify = async (
 };
 
 const mapValidationErrors = async (
-  validationErrors: ValidationError[]
+  validationErrors: ValidationError[],
 ): Promise<string> => {
   const errorMessages = [];
 
@@ -87,7 +87,7 @@ const mapPA2026Body = async (
   cleanJsonResult,
   generalStatus: boolean,
   isFirstScan: boolean,
-  passedAuditsPercentage: string
+  passedAuditsPercentage: string,
 ) => {
   try {
     const mainObjKey =
@@ -109,8 +109,8 @@ const mapPA2026Body = async (
       packageJSON =
         JSON.parse(
           await readFileSync(
-            path.resolve(__dirname, "../package.json")
-          ).toString()
+            path.resolve(__dirname, "../package.json"),
+          ).toString(),
         ) ?? {};
     } catch (e) {
       packageJSON = null;
@@ -140,7 +140,7 @@ const mapPA2026Body = async (
     initialBody[`Criteri_Superati_Crawler_${key}__c`] = passedAuditsPercentage;
     initialBody[`Status_Generale_${key}__c`] = generalStatus;
     initialBody[`Data_Job_Crawler_${key}__c`] = new Date(job.end_at).getTime();
-    (initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
+    ((initialBody[`URL_Scansione_${key}__c`] = job.scan_url),
       (initialBody[`ID_Crawler_Job_${key}__c`] = job.id),
       (initialBody[`Esperienza_Utente_${key}__c`] = userExperienceObj.status),
       (initialBody[`Normativa_${key}__c`] = legislationObj.status),
@@ -162,19 +162,19 @@ const mapPA2026Body = async (
       (initialBody[`Raccomandazioni_${key}_Descrizione__c`] =
         getFailAudits(raccomandationObj.audits)
           .map((x) => mapAuditTitle(x))
-          .join(" | ") ?? "");
+          .join(" | ") ?? ""));
 
     switch (job.type) {
       case "municipality":
         // eslint-disable-next-line
         const functionObj = cleanJsonResult[mainObjKey].groups["funzionalita"];
-        (initialBody[`Cittadino_Informato_${key}__c`] =
+        ((initialBody[`Cittadino_Informato_${key}__c`] =
           cleanJsonResult[mainObjKey].status),
           (initialBody[`Funzionalita_${key}__c`] = functionObj.status),
           (initialBody[`Funzionalita_${key}_Descrizione__c`] =
             getFailAudits(functionObj.audits)
               .map((x) => mapAuditTitle(x))
-              .join(" | ") ?? "");
+              .join(" | ") ?? ""));
         break;
       case "school":
         initialBody[`Criteri_Conformita_${key}__c`] =
@@ -198,7 +198,7 @@ const mapPA2026BodyUrlNotExists = async (urlToBeScanned: string) => {
 
 const calculatePassedAuditPercentage = async (
   job: Job,
-  cleanJsonResult
+  cleanJsonResult,
 ): Promise<string> => {
   let totalAudits = {};
 
@@ -253,7 +253,7 @@ const urlExists = async (url: string) => {
       headers: { Accept: "text/html,application/xhtml+xml" },
     });
     console.log(
-      `[SCAN MANAGER ITEM] - Calling URL ${url} returned: ${response.status} ${response.statusText}.`
+      `[SCAN MANAGER ITEM] - Calling URL ${url} returned: ${response.status} ${response.statusText}.`,
     );
     statusCode = response.status;
 
@@ -350,7 +350,7 @@ const sanitizeInput = (input) => {
   } else if (typeof input === "string") {
     console.log(input);
     throw new Error(
-      "Invalid input: Only alphanumeric characters, underscores, and hyphens are allowed."
+      "Invalid input: Only alphanumeric characters, underscores, and hyphens are allowed.",
     );
   }
   return input;
@@ -369,7 +369,7 @@ const preFilterPayload = (payload) => {
       for (const key in obj) {
         if (key === "external_id") {
           throw new Error(
-            "'external_id' can appear only in top level 'and' object"
+            "'external_id' can appear only in top level 'and' object",
           );
         }
         result[key] = processObject(obj[key]);

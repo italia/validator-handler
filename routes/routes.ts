@@ -167,7 +167,7 @@ router.post(
   "/login/token",
   async (
     req: loginBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const username: string = req.body.username;
@@ -181,7 +181,7 @@ router.post(
       const token = await jwtGenerate(
         process.env.JWT_SECRET,
         userObj,
-        Number(process.env.JWT_EXPIRATION_TIME)
+        Number(process.env.JWT_EXPIRATION_TIME),
       );
 
       return succesResponse(
@@ -189,12 +189,12 @@ router.post(
           token: token,
           expiresIn: Number(process.env.JWT_EXPIRATION_TIME),
         },
-        res
+        res,
       );
     } catch (error) {
       return errorResponse(0, error, 401, res);
     }
-  }
+  },
 );
 
 /**
@@ -231,7 +231,7 @@ router.post(
   "/login/refresh",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const token = await getToken(req);
@@ -239,7 +239,7 @@ router.post(
       const newToken = await jwtRefreshToken(
         process.env.JWT_SECRET,
         Number(process.env.JWT_EXPIRATION_TIME),
-        token
+        token,
       );
 
       return succesResponse(
@@ -247,12 +247,12 @@ router.post(
           token: newToken,
           expiresIn: Number(process.env.JWT_EXPIRATION_TIME),
         },
-        res
+        res,
       );
     } catch (error) {
       return errorResponse(0, error, 401, res);
     }
-  }
+  },
 );
 
 /**
@@ -300,7 +300,7 @@ router.put(
   "/entity/create",
   async (
     req: createEntityBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -326,7 +326,7 @@ router.put(
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -380,7 +380,7 @@ router.post(
   "/entity/:external_id/update",
   async (
     req: updateEntityBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -388,14 +388,14 @@ router.post(
 
       const result = await new entityController(dbWS).update(
         req.params.external_id,
-        req.body
+        req.body,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -461,7 +461,7 @@ router.get(
   "/entity/list",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -473,14 +473,14 @@ router.get(
       const result = await new entityController(dbWS).list(
         type as string,
         page,
-        limit
+        limit,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -523,7 +523,7 @@ router.get(
   "/entity/:external_id/retrieve",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -531,14 +531,14 @@ router.get(
       const externalEntityId = req.params.external_id.toString();
 
       const result = await new entityController(dbWS).retrieve(
-        externalEntityId
+        externalEntityId,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -616,7 +616,7 @@ router.get(
   "/entity/:external_id/job/list",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -633,14 +633,14 @@ router.get(
         dateFrom,
         dateTo,
         page,
-        limit
+        limit,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -767,7 +767,7 @@ router.get(
   "/entity/:external_id/job/:id/results",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -776,7 +776,7 @@ router.get(
       const jobId = parseInt(req.params.id);
 
       const jobObj = await new jobController(
-        dbWS
+        dbWS,
       ).getJobFromIdAndExternalEntityId(jobId, externalEntityId);
 
       if (!jobObj) {
@@ -788,14 +788,14 @@ router.get(
       }
 
       const result = await getFile(
-        jobObj.entity_id + "/" + jobObj.id + "/" + "report.json"
+        jobObj.entity_id + "/" + jobObj.id + "/" + "report.json",
       );
 
       return succesResponse(JSON.parse(result), res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -845,7 +845,7 @@ router.get(
       const jobId = parseInt(req.params.id);
 
       const jobObj = await new jobController(
-        dbWS
+        dbWS,
       ).getJobFromIdAndExternalEntityId(jobId, externalEntityId);
 
       if (!jobObj) {
@@ -857,19 +857,19 @@ router.get(
       }
 
       const htmlReport = await getFile(
-        jobObj.entity_id + "/" + jobObj.id + "/" + "report.html"
+        jobObj.entity_id + "/" + jobObj.id + "/" + "report.html",
       );
 
       res.setHeader("Content-Type", "text/html");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="report-entity-${externalEntityId}-job-${jobObj.id}.html"`
+        `attachment; filename="report-entity-${externalEntityId}-job-${jobObj.id}.html"`,
       );
       return res.status(200).send(htmlReport);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1022,7 +1022,7 @@ router.post(
   "/job/query",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -1037,14 +1037,14 @@ router.post(
         req.body,
         page as string,
         limit as string,
-        countOnly
+        countOnly,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1121,7 +1121,7 @@ router.get(
   "/job/:type/stats",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -1148,7 +1148,7 @@ router.get(
           type,
           status,
           dateFrom,
-          dateTo
+          dateTo,
         );
       }
 
@@ -1156,7 +1156,7 @@ router.get(
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1215,7 +1215,7 @@ router.get(
   "/audit/:type/stats",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -1246,14 +1246,14 @@ router.get(
         type,
         score,
         dateFrom,
-        dateTo
+        dateTo,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1311,7 +1311,7 @@ router.post(
   "/entity/:external_id/job/:id/preserve/update",
   async (
     req: updatePreserveBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       await jwtVerify(process.env.JWT_SECRET, await getToken(req));
@@ -1323,14 +1323,14 @@ router.post(
       const result = await new jobController(dbWS).updatePreserve(
         externalEntityId,
         jobId,
-        req.body
+        req.body,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 router.get(
@@ -1341,8 +1341,8 @@ router.get(
       packageJSON =
         JSON.parse(
           await readFileSync(
-            path.resolve(__dirname, "../package.json")
-          ).toString()
+            path.resolve(__dirname, "../package.json"),
+          ).toString(),
         ) ?? {};
     } catch (e) {
       packageJSON = null;
@@ -1356,9 +1356,9 @@ router.get(
     succesResponse(
       { handlerVersion: handlerVersion, validatorVersion: validatorVersion },
       res,
-      200
+      200,
     );
-  }
+  },
 );
 
 /**
@@ -1417,7 +1417,7 @@ router.put(
   "/user/create",
   async (
     req: createEntityBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const token = await getToken(req);
@@ -1434,7 +1434,7 @@ router.put(
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1481,7 +1481,7 @@ router.post(
   "/user/update",
   async (
     req: createEntityBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const token = await getToken(req);
@@ -1498,7 +1498,7 @@ router.post(
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1544,7 +1544,7 @@ router.post(
   "/user/delete",
   async (
     req: createEntityBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const token = await getToken(req);
@@ -1561,7 +1561,7 @@ router.post(
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1608,7 +1608,7 @@ router.post(
   "/user/password/change",
   async (
     req: createEntityBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const token = await getToken(req);
@@ -1618,14 +1618,14 @@ router.post(
 
       const updated: boolean = await new userController(dbWS).changePassword(
         req.body,
-        await getPayload(token)
+        await getPayload(token),
       );
 
       return succesResponse({ updated }, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 /**
@@ -1691,7 +1691,7 @@ router.get(
   "/user/list",
   async (
     req: emptyBodyType,
-    res: successResponseType | errorResponseType
+    res: successResponseType | errorResponseType,
   ): Promise<void> => {
     try {
       const token = await getToken(req);
@@ -1707,14 +1707,14 @@ router.get(
       const result = await new userController(dbWS).list(
         page,
         limit,
-        role as string
+        role as string,
       );
 
       return succesResponse(result, res);
     } catch (error) {
       return errorResponse(0, error, 500, res);
     }
-  }
+  },
 );
 
 // ** 404 ROUTE HANDLING **
@@ -1722,28 +1722,28 @@ router.get(
   "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
-  }
+  },
 );
 
 router.post(
   "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
-  }
+  },
 );
 
 router.delete(
   "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
-  }
+  },
 );
 
 router.put(
   "/*",
   (req: emptyBodyType, res: successResponseType | errorResponseType): void => {
     errorResponse(0, { message: "Not found" }, 404, res);
-  }
+  },
 );
 
 export default router;

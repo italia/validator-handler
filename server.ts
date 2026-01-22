@@ -30,7 +30,7 @@ app.use(
   "/docs",
   //basicAuthMiddleware,
   swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec)
+  swaggerUi.setup(swaggerSpec),
 );
 app.use("/api/v1/", router);
 

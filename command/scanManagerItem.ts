@@ -86,7 +86,7 @@ const scan = async (jobId) => {
       "all",
       300000,
       10,
-      parseInt(process.env.CRAWLER_PARALLEL_PAGES ?? "5")
+      parseInt(process.env.CRAWLER_PARALLEL_PAGES ?? "5"),
     );
 
     if (!lighthouseResult.status) {
@@ -96,11 +96,11 @@ const scan = async (jobId) => {
     let jsonResult = {};
     if (jobObjParsed.type === "municipality") {
       jsonResult = await cleanMunicipalityJSONReport(
-        lighthouseResult["data"]["jsonReport"]
+        lighthouseResult["data"]["jsonReport"],
       );
     } else if (jobObjParsed.type === "school") {
       jsonResult = await cleanSchoolJSONReport(
-        lighthouseResult["data"]["jsonReport"]
+        lighthouseResult["data"]["jsonReport"],
       );
     }
 
@@ -109,7 +109,7 @@ const scan = async (jobId) => {
       jobObjParsed.entity_id,
       lighthouseResult["data"]["htmlReport"],
       lighthouseResult["data"]["jsonReport"],
-      JSON.stringify(jsonResult)
+      JSON.stringify(jsonResult),
     );
 
     if (!uploadResult.status) {
@@ -119,7 +119,7 @@ const scan = async (jobId) => {
     const status = await isPassedReport(
       jsonResult,
       jobObjParsed.type,
-      jobObjParsed.entity_id
+      jobObjParsed.entity_id,
     );
 
     const job: Job = await jobObj.update({
@@ -139,11 +139,11 @@ const scan = async (jobId) => {
       job,
       jsonResult,
       status,
-      lighthouseResult["data"]["htmlReport"]
+      lighthouseResult["data"]["htmlReport"],
     );
 
     const jobDeleted = await new jobController(dbSM).cleanJobs(
-      jobObjParsed.entity_id
+      jobObjParsed.entity_id,
     );
     console.log("[SCAN MANAGER ITEM] - JOB DELETED: ", jobDeleted);
 
@@ -165,7 +165,7 @@ const uploadFiles = async (
   entityId: number,
   htmlReport: string,
   jsonReport: string,
-  cleanJsonReport: string
+  cleanJsonReport: string,
 ): Promise<{
   status: boolean;
   htmlLocationUrl: string | null;
@@ -185,15 +185,15 @@ const uploadFiles = async (
 
     const htmlLocationUrl = await s3Upload(
       htmlReport,
-      entityId + "/" + jobId + "/" + "report.html"
+      entityId + "/" + jobId + "/" + "report.html",
     );
     const jsonLocationUrl = await s3Upload(
       jsonReport,
-      entityId + "/" + jobId + "/" + "report.json"
+      entityId + "/" + jobId + "/" + "report.json",
     );
     const cleanJsonLocationUrl = await s3Upload(
       cleanJsonReport,
-      entityId + "/" + jobId + "/" + "summary.json"
+      entityId + "/" + jobId + "/" + "summary.json",
     );
 
     if (

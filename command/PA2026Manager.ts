@@ -32,7 +32,7 @@ dbRoot
       const asseverationResult = await asseveration();
       console.log(
         "[PA2026 MANAGER]: ASSEVERATION RESULT - ",
-        asseverationResult
+        asseverationResult,
       );
 
       await sendRetryJobInSendError();
@@ -74,7 +74,7 @@ const create = async () => {
       try {
         const externalId = record.Id ?? "";
         let entity: Entity = await new entityController(dbWS).retrieve(
-          externalId
+          externalId,
         );
 
         if (!entity) {
@@ -94,7 +94,7 @@ const create = async () => {
 
           if (!entity) {
             throw new Error(
-              "Create entity failed for entity external id: " + externalId
+              "Create entity failed for entity external id: " + externalId,
             );
           }
         }
@@ -107,8 +107,8 @@ const create = async () => {
           },
           process.env.PA2026_UPDATE_RECORDS_PATH.replace(
             "{external_entity_id}",
-            entity.external_id
-          )
+            entity.external_id,
+          ),
         );
 
         returnIds.push(entity.id);
@@ -153,7 +153,7 @@ const update = async () => {
         const url = record.Url_Sito_Internet__c ?? "";
 
         const entity: Entity = await new entityController(dbWS).retrieve(
-          externalId
+          externalId,
         );
 
         if (!entity) {
@@ -178,8 +178,8 @@ const update = async () => {
             },
             process.env.PA2026_UPDATE_RECORDS_PATH.replace(
               "{external_entity_id}",
-              entity.external_id
-            )
+              entity.external_id,
+            ),
           );
         }
 
@@ -223,11 +223,11 @@ const asseveration = async () => {
         const projectState = record.Stato_Progetto__c ?? "";
 
         const entity: Entity = await new entityController(dbWS).retrieve(
-          externalId
+          externalId,
         );
         if (!entity) {
           throw new Error(
-            "Retrieve entity failed for entity external id: " + externalId
+            "Retrieve entity failed for entity external id: " + externalId,
           );
         }
 
@@ -243,12 +243,13 @@ const asseveration = async () => {
         ) {
           if (!asseverationJobId) {
             throw new Error(
-              "Asseveration job id from PA2026 is null for entity: " + entity.id
+              "Asseveration job id from PA2026 is null for entity: " +
+                entity.id,
             );
           }
 
           const job: Job = await new jobController(
-            dbWS
+            dbWS,
           ).getJobFromIdAndEntityId(asseverationJobId, entity.id);
 
           if (!job) {
@@ -256,7 +257,7 @@ const asseveration = async () => {
               "Job not found for entity: " +
                 entity.id +
                 " with jobId: " +
-                asseverationJobId
+                asseverationJobId,
             );
           }
 
@@ -289,8 +290,8 @@ const asseveration = async () => {
             { Progetto_Terminato__c: true },
             process.env.PA2026_UPDATE_RECORDS_PATH.replace(
               "{external_entity_id}",
-              entityUpdated.external_id
-            )
+              entityUpdated.external_id,
+            ),
           );
         }
 
@@ -298,7 +299,7 @@ const asseveration = async () => {
       } catch (e) {
         console.log(
           "ASSEVERATION QUERY FOR-STATEMENT EXCEPTION: ",
-          e.toString()
+          e.toString(),
         );
       }
     }
@@ -329,7 +330,7 @@ const sendRetryJobInSendError = async () => {
   try {
     const date = new Date();
     date.setHours(
-      date.getHours() - parseInt(process.env.SEND_RETRY_JOB_IN_ERROR)
+      date.getHours() - parseInt(process.env.SEND_RETRY_JOB_IN_ERROR),
     );
 
     const jobs: Job[] = await jobDefine(dbWS).findAll({

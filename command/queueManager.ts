@@ -19,7 +19,7 @@ import {
 } from "../controller/queueManagerController.js";
 
 const command = yargs(hideBin(process.argv)).usage(
-  "Usage: " + "--maxItems <maxItems> "
+  "Usage: " + "--maxItems <maxItems> ",
 ).argv;
 
 dbQM
@@ -42,15 +42,15 @@ dbQM
     });
 
     const inProgressJobInError = await new jobController(
-      dbQM
+      dbQM,
     ).manageInProgressJobInError();
     console.log(
       'MANAGE IN PROGRESS JOB IN "ERROR": ',
-      inProgressJobInError.length
+      inProgressJobInError.length,
     );
 
     const inPendingJob = await new jobController(dbQM).managePendingJobs(
-      crawlerQueue
+      crawlerQueue,
     );
     console.log('MANAGE JOB IN "PENDING": ', inPendingJob.length);
 
@@ -58,7 +58,7 @@ dbQM
     entityInErrorJob = await manageEntitiesInErrorJobs();
     console.log(
       'MANAGE ENTITY WITH LAST JOB IN "ERROR": ',
-      entityInErrorJob.length
+      entityInErrorJob.length,
     );
 
     let gapLimit: number = parseInt(command.maxItems);
@@ -84,13 +84,13 @@ dbQM
         [...firstTimeForcedEntityToBeAnalyzed],
         crawlerQueue,
         true,
-        preserveReasons[0]
+        preserveReasons[0],
       );
     }
 
     forcedRescanEntitiesToBeAnalyzed = forcedRescanEntitiesToBeAnalyzed.filter(
       (elem) =>
-        !firstTimeForcedEntityToBeAnalyzed.find(({ id }) => elem.id === id)
+        !firstTimeForcedEntityToBeAnalyzed.find(({ id }) => elem.id === id),
     );
 
     if (
@@ -100,24 +100,24 @@ dbQM
       await generateJobs(
         [...forcedRescanEntitiesToBeAnalyzed, ...entityInErrorJob],
         crawlerQueue,
-        false
+        false,
       );
     }
 
     console.log(
       "FIRST TIME FORCED ENTITIES",
-      firstTimeForcedEntityToBeAnalyzed.length
+      firstTimeForcedEntityToBeAnalyzed.length,
     );
 
     console.log(
       "FORCED RESCAN ENTITIES",
-      forcedRescanEntitiesToBeAnalyzed.length
+      forcedRescanEntitiesToBeAnalyzed.length,
     );
 
     const counts = await crawlerQueue.getJobCounts(
       "wait",
       "completed",
-      "failed"
+      "failed",
     );
     console.log("QUEUE STATUS", counts);
 

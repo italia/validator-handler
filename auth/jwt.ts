@@ -7,11 +7,11 @@ import express from "express";
 const generate = async (
   key: string,
   payload: authUser,
-  expiresIn: number
+  expiresIn: number,
 ): Promise<string> => {
   if (!key || !payload || !expiresIn) {
     throw new Error(
-      "Error in generate token: empty key or payload or expiresIn"
+      "Error in generate token: empty key or payload or expiresIn",
     );
   }
 
@@ -53,14 +53,14 @@ const getPayload = async (token: string): Promise<authUser> => {
 const refreshToken = async (
   key: string,
   expiresIn: number,
-  token: string
+  token: string,
 ): Promise<string> => {
   const payload: authUser = await getPayload(token);
 
   return await generate(
     key,
     { username: payload.username, role: payload.role },
-    expiresIn
+    expiresIn,
   );
 };
 

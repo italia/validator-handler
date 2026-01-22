@@ -13,8 +13,8 @@ const options = {
       winston.format.timestamp({ format: "MMM-DD-YYYY HH:mm:ss" }),
       winston.format.align(),
       winston.format.printf(
-        (info) => `${info.level} - ${[info.timestamp]}: ${info.message}`
-      )
+        (info) => `${info.level} - ${[info.timestamp]}: ${info.message}`,
+      ),
     ),
   },
 };

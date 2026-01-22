@@ -1,6 +1,6 @@
 import express from "express";
 
-export interface successResponseType<>extends express.Response {
+export interface successResponseType extends express.Response {
   json: Send<
     {
       status: string;
@@ -11,7 +11,7 @@ export interface successResponseType<>extends express.Response {
   >;
 }
 
-export interface errorResponseType<>extends express.Response {
+export interface errorResponseType extends express.Response {
   json: Send<
     {
       status: string;

@@ -26,7 +26,7 @@ const manageEntitiesInErrorJobs = async () => {
 
     for (let i = 0; i < inErrorEntities[0].length; i++) {
       const entity: Entity | null = await new entityController(
-        dbWS
+        dbWS,
       ).retrieveById(inErrorEntities[0][i]["entity_id"]);
 
       if (!entity) {
@@ -40,8 +40,8 @@ const manageEntitiesInErrorJobs = async () => {
           },
           process.env.PA2026_UPDATE_RECORDS_PATH.replace(
             "{external_entity_id}",
-            entity.external_id
-          )
+            entity.external_id,
+          ),
         );
       } catch (e) {
         console.log("FOR: ENTITY IN ERROR JOBS: ", e.toString());
@@ -136,7 +136,7 @@ const generateJobs = async (
   entities,
   crawlerQueue,
   preserve = false,
-  preserve_reason = null
+  preserve_reason = null,
 ): Promise<void> => {
   for (const entity of entities) {
     try {
