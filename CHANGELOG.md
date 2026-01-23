@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.24](https://github.com/italia/validator-handler/compare/v3.1.23...v3.1.24) (2026-01-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pa-website-validator-ng to v1.1.38 ([4c02bb4](https://github.com/italia/validator-handler/commit/4c02bb4960c6d0897e2cf5b42d69c463d7127681))
+
 ## [3.1.23](https://github.com/italia/validator-handler/compare/v3.1.22...v3.1.23) (2026-01-22)
 
 
