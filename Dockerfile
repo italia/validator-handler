@@ -13,6 +13,7 @@ WORKDIR /usr/src/app/
 RUN apt-get install -y git
 RUN apt-get install -y nano
 RUN apt-get install -y chromium
+RUN apt-get install -y unzip
 
 RUN npm install -g npm@10.9.0
 RUN npm install -g puppeteer
