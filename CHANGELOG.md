@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.27](https://github.com/italia/validator-handler/compare/v3.1.26...v3.1.27) (2026-05-20)
+
+
+### Bug Fixes
+
+* install unzip in container image ([54ea896](https://github.com/italia/validator-handler/commit/54ea89691c3a445060fc6d8eed27183443878ff6))
+
 ## [3.1.26](https://github.com/italia/validator-handler/compare/v3.1.25...v3.1.26) (2026-05-20)
 
 
